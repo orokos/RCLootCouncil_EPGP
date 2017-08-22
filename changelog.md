@@ -1,3 +1,11 @@
+v1.5
+Add "Undo GP" and "Award GP" button in rightclick menu of the RCLootCouncil History Frame to help manage GP after loot has been distributed by the loot master.
+
+"Undo GP" button: Undo the last GP action that awards the exact item to the exact player
+"Award GP" button: Award GP amount to the player. The default GP amount is determined by the item and response in the history.
+                   You will be able to adjust the GP amount in the following popup.
+
+
 v1.4.1
 Fix lua error that prevent EP, GP, PR to be shown.
 

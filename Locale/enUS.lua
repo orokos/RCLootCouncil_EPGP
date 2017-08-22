@@ -30,3 +30,6 @@ L["Enable Bidding"] = true
 L["Custom GP"] = true
 L["bidding_desc"] = "Player can send bid price to the loot master by sending a note that starts with integer in the RCLootCouncil popup."
 L["Bidding"] = true
+L["Credit GP to %s"] = true
+L["Undo GP"] = true
+L["Award GP (Default: %s)"] = true

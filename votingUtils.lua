@@ -134,24 +134,47 @@ end
 ---------------------------------------------
 -- Lib-st UI functions
 ---------------------------------------------
+
+-- Uppercase the first character of the string and lowercase the rest of characters.
+-- Str can contain unicode characters.
+local function UpperFirstLowerRest(str)
+    local isFirstChar = true
+    local result= ""
+
+    for c in str:gmatch(".[\128-\191]*") do -- string can contains unicode characters.
+    --https://stackoverflow.com/questions/22129516/string-sub-issue-with-non-english-characters
+        if isFirstChar then
+            isFirstChar = false
+            result = result..c:upper()
+        else
+            result = result..c:lower()
+        end
+    end
+    return result
+end
+
 -- Trying to fix some issue where RCLootCouncil handles some names differently with EPGP
 -- EPGP requires fullname (name-realm) with the correct capitialization,
 -- and realm name cannot contain space.
-local function GetEPGPName(inputName)
+function RCEPGP:GetEPGPName(inputName)
   if not inputName then return nil end
 
+  --------- First try to find name in the raid ------------------------------
   local name = Ambiguate(inputName, "short") -- Convert to short name to be used as the argument to UnitFullName
   local _, ourRealmName = UnitFullName("player") -- Get the name of our realm WITHOUT SPACE.
 
   local name, realm = UnitFullName(name)         -- In order to return a name with correct capitialization, and the realm name WITHOUT SPACE.
-  if not name then
-    return inputName
-  else
+  if name then -- Found the name in the raid
     if realm and realm ~= "" then
       return name.."-"..realm
     else
       return name.."-"..ourRealmName
     end
+  else  -- Name not found in raid, fix capitialiation and space in realm name manually.
+    local shortName,  realmName = strsplit("-", inputName)
+    local shortName = UpperFirstLowerRest(shortName)
+    realmName = realmName:gsub(" ", "") -- Eliminate space in the name
+    return shortName.."-"..realmName
   end
 end
 
@@ -160,7 +183,7 @@ local COLOR_GREY = "|cFF808080"
 
 function RCEPGP.SetCellEP(rowFrame, frame, data, cols, row, realrow, column, fShow, table, ...)
     local name = data[realrow].name
-    name = GetEPGPName(name)
+    name = RCEPGP:GetEPGPName(name)
     local ep, gp, main = EPGP:GetEPGP(name)
     if not ep then
       frame.text:SetText(COLOR_RED.."?")
@@ -174,7 +197,7 @@ end
 
 function RCEPGP.SetCellGP(rowFrame, frame, data, cols, row, realrow, column, fShow, table, ...)
     local name = data[realrow].name
-    name = GetEPGPName(name)
+    name = RCEPGP:GetEPGPName(name)
     local ep, gp, main = EPGP:GetEPGP(name)
     if not gp then
       frame.text:SetText(COLOR_GREY.."?")
@@ -186,7 +209,7 @@ end
 
 function RCEPGP.SetCellPR(rowFrame, frame, data, cols, row, realrow, column, fShow, table, ...)
     local name = data[realrow].name
-    name = GetEPGPName(name)
+    name = RCEPGP:GetEPGPName(name)
     local ep, gp, main = EPGP:GetEPGP(name)
     local pr
     if ep and gp then
@@ -228,8 +251,8 @@ function RCEPGP.PRSort(table, rowa, rowb, sortbycol)
   local a, b = table:GetRow(rowa), table:GetRow(rowb);
   -- Extract the rank index from the name, fallback to 100 if not found
 
-  local nameA = GetEPGPName(a.name)
-  local nameB = GetEPGPName(b.name)
+  local nameA = RCEPGP:GetEPGPName(a.name)
+  local nameB = RCEPGP:GetEPGPName(b.name)
 
   local a_ep, a_gp = EPGP:GetEPGP(nameA)
   local b_ep, b_gp = EPGP:GetEPGP(nameB)
@@ -343,14 +366,14 @@ function RCEPGP:AddGPEditBox()
   end
 end
 
+-- "response" needs to be the response id(Number), or the button name(not response name)
 function RCEPGP:GetResponseGP(response, isTier)
   if response == "PASS" or response == "AUTOPASS" then
     return "0%"
   end
   local responseGP = "100%"
 
-  local index = addon:GetResponseSort(response, isTier)
-  if isTier and addon.mldb.tierButtonsEnabled then
+  if isTier then
     for k, v in pairs(addon.db.profile.tierButtons) do 
       if v.text == response then
         responseGP = v.gp or responseGP
@@ -476,7 +499,7 @@ LibDialog:Register("RCEPGP_CONFIRM_AWARD", {
         if awarded then -- log it
           RCLootCouncilML:TrackAndLogLoot(player, item, response, addon.target, votes, item1, item2, reason, isToken, isTierRoll)
           if gp and gp ~= 0 then
-          	EPGP:IncGPBy(GetEPGPName(player), item, gp)
+          	EPGP:IncGPBy(RCEPGP:GetEPGPName(player), item, gp)
       	  end
         end
         -- We need to delay the test mode disabling so comms have a chance to be send first!

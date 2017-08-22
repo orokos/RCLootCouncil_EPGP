@@ -2,14 +2,14 @@
 ## Interface: 70200
 ## Notes: An UNOFFICIAL RCLootCouncil module to add minimum EPGP support to RCLootCouncil
 ## Title: RCLootCouncil - EPGP
-## Version: 1.4.1
+## Version: 1.5
 ## Dependencies: RCLootCouncil
 ## Dependencies: EPGP
 ## OptionalDeps: RCLootCouncil_ExtraUtilities
 
 Locale\Locales.xml
-
 votingUtils.lua
 options.lua
 CustomLibGearPoints-1.2.lua
+lootHistory.lua
 

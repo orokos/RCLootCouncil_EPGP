@@ -34,4 +34,9 @@ L["Bidding"] = "ставки"
 
 -- Need translation
 --L["bidding_desc"] = "Player can send bid price to the loot master by sending a note that starts with integer."
+L["Credit GP to %s"] = "Начислить GP для игрока %s"
+L["Undo GP"] = "Отменить GP"
+
+-- Need translation
+--L["Award GP (Default: %s)"]
 
