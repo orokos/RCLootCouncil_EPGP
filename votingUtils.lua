@@ -227,11 +227,16 @@ end
 
 function RCEPGP:GetBid(name)
 	local lootTable = RCVotingFrame:GetLootTable()
-	local note = lootTable[session].candidates[name].note
-	if note then
-		local bid = tonumber(string.match(note, "[0-9]+"))
-		return bid
-	end
+
+  -- nil protection
+  if session and name and lootTable and lootTable[session] 
+    and lootTable[session].candidates and lootTable[session].candidates[name] then
+      local note = lootTable[session].candidates[name].note
+    	if note then
+    		local bid = tonumber(string.match(note, "[0-9]+"))
+    		return bid
+    	end
+  end
 end
 
 function RCEPGP.SetCellBid(rowFrame, frame, data, cols, row, realrow, column, fShow, table, ...)
@@ -419,23 +424,29 @@ function RCEPGP.RightClickMenu(menu, level)
   local function GetGPInfo()
     local lootTable = RCVotingFrame:GetLootTable()
     local name = menu.name
-    local data = lootTable[session].candidates[name]
-    local responseGP = RCEPGP:GetResponseGP(data.response, data.isTier)
-    local editboxGP = RCVotingFrame.frame.editbox:GetNumber()
-    local gp = RCEPGP:GetFinalGP(responseGP, editboxGP)
-    local item = lootTable[session].link
-    local bid = RCEPGP:GetBid(name)
-    return data, name, item, responseGP, gp, bid
+    if lootTable and lootTable[session] and lootTable[session].candidates 
+      and name and lootTable[session].candidates[name] then
+      local data = lootTable[session].candidates[name]
+      local responseGP = RCEPGP:GetResponseGP(data.response, data.isTier)
+      local editboxGP = RCVotingFrame.frame.editbox:GetNumber()
+      local gp = RCEPGP:GetFinalGP(responseGP, editboxGP)
+      local item = lootTable[session].link
+      local bid = RCEPGP:GetBid(name)
+      return data, name, item, responseGP, gp, bid
+    else -- Error occurs
+      return nil, "ERROR", "ERROR", "0", 0, 0
+    end
   end
 
   local data, name, item, responseGP, gp, bid = GetGPInfo()
-
-  if level == 1 then
+  
+  if data and level == 1 then
 
   	if addon:Getdb().epgp.biddingEnabled then
 	  	info = Lib_UIDropDownMenu_CreateInfo()
 	    info.func = function()
         local data, name, item, responseGP, gp, bid = GetGPInfo()
+        if not data then return end
 	      LibDialog:Spawn("RCEPGP_CONFIRM_AWARD", {
 	        session,
 	        name,
@@ -455,6 +466,7 @@ function RCEPGP.RightClickMenu(menu, level)
     info = Lib_UIDropDownMenu_CreateInfo()
     info.func = function()
       local data, name, item, responseGP, gp, bid = GetGPInfo()
+      if not data then return end
       LibDialog:Spawn("RCEPGP_CONFIRM_AWARD", {
         session,
         name,
@@ -481,11 +493,8 @@ function RCEPGP.RightClickMenu(menu, level)
         function()
             if Lib_UIDropDownMenu_GetCurrentDropDown() ~= menu then return end
             if not Lib_DropDownList1:IsShown() then return end
-            if (not session) or (not RCVotingFrame:GetLootTable()[session]) then
-              Lib_CloseDropDownMenus(1)
-              return 
-            end
             local data, name, item, responseGP, gp, bid = GetGPInfo()
+            if not data then return end
 
             -- (Optional) Button 1: Bid Button
             local id = 1
