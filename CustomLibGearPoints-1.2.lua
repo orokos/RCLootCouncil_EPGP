@@ -2,6 +2,7 @@
 -- http://code.google.com/p/epgp/wiki/GearPoints
 local addon = LibStub("AceAddon-3.0"):GetAddon("RCLootCouncil")
 local RCEPGP = addon:GetModule("RCEPGP")
+local LEP = LibStub("AceLocale-3.0"):GetLocale("RCEPGP")
 
 local functionOldLibGearPoints = {}
 local versionOldLibGearPoints = 1
@@ -846,11 +847,33 @@ function RCEPGP:ApplyNewLibGearPoints()
       rarity = rarity,
       equipLoc = equipLoc,
       itemID = itemID,
+      link = itemLink,
     }
     formula = setfenv(formula, fenv)
-    local high = formula()
+
+    local status, value = pcall(formula)
+
+    local high
+    if status then -- No Error
+        high = value
+    else           -- Error
+        formula = loadstring(RCEPGP.defaults.formula)
+        formula = setfenv(formula, fenv)
+        high = formula()
+        RCEPGP:AnnounceRuntimeError(value)
+    end
+
     high = math.floor(0.5 + high)
     return high, low, level, rarity, equipLoc
   end
 
+end
+
+local ANNOUNCE_INTERVAL = 2
+local lastErrorTime
+function RCEPGP:AnnounceRuntimeError(errMsg)
+    if (not lastErrorTime) or GetTime() - lastErrorTime > ANNOUNCE_INTERVAL then
+        lastErrorTime = GetTime()
+        self:Print(LEP["announce_formula_runtime_error"].."\n"..errMsg)
+    end
 end

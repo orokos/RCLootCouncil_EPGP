@@ -39,4 +39,5 @@ L["Undo GP"] = "Отменить GP"
 
 -- Need translation
 --L["Award GP (Default: %s)"]
+--L["variable_link_help"] 
 

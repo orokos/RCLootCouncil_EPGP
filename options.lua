@@ -509,6 +509,19 @@ function RCEPGP:OptionsTable()
             type = "description",
             width = "double",
          },
+         variableLink = {
+            name = "|cFFFFFF00link|r",
+            order = 124,
+            fontSize = "medium",
+            type = "description",
+            width = "normal",
+         },
+         variableLinkHelp = {
+            name = LEP["variable_link_help"],
+            order = 125,
+            type = "description",
+            width = "double",
+         },
          formula = {
             name = LEP["gp_formula"],
             order = 150,
