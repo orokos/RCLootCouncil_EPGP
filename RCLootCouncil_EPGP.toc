@@ -2,7 +2,7 @@
 ## Interface: 70200
 ## Notes: An UNOFFICIAL RCLootCouncil module to add minimum EPGP support to RCLootCouncil
 ## Title: RCLootCouncil - EPGP
-## Version: 1.5
+## Version: 1.6
 ## Dependencies: RCLootCouncil
 ## Dependencies: EPGP
 ## OptionalDeps: RCLootCouncil_ExtraUtilities

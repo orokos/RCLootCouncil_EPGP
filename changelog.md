@@ -1,3 +1,7 @@
+v1.6
+All rightclick menus are refreshed every frame rather than only when opened. This allows you to make multiple changes in one menu without reopening the menu.
+Add "link" variable to Custom GP Rule Feature for advanced user.
+
 v1.5
 Add "Undo GP" and "Award GP" button in rightclick menu of the RCLootCouncil History Frame to help manage GP after loot has been distributed by the loot master.
 
