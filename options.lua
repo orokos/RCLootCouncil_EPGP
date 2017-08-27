@@ -589,17 +589,12 @@ function RCEPGP:OptionsTable()
    LibStub("AceConfigRegistry-3.0"):NotifyChange("RCLootCouncil - EPGP")
 end
 
+function RCEPGP:OpenOptions()
+   InterfaceOptionsFrame_OpenToCategory(RCEPGP.optionsFrame)
+   InterfaceOptionsFrame_OpenToCategory(RCEPGP.optionsFrame)
+end
+
 function RCEPGP:AddChatCommand()
    L["chat_commands"] = L["chat_commands"]..LEP["chat_commands"]
-   local oldChatCommand = addon.ChatCommand
-   self:RawHook(addon, "ChatCommand", function(self, msg)
-      local input, arg1, arg2 = addon:GetArgs(msg,3)
-      input = strlower(input or "")
-      if input == "epgp" then
-         InterfaceOptionsFrame_OpenToCategory(RCEPGP.optionsFrame)
-         InterfaceOptionsFrame_OpenToCategory(RCEPGP.optionsFrame)
-      else
-         oldChatCommand(addon, msg)
-      end
-   end)
+   addon:CustomChatCmd(self, "OpenOptions", LEP["chat_commands"], "EPGP", "epgp")
 end
