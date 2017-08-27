@@ -41,4 +41,5 @@ L["Undo GP"] = "Отменить GP"
 --L["Award GP (Default: %s)"]
 --L["variable_link_help"] 
 --L["chat_commands"]
-
+--L["gpOptions"]
+--L["gpOptionsButton"]

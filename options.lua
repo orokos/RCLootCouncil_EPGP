@@ -166,9 +166,28 @@ function RCEPGP:OptionsTable()
       type = "group",
       childGroups = "tab",
       args = {
+         gpOptions = {
+            name = LEP["gpOptions"],
+            order = 4,
+            type = "group",
+            inline = true,
+            args = {
+               gpOptionsButton = {
+                  name = LEP["gpOptionsButton"],
+                  order = 1,
+                  width = "double",
+                  type = "execute",
+                  func = function()
+                           InterfaceOptionsFrame_OpenToCategory(addon.optionsFrame.ml)
+                           InterfaceOptionsFrame_OpenToCategory(addon.optionsFrame.ml) -- Twice due to blizz reasons
+                           LibStub("AceConfigDialog-3.0"):SelectGroup("RCLootCouncil", "mlSettings", "buttonsTab")
+                        end,
+               },
+            },
+         }, 
          bidding = {
             name = LEP["Bidding"],
-            order = 0,
+            order = 5,
             type = "group",
             inline = true,
             args = {

@@ -35,3 +35,6 @@ L["Award GP (Default: %s)"] = "獎勵GP （默認： %s)"
 L["variable_link_help"] = "字符串. 物品的完整鏈接."
 L["announce_formula_runtime_error"] = "你的GP公式含有運行時錯誤.出錯時會使用默認公式."
 L["chat_commands"] = "- epgp     - 開啟RCLootCouncil-EPGP設定介面"
+L["gpOptions"] = "回應的GP百分比"
+L["gpOptionsButton"] = "打開配置回應的GP百分比的選項"
+
