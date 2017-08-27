@@ -830,10 +830,8 @@ function RCEPGP:ApplyNewLibGearPoints()
       isToken = 1
     end
 
-    local formula, env = loadstring(addon_db.epgp.formula)
-    if not formula then
-      formula = loadstring(RCEPGP.defaults.formula)
-    end
+    local formula, err = RCEPGP:GetFormulaFunc()
+
     local fenv =
     {
       ilvl = ilvl,
@@ -867,6 +865,17 @@ function RCEPGP:ApplyNewLibGearPoints()
     return high, low, level, rarity, equipLoc
   end
 
+end
+
+function RCEPGP:GetFormulaFunc()
+    local formula, err = loadstring("return "..addon_db.epgp.formula)
+    if not formula then
+        formula, err = loadstring(addon_db.epgp.formula)
+    end
+    if not formula then
+      formula, err = loadstring(RCEPGP.defaults.formula)
+    end
+    return formula, err
 end
 
 local ANNOUNCE_INTERVAL = 2

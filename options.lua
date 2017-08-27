@@ -25,7 +25,7 @@ local defaults = {
    INVTYPE_HAND = 0.75,
    INVTYPE_TRINKET = 1.25,
    INVTYPE_RELIC = 0.667,
-   formula = "return 1000 * 2 ^ (-915/30) * 2 ^ (ilvl/30) * slotWeights + hasSpeed * 25 + numSocket * 200" 
+   formula = "1000 * 2 ^ (-915/30) * 2 ^ (ilvl/30) * slotWeights + hasSpeed * 25 + numSocket * 200" 
 }
 
 RCEPGP.defaults = defaults
@@ -534,7 +534,7 @@ function RCEPGP:OptionsTable()
                      value = tostring(defaults[info[#info]])
                end
                addon_db.epgp[info[#info]] = value
-               local func, err = loadstring(value)
+               local func, err = RCEPGP:GetFormulaFunc()
                if not func then
                   RCEPGP.epgpOptions.args.customGP.args.errorMsg.name = LEP["formula_syntax_error"]
                   RCEPGP.epgpOptions.args.customGP.args.errorDetailedMsg.name = err
