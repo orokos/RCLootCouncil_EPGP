@@ -35,3 +35,4 @@ L["Undo GP"] = true
 L["Award GP (Default: %s)"] = true
 L["variable_link_help"] = "String. The full item link of the item"
 L["announce_formula_runtime_error"] = "Your GP formula has runtime error. Default formula is used when error occurs."
+L["chat_commands"] = "- epgp     - Open the RCLootCouncil-EPGP options interface"

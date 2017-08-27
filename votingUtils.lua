@@ -38,6 +38,7 @@ function RCEPGP:OnEnable()
    self:SecureHook(EPGP:GetModule("loot"), "OnEnable", self.DisableEPGPPopup)
    self:OptionsTable()
    self:AddGPOptions()
+   self:AddChatCommand()
    self:RegisterMessage("RCGPRuleChanged", "UpdateGPEditbox")
    self:SetupColumns()
 end
