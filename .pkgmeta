@@ -1,0 +1,13 @@
+package-as: RCLootCouncil_EPGP
+
+manual-changelog:
+    filename: changelog.md
+    markup-type: markdown
+
+enable-nolib-creation: no
+
+license-output: LICENSE.md
+
+required-dependencies:
+    - rclootcouncil
+    - epgp-dkp-reloaded
