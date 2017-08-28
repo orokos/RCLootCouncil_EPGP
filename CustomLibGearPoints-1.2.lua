@@ -630,6 +630,31 @@ function RCEPGP:ApplyNewLibGearPoints()
         [147332] = { 4, 900, "INVTYPE_CLOAK", true },
         [147331] = { 4, 900, "INVTYPE_CLOAK", true },
         [147333] = { 4, 900, "INVTYPE_CLOAK", true },
+
+        -- TIER 21 Antorus, the Burning Throne
+        [152515] = { 4, 930, "INVTYPE_CLOAK", true },
+        [152516] = { 4, 930, "INVTYPE_CLOAK", true },
+        [152517] = { 4, 930, "INVTYPE_CLOAK", true },
+
+        [152518] = { 4, 930, "INVTYPE_CHEST", true },
+        [152519] = { 4, 930, "INVTYPE_CHEST", true },
+        [152520] = { 4, 930, "INVTYPE_CHEST", true },
+
+        [152521] = { 4, 930, "INVTYPE_HAND", true },
+        [152522] = { 4, 930, "INVTYPE_HAND", true },
+        [152523] = { 4, 930, "INVTYPE_HAND", true },
+
+        [152524] = { 4, 930, "INVTYPE_HEAD", true },
+        [152525] = { 4, 930, "INVTYPE_HEAD", true },
+        [152526] = { 4, 930, "INVTYPE_HEAD", true },
+
+        [152527] = { 4, 930, "INVTYPE_LEGS", true },
+        [152528] = { 4, 930, "INVTYPE_LEGS", true },
+        [152529] = { 4, 930, "INVTYPE_LEGS", true },
+
+        [152530] = { 4, 930, "INVTYPE_SHOULDER", true },
+        [152531] = { 4, 930, "INVTYPE_SHOULDER", true },
+        [152532] = { 4, 930, "INVTYPE_SHOULDER", true },
     }
 
   -- Used to add extra GP if the item contains bonus stats
