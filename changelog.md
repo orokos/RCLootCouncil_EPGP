@@ -1,3 +1,10 @@
+### v1.7
+---
++ Add chat command "/rc epgp" to get access to RCLootCouncil - EPGP settings.
++ Add variables "isNormal", "isHeroic", "isMythic", "isWarforged", "isTitanforged" to custom GP rule.
++ One line formula in custom GP rule no longer needs "return"
++ Add Tier21 token info
+
 ### v1.6
 ---
 + All rightclick menus are refreshed every frame rather than only when opened. This allows you to make multiple changes in one menu without reopening the menu.
