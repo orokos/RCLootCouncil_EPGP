@@ -43,3 +43,8 @@ L["Undo GP"] = "Отменить GP"
 --L["chat_commands"]
 --L["gpOptions"]
 --L["gpOptionsButton"]
+--L["variable_isNormal_help"]
+--L["variable_isHeroic_help"]
+--L["variable_isMythic_help"]
+--L["variable_isWarforged_help"]
+--L["variable_isTitanforged_help"]

@@ -37,4 +37,9 @@ L["announce_formula_runtime_error"] = "你的GP公式含有運行時錯誤.出�
 L["chat_commands"] = "- epgp     - 開啟RCLootCouncil-EPGP設定介面"
 L["gpOptions"] = "回應的GP百分比"
 L["gpOptionsButton"] = "打開配置回應的GP百分比的選項"
+L["variable_isNormal_help"] = "整數. 1如果物品來自普通難度,否則為0."
+L["variable_isHeroic_help"] = "整數. 1如果物品來自英雄難度,否則為0."
+L["variable_isMythic_help"] = "整數. 1如果物品來自傳奇難度,否則為0."
+L["variable_isWarforged_help"] = "整數. 1如果物品戰鑄,否則為0."
+L["variable_isTitanforged_help"] = "整數. 1如果物品泰坦造物,否則為0."
 

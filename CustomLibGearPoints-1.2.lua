@@ -846,6 +846,11 @@ function RCEPGP:ApplyNewLibGearPoints()
       equipLoc = equipLoc,
       itemID = itemID,
       link = itemLink,
+      isNormal = RCEPGP:IsItemNormalDifficulty(itemLink) and 1 or 0,
+      isHeroic = RCEPGP:IsItemHeroicDifficulty(itemLink) and 1 or 0,
+      isMythic = RCEPGP:IsItemMythicDifficulty(itemLink) and 1 or 0,
+      isWarforged = RCEPGP:IsItemWarforged(itemLink) and 1 or 0,
+      isTitanforged = RCEPGP:IsItemTitanforged(itemLink) and 1 or 0,
     }
     formula = setfenv(formula, fenv)
 
@@ -885,4 +890,90 @@ function RCEPGP:AnnounceRuntimeError(errMsg)
         lastErrorTime = GetTime()
         self:Print(LEP["announce_formula_runtime_error"].."\n"..errMsg)
     end
+end
+
+local ItemUtils = LibStub:GetLibrary("LibItemUtils-1.0")
+local tooltip = ItemUtils.tooltip
+
+local links =
+{
+    Heroic = "|cffa335ee|Hitem:147425::::::::2:71::5:3:3562:1497:3528:::|h[Cord of Pilfered Rosaries]|h|r",
+    Mythic = "|cffa335ee|Hitem:147425::::::::2:71::6:3:3563:1512:3528:::|h[Cord of Pilfered Rosaries]|h|r",
+    LFR = "|cffa335ee|Hitem:147424::::::::2:71::4:3:3564:1467:3528:::|h[Treads of Violent Intrusion]|h|r",
+    Warforged = "|cffa335ee|Hitem:147425::::::::2:71::3:3:3561:1487:3336:::|h[Cord of Pilfered Rosaries]|h|r",
+    Titanforged = "|cffa335ee|Hitem:147424::::::::2:71::3:3:3561:1507:3337:::|h[Treads of Violent Intrusion]|h|r",
+}
+
+for _, item in pairs(links) do -- Load item infos into memory
+    GetItemInfo(item)
+end
+
+local textLeft2 = {
+    
+}
+
+local function GetTextLeft2(link)
+    if textLeft2[link] then return textLeft2[link] end
+    tooltip:SetOwner(UIParent, "ANCHOR_NONE")
+    tooltip:SetHyperlink(link)
+    if tooltip:NumLines() > 1 then
+        local line = getglobal(tooltip:GetName()..'TextLeft2')
+        if line and line.GetText then
+            local text = line:GetText()
+            if text:find("|c") then
+                text = text:sub(11, -3) -- remove color code
+            end
+            textLeft2[link] = text
+            tooltip:Hide()
+            return text
+        end
+    end
+    tooltip:Hide()
+    return ""
+end
+
+function RCEPGP:IsItemHasKeyword(item, keyword)
+    if (not keyword) or keyword == "" then return false end
+    local link = select(2, GetItemInfo(item))
+    tooltip:SetOwner(UIParent, "ANCHOR_NONE")
+    tooltip:SetHyperlink(link)
+    if tooltip:NumLines() > 1 then
+        for i = 2, 5 do -- Check 4 lines, just in case.
+            local line = getglobal(tooltip:GetName()..'TextLeft' .. i)
+            if line and line.GetText then
+                local text = line:GetText()
+                if text and text:find(keyword)then
+                    tooltip:Hide()
+                    return true
+                end
+            end
+        end
+    end
+    tooltip:Hide()
+    return false
+end
+
+
+function RCEPGP:IsItemNormalDifficulty(item)
+    return not (self:IsItemHeroicDifficulty(item) or self:IsItemMythicDifficulty(item) or self:IsItemLFRDifficulty(item) )
+end
+
+function RCEPGP:IsItemHeroicDifficulty(item)
+    return self:IsItemHasKeyword(item, GetTextLeft2(links.Heroic))
+end
+
+function RCEPGP:IsItemMythicDifficulty(item)
+    return self:IsItemHasKeyword(item, GetTextLeft2(links.Mythic))
+end
+
+function RCEPGP:IsItemLFRDifficulty(item)
+    return self:IsItemHasKeyword(item, GetTextLeft2(links.LFR))
+end
+
+function RCEPGP:IsItemWarforged(item)
+    return self:IsItemHasKeyword(item, GetTextLeft2(links.Warforged))
+end
+
+function RCEPGP:IsItemTitanforged(item)
+    return self:IsItemHasKeyword(item, GetTextLeft2(links.Titanforged))
 end
