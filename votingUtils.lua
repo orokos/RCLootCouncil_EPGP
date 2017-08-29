@@ -14,6 +14,14 @@ local originalCols = {unpack(RCVotingFrame.scrollCols)}
 
 local session = 1
 
+function RCEPGP:GetEPGPdb()
+  if not addon:Getdb().epgp then
+    addon:Getdb().epgp = {}
+    self:SetDefaults()
+  end
+  return addon:Getdb().epgp
+end
+
 function RCEPGP:OnInitialize()
    self.version = GetAddOnMetadata("RCLootCouncil_EPGP", "Version")
    self:Enable()
@@ -39,7 +47,6 @@ function RCEPGP:OnEnable()
    self:OptionsTable()
    self:AddGPOptions()
    self:AddChatCommand()
-   self:RegisterMessage("RCGPRuleChanged", "UpdateGPEditbox")
    self:SetupColumns()
 end
 
@@ -103,7 +110,7 @@ function RCEPGP:SetupColumns()
    ReinsertColumnAtTheEnd(RCVotingFrame.scrollCols, gp)
    ReinsertColumnAtTheEnd(RCVotingFrame.scrollCols, pr)
 
-   if addon:Getdb().epgp.biddingEnabled then
+   if self:GetEPGPdb().biddingEnabled then
    	ReinsertColumnAtTheEnd(RCVotingFrame.scrollCols, bid)
    else
    	RemoveColumn(RCVotingFrame.scrollCols, bid)
@@ -443,7 +450,7 @@ function RCEPGP.RightClickMenu(menu, level)
   
   if data and level == 1 then
 
-  	if addon:Getdb().epgp.biddingEnabled then
+  	if RCEPGP:GetEPGPdb().biddingEnabled then
 	  	info = Lib_UIDropDownMenu_CreateInfo()
 	    info.func = function()
         local data, name, item, responseGP, gp, bid = GetGPInfo()
@@ -499,7 +506,7 @@ function RCEPGP.RightClickMenu(menu, level)
 
             -- (Optional) Button 1: Bid Button
             local id = 1
-            if addon:Getdb().epgp.biddingEnabled then
+            if RCEPGP:GetEPGPdb().biddingEnabled then
               if not bid then bid = "?" end
               Lib_UIDropDownMenu_SetButtonText(1, id, L["Award"].." ("..bid.." "..LEP["GP Bid"]..")")
               if (bid == "?") or ((not EPGP:CanIncGPBy(item, bid)) and (bid ~= 0)) then

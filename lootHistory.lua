@@ -18,7 +18,7 @@ end
 
 function RCEPGPHistory:GetLastGPAmount(name, item)
 	local logMod = EPGP:GetModule("log")
-	if log then
+	if logMod and logMod.db and logMod.db.profile and logMod.db.profile.log then
 		for i =#logMod.db.profile.log, 1, -1 do
 			local entry = logMod.db.profile.log[i]
 			local timestamp, kind, name2, reason, amount = unpack(entry)

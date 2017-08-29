@@ -4,11 +4,6 @@ local L = LibStub("AceLocale-3.0"):GetLocale("RCLootCouncil")
 local LEP = LibStub("AceLocale-3.0"):GetLocale("RCEPGP")
 
 ------ Options ------
-local addon_db = addon:Getdb()
-if not addon_db.epgp then
-   addon_db.epgp = {}
-end
-
 local defaults = {
    customGPEnabled = false,
    INVTYPE_HEAD = 1,
@@ -30,24 +25,16 @@ local defaults = {
 
 RCEPGP.defaults = defaults
 
-local function SetDefaults(restoreDefaults)
-   if not addon_db.epgp then
-      addon_db.epgp = {}
-   end
+function RCEPGP:SetDefaults(restoreDefaults)
    for info, value in pairs(defaults) do
-      if restoreDefaults or addon_db.epgp[info] == nil or addon_db.epgp[info] == "" then
+      if restoreDefaults or self:GetEPGPdb()[info] == nil or self:GetEPGPdb()[info] == "" then
          if type(value) == "boolean" then
-            addon_db.epgp[info] = value
+            self:GetEPGPdb()[info] = value
          else
-            addon_db.epgp[info] = tostring(value)
+            self:GetEPGPdb()[info] = tostring(value)
          end
       end
    end
-
-   if addon_db.epgp.customGPEnabled then
-      RCEPGP:ApplyNewLibGearPoints()
-   end
-   RCEPGP:SendMessage("RCGPRuleChanged")
 end
 
 local function ValidateStatWeights(info, value)
@@ -62,19 +49,18 @@ local function ValidateStatWeights(info, value)
 end
 
 local function Getter(info, value)
-   return addon_db.epgp[info[#info]]
+   return RCEPGP:GetEPGPdb()[info[#info]]
 end 
 
 local function Setter(info, value)
    if (not value) or value == "" then
       value = tostring(defaults[info[#info]])
    end
-   addon_db.epgp[info[#info]] = value
-   RCEPGP:SendMessage("RCGPRuleChanged")
+   RCEPGP:GetEPGPdb()[info[#info]] = value
 end
 
 local function CustomGPDisabled()
-   return (not addon_db.epgp.customGPEnabled)
+   return (not RCEPGP:GetEPGPdb().customGPEnabled)
 end
 
 
@@ -82,12 +68,6 @@ function RCEPGP:AddGPOptions()
   local options = addon:OptionsTable()
 
   addon.options = addon:OptionsTable()
-
-  if addon_db.epgp.customGPEnabled then
-      RCEPGP:ApplyNewLibGearPoints()
-  else
-      RCEPGP:RestoraOldLibGearPoints()
-  end
 
   local button, picker, text, gp = {}, {}, {}, {}
   for i = 1, addon.db.profile.maxButtons do
@@ -155,10 +135,7 @@ function RCEPGP:AddGPOptions()
 end
 
 function RCEPGP:OptionsTable()
-   SetDefaults()
-   if not addon_db.epgp then
-      addon_db.epgp = {}
-   end
+   self:SetDefaults()
 
    local options = {
       name = "RCLootCouncil - EPGP v"..self.version,
@@ -196,8 +173,8 @@ function RCEPGP:OptionsTable()
                   order = 1,
                   type = "toggle",
                   width = "full",
-                  get = function() return addon_db.epgp.biddingEnabled end,
-                  set = function(info, value) addon_db.epgp.biddingEnabled = value; RCEPGP:SetupColumns() end,
+                  get = function() return self:GetEPGPdb().biddingEnabled end,
+                  set = function(info, value) self:GetEPGPdb().biddingEnabled = value; RCEPGP:SetupColumns() end,
                },
                biddingDesc = {
                   name = LEP["bidding_desc"],
@@ -220,20 +197,14 @@ function RCEPGP:OptionsTable()
                   width = "double",
                   get = Getter,
                   set = function(info, value)
-                        addon_db.epgp[info[#info]] = value
-                        if addon_db.epgp.customGPEnabled then
-                           RCEPGP:ApplyNewLibGearPoints()
-                        else
-                           RCEPGP:RestoraOldLibGearPoints()
-                        end
-                        RCEPGP:SendMessage("RCGPRuleChanged")
+                        self:GetEPGPdb()[info[#info]] = value
                      end,
                },
                restoreDefault = {
                   name = LEP["restore_default"],
                   order = 2,
                   type = "execute",
-                  func = function() SetDefaults(true) end,
+                  func = function() RCEPGP:SetDefaults(true) end,
                },
                slotWeights = {
                   name = LEP["slot_weights"],
@@ -267,7 +238,7 @@ function RCEPGP:OptionsTable()
                if value == "" then
                      value = tostring(defaults[info[#info]])
                end
-               addon_db.epgp[info[#info]] = value
+               self:GetEPGPdb()[info[#info]] = value
                local func, err = RCEPGP:GetFormulaFunc()
                if not func then
                   RCEPGP.epgpOptions.args.customGP.args.errorMsg.name = LEP["formula_syntax_error"]
@@ -277,7 +248,6 @@ function RCEPGP:OptionsTable()
                   RCEPGP.epgpOptions.args.customGP.args.errorDetailedMsg.name = ""
                end
                LibStub("AceConfigRegistry-3.0"):NotifyChange("RCLootCouncil");
-               RCEPGP:SendMessage("RCGPRuleChanged")
             end,
             disabled = CustomGPDisabled,
          },

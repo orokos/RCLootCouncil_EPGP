@@ -8,7 +8,6 @@ local functionOldLibGearPoints = {}
 local versionOldLibGearPoints = 1
 
 local MAJOR_VERSION = "LibGearPoints-1.2"
-local addon_db = addon:Getdb()
 
 function RCEPGP:BackupOldLibGearPoints()
   versionOldLibGearPoints = LibStub.minors[MAJOR_VERSION]
@@ -27,7 +26,8 @@ function RCEPGP:RestoraOldLibGearPoints()
   end
 end
 
-function RCEPGP:ApplyNewLibGearPoints()
+--------------------Start of GP Calculation -------------------------------
+
   LibStub.minors[MAJOR_VERSION] = 10200
   local lib = LibStub:GetLibrary(MAJOR_VERSION)
 
@@ -719,21 +719,33 @@ function RCEPGP:ApplyNewLibGearPoints()
   end
 
   function lib:GetNumRecentItems()
+    if not RCEPGP:GetEPGPdb().customGPEnabled then
+        return functionOldLibGearPoints["GetNumRecentItems"]()
+    end
     return #recent_items_queue
   end
 
   function lib:GetRecentItemLink(i)
+    if not RCEPGP:GetEPGPdb().customGPEnabled then
+        return functionOldLibGearPoints["GetRecentItemLink"](i)
+    end
     return recent_items_queue[i]
   end
 
   --- Return the currently set quality threshold.
   function lib:GetQualityThreshold()
+    if not RCEPGP:GetEPGPdb().customGPEnabled then
+        return functionOldLibGearPoints["GetQualityThreshold"]()
+    end
     return quality_threshold
   end
 
   --- Set the minimum quality threshold.
   -- @param itemQuality Lowest allowed item quality.
   function lib:SetQualityThreshold(itemQuality)
+    if not RCEPGP:GetEPGPdb().customGPEnabled then
+        return functionOldLibGearPoints["SetQualityThreshold"](itemQuality)
+    end
     itemQuality = itemQuality and tonumber(itemQuality)
     if not itemQuality or itemQuality > 6 or itemQuality < 0 then
       return error("Usage: SetQualityThreshold(itemQuality): 'itemQuality' - number [0,6].", 3)
@@ -743,6 +755,9 @@ function RCEPGP:ApplyNewLibGearPoints()
   end
 
   function lib:GetValue(item)
+    if not RCEPGP:GetEPGPdb().customGPEnabled then
+        return functionOldLibGearPoints["GetValue"](item)
+    end
     if not item then return end
 
     local _, itemLink, rarity, level, _, itemClass, itemSubClass, _, equipLoc = GetItemInfo(item)
@@ -790,8 +805,8 @@ function RCEPGP:ApplyNewLibGearPoints()
 
     UpdateRecentLoot(itemLink)
     local slot_multiplier1 = EQUIPSLOT_MULTIPLIER_1[equipLoc]
-    if addon_db.epgp[equipLoc] then
-    	slot_multiplier1 = tonumber(addon_db.epgp[equipLoc])
+    if RCEPGP:GetEPGPdb()[equipLoc] then
+    	slot_multiplier1 = tonumber(RCEPGP:GetEPGPdb()[equipLoc])
     end
     local slot_multiplier2 = EQUIPSLOT_MULTIPLIER_2[equipLoc]
 
@@ -895,12 +910,12 @@ function RCEPGP:ApplyNewLibGearPoints()
     return high, low, level, rarity, equipLoc
   end
 
-end
+--------------------End of GP Calculation -------------------------------
 
 function RCEPGP:GetFormulaFunc()
-    local formula, err = loadstring("return "..addon_db.epgp.formula)
+    local formula, err = loadstring("return "..RCEPGP:GetEPGPdb().formula)
     if not formula then
-        formula, err = loadstring(addon_db.epgp.formula)
+        formula, err = loadstring(RCEPGP:GetEPGPdb().formula)
     end
     if not formula then
       formula, err = loadstring(RCEPGP.defaults.formula)
