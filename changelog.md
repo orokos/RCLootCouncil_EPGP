@@ -3,7 +3,9 @@
 + Add chat command "/rc epgp" to get access to RCLootCouncil - EPGP settings.
 + Add variables "isNormal", "isHeroic", "isMythic", "isWarforged", "isTitanforged" to custom GP rule.
 + One line formula in custom GP rule no longer needs "return"
++ GP editbox in voting frame now affords 5 digits instead of 4.
 + Add Tier21 token info
++ Ready for patch 7.3
 
 ### v1.6
 ---

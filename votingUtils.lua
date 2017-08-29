@@ -320,11 +320,11 @@ function RCEPGP:AddGPEditBox()
   local editbox_name = "RCLootCouncil_GP_EditBox"
   if not RCVotingFrame.frame.editbox then
       local editbox = _G.CreateFrame("EditBox", editbox_name, RCVotingFrame.frame.content, "AutoCompleteEditBoxTemplate")
-      editbox:SetWidth(32)
+      editbox:SetWidth(40)
       editbox:SetHeight(32)
       editbox:SetFontObject("ChatFontNormal")
       editbox:SetNumeric(true)
-      editbox:SetMaxLetters(4)
+      editbox:SetMaxLetters(5)
       editbox:SetAutoFocus(false)
 
       local left = editbox:CreateTexture(("%sLeft"):format(editbox_name), "BACKGROUND")
