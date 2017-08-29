@@ -42,29 +42,28 @@ This is an _**UNOFFICIAL**_ module of the loot distribution addon [RCLootCouncil
 ######  
 + Formula is used to calculate the GP value of the item. Formula should be written in LUA code. But you don't need any programming knowledge. For the most guild, you just need to summarize your rule into a simple one-line math formula and enter the formula into the RCLootCouncil-EPGP settings. Formula must returns a number(Don't need to be an integer. The addon will do rounding.)
 + Variables are built-in values that fetch the information of the item, which will assist you in creating the formula. Most variables can only have value 1 or 0, and you just need to do multiplication with those variable to make use of them in the formula.
-+ Slot weights is used to give items in the different slot a different GP coefficient. Its value can be set in the settings. The addon automatically detects the slot of the item, and assign the value of variable "_slotWeights_" according to user settings and the item slot.
++ Slot weights is used to give items in the different slot a different GP coefficient. Its value can be set in the settings. The addon automatically detects the slot of the item, and assign the value of variable `slotWeights` according to user settings and the item slot.
 
 **Available Variables**
+######  
 
-| Variable Name |  Description|
-| ------------- |:-------------:|
-| ilvl | Integer. The item level of the item or the base ilvl of the token. |
-| slotWeights | Number. The weights of the item according to its equipment slot. |
-| isToken | Integer. 1 if the item is a set token, 0 otherwise. |
-| numSocket | Integer. The number of socket in the item. |
-| hasAvoid | Integer. 1 if the item has avoidance, 0 otherwise. |
-| hasSpeed | Integer. 1 if the item has speed, 0 otherwise. |
-| hasLeech | Integer. 1 if the item has leech, 0 otherwise. |
-| hasIndes | Integer. 1 if the item is indestructible, 0 otherwise. |
-| isNormal | Integer. 1 if the item is from normal difficulty, 0 otherwise. |  
-| isHeroic | Integer. 1 if the item is from heroic difficulty, 0 otherwise. |
-| isMythic | Integer. 1 if the item is from mythic difficulty, 0 otherwise. |
-| isWarforged | Integer. 1 if the item is warforged, 0 otherwise. |
-| isTitanforged | Integer. 1 if the item is titanforged, 0 otherwise. |
-| rarity | Integer. The rarity of the item. 3-Rare, 4-Epic, 5-Legendary |
-| itemID | Integer. The item id of the item.  |
-| equipLoc | String. The non-localized string representing the equipment slot. <br> Recommend to use variable "slotWeights" instead if possible. |
-| link | String. The full item link of the item. |
++ `ilvl` The item level of the item or the base ilvl of the token.
++ `slotWeights` Number. The weights of the item according to its equipment slot.
++ `isToken` Integer. 1 if the item is a set token, 0 otherwise.
++ `numSocket` Integer. The number of socket in the item.
++ `hasAvoid` Integer. 1 if the item has avoidance, 0 otherwise.
++ `hasLeech` Integer. 1 if the item has leech, 0 otherwise.
++ `hasSpeed` Integer. 1 if the item has speed, 0 otherwise.
++ `hasIndes` Integer. 1 if the item is indestructible, 0 otherwise.
++ `isNormal` Integer. 1 if the item is from normal difficulty, 0 otherwise.
++ `isHeroic` Integer. 1 if the item is from heroic difficulty, 0 otherwise.
++ `isMythic` Integer. 1 if the item is from mythic difficulty, 0 otherwise.
++ `isWarforged` Integer. 1 if the item is warforged, 0 otherwise.
++ `isTitanforged` Integer. 1 if the item is titanforged, 0 otherwise.
++ `rarity`  Integer. The rarity of the item. 3-Rare, 4-Epic, 5-Legendary
++ `itemID` Integer. The item id of the item.
++ `equipLoc`  String. The non-localized string representing the equipment slot. Recommend to use variable _"slotWeights"_ instead if possible.
++ `link` String. The full item link of the item.
 
 **Rules And Formulas Examples**
 ######  
