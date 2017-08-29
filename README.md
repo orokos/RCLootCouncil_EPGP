@@ -98,6 +98,8 @@ Open Dungeon Journal and mouseover a loot. Check if the GP value shown in the to
 + **/rc epgp**   Open the RCLootCouncil - EPGP settings
 
 ## Known Issues
++ RCLootCouncil v2.4.6 and older, v2.5Beta1, v2.5Beta2 do not work for Patch 7.3.  
+  This module cannot do anything about that. This module should work fine after RCLootCouncil is updated.
 + This module always put columns "EP", "GP" and "PR" at the rightmost of voting frame. You cant use "RCLootCouncil - ExtraUtilities" to disable, set width or position of these columns at the moment. This module does not affect other columns from ExtraUtilities.
 + Missing translation. Only English, Chinese Simplified and Chinese traditional are fully localized right now. I can only translate language I know. Help to localize this project [here](https://wow.curseforge.com/projects/rclootcouncil-epgp/localization)
 
