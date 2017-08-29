@@ -1,3 +1,11 @@
+### v1.7.1
+---
++ Should now support SYNC feature introduced by RCLootCouncil-v2.5Beta1
+### Known Issues
++ RCLootCouncil v2.4.6 and older, v2.5Beta1, v2.5Beta2 do not work for Patch 7.3.  
+  This module cannot do anything about that. This module should work fine after RCLootCouncil is updated.
+
+
 ### v1.7
 ---
 + Add chat command "/rc epgp" to get access to RCLootCouncil - EPGP settings.
@@ -81,7 +89,7 @@ Support enUS, zhCN, zhTW localization.
 ---
 + Award with GP button is now clickable when the GP value of response/item is 0
 
-## v0.7
+### v0.7
 ---
 + Improve EP, GP, PR text format.  
 If EP, GP, PR are unknown, they are shown as "?" instead of 0.  
