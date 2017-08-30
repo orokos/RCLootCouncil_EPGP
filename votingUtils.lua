@@ -47,6 +47,7 @@ function RCEPGP:OnEnable()
    self:OptionsTable()
    self:AddGPOptions()
    self:AddChatCommand()
+   self:AddAnnouncement()
    self:SetupColumns()
 end
 
@@ -537,6 +538,7 @@ function RCEPGP.RightClickMenu(menu, level)
   RCVotingFrame.RightClickMenu(menu, level)
 end
 
+local currentAwardingGP = 0 -- Record it for annoucement of the new GP and new PR value.
 
 LibDialog:Register("RCEPGP_CONFIRM_AWARD", {
   text = "something_went_wrong",
@@ -556,6 +558,7 @@ LibDialog:Register("RCEPGP_CONFIRM_AWARD", {
       on_click = function(self, data)
         -- IDEA Perhaps come up with a better way of handling this
         local session, player, response, reason, votes, item1, item2, isTierRoll, gp,responseGP = unpack(data,1,9)
+        currentAwardingGP = gp -- This varible to be used in announcement
         local item = RCLootCouncilML.lootTable[session].link -- Store it now as we wipe lootTable after Award()
         local isToken = RCLootCouncilML.lootTable[session].token
         local awarded = RCLootCouncilML:Award(session, player, response, reason, isTierRoll)
@@ -567,6 +570,7 @@ LibDialog:Register("RCEPGP_CONFIRM_AWARD", {
         end
         -- We need to delay the test mode disabling so comms have a chance to be send first!
         if addon.testMode and RCLootCouncilML:HasAllItemsBeenAwarded() then RCLootCouncilML:EndSession() end
+        currentAwardingGP = 0
       end,
     },
     { text = L["No"],
@@ -578,4 +582,42 @@ LibDialog:Register("RCEPGP_CONFIRM_AWARD", {
 
 function RCEPGP:AddChatCommand()
    addon:CustomChatCmd(self, "OpenOptions", LEP["chat_commands"], "EPGP", "epgp")
+end
+
+function RCEPGP:AddAnnouncement()
+  if RCLootCouncilML.awardStrings then -- Requires RCLootCouncil v2.5
+     local function GetEPGPInfo(name)
+          name = self:GetEPGPName(name)
+          local ep = "?"
+          local gp = "?"
+          local pr = "?"
+          local newgp = "?"
+          local newpr = "?"
+          ep, gp = EPGP:GetEPGP(name)
+          if ep and gp then
+            pr = string.format("%.4g", ep/gp)
+          end
+
+          if ep and gp then
+            newgp = gp + currentAwardingGP
+            newpr = string.format("%.4g", ep/newgp)
+          end
+
+          if not ep then ep = "?" end
+          if not gp then gp = "?" end
+
+          return ep, gp, pr, newgp, newpr
+     end
+
+     RCLootCouncilML.awardStrings['#diffgp'] = function(name) return currentAwardingGP end
+     RCLootCouncilML.awardStrings['#ep'] = function(name) return select(1, GetEPGPInfo(name)) end
+     RCLootCouncilML.awardStrings['#gp'] = function(name) return select(2, GetEPGPInfo(name)) end
+     RCLootCouncilML.awardStrings['#pr'] = function(name) return select(3, GetEPGPInfo(name)) end
+     RCLootCouncilML.awardStrings['#newgp'] = function(name) return select(4, GetEPGPInfo(name)) end
+     RCLootCouncilML.awardStrings['#newpr'] = function(name) return select(5, GetEPGPInfo(name)) end
+
+     L["announce_awards_desc2"] = L["announce_awards_desc2"].." "..LEP["announce_awards_desc2"]
+     addon.options.args.mlSettings.args.announcementsTab.args.awardAnnouncement.args.outputDesc.name = L["announce_awards_desc2"]
+
+  end
 end

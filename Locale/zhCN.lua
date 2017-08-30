@@ -4,7 +4,7 @@
 local L = LibStub("AceLocale-3.0"):NewLocale("RCEPGP", "zhCN")
 if not L then return end
 
-L["gp_value_help"] = "例:\r\n100%: 使用100%GP值\r\n50%: 使用50%GP值\r\n25: 所有物品价值25GP"
+L["gp_value_help"] = "例:\r\n100#: 使用100#GP值\r\n50#: 使用50#GP值\r\n25: 所有物品价值25GP"
 L["enable_custom_gp"] = "启用自定义GP"
 L["formula_syntax_error"] = "公式有语法错误. 将使用默认公式."
 L["restore_default"] = "恢复默认设置"
@@ -29,9 +29,9 @@ L["Enable Bidding"] = "开启竞标"
 L["Custom GP"] = "自定义GP"
 L["bidding_desc"] = "玩家可以在RCLootCouncil弹窗中向战利品分配者发送以整数开始的备注以告知竞标出价."
 L["Bidding"] = "竞标"
-L["Credit GP to %s"] = "给 %s 增加GP"
+L["Credit GP to #s"] = "给 #s 增加GP"
 L["Undo GP"] = "撤销GP"
-L["Award GP (Default: %s)"] = "奖励GP （默认： %s)"
+L["Award GP (Default: #s)"] = "奖励GP （默认： #s)"
 L["variable_link_help"] = "字符串. 物品的完整链接."
 L["announce_formula_runtime_error"] = "你的GP公式含有运行时错误.出错时会使用默认公式."
 L["chat_commands"] = "- epgp     - 打开RCLootCouncil-EPGP配置界面"
@@ -42,3 +42,4 @@ L["variable_isHeroic_help"] = "整数. 1如果物品来自英雄难度,否则为
 L["variable_isMythic_help"] = "整数. 1如果物品来自史诗难度,否则为0."
 L["variable_isWarforged_help"] = "整数. 1如果物品战火,否则为0."
 L["variable_isTitanforged_help"] = "整数. 1如果物品泰坦造物,否则为0."
+L["announce_awards_desc2"] = "\nRCLootCouncil-EPGP: #diffgp 指代玩家从物品获取的GP量. #ep 指代玩家的EP值. #gp 指代玩家获取物品前的GP值. #pr 指代玩家获取物品前的PR值. #newgp 指代玩家获取物品后的GP值. #newpr 指代玩家获取物品后的PR值."
