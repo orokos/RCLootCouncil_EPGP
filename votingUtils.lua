@@ -540,6 +540,10 @@ end
 
 local currentAwardingGP = 0 -- Record it for annoucement of the new GP and new PR value.
 
+function RCEPGP:GetCurrentAwardingGP()
+  return currentAwardingGP
+end
+
 LibDialog:Register("RCEPGP_CONFIRM_AWARD", {
   text = "something_went_wrong",
   icon = "",
@@ -599,7 +603,7 @@ function RCEPGP:AddAnnouncement()
           end
 
           if ep and gp then
-            newgp = gp + currentAwardingGP
+            newgp = math.floor(gp + self:GetCurrentAwardingGP() + 0.5)
             newpr = string.format("%.4g", ep/newgp)
           end
 
@@ -609,7 +613,7 @@ function RCEPGP:AddAnnouncement()
           return ep, gp, pr, newgp, newpr
      end
 
-     RCLootCouncilML.awardStrings['#diffgp'] = function(name) return currentAwardingGP end
+     RCLootCouncilML.awardStrings['#diffgp'] = function(name) return self:GetCurrentAwardingGP() end
      RCLootCouncilML.awardStrings['#ep'] = function(name) return select(1, GetEPGPInfo(name)) end
      RCLootCouncilML.awardStrings['#gp'] = function(name) return select(2, GetEPGPInfo(name)) end
      RCLootCouncilML.awardStrings['#pr'] = function(name) return select(3, GetEPGPInfo(name)) end
