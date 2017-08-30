@@ -1,10 +1,17 @@
+### v1.7.2
+---
+**You should have updated RCLootCouncil to v2.5.0, as older versions of RCLootCouncil does not support Patch 7.3**
+###### Bugfixes
++ Fix GP not working when you are not using custom GP Rule.
++ Fix GP tooltip performance issues when you are using custom GP rule.
+
 ### v1.7.1
 ---
 + Should now support SYNC feature introduced by RCLootCouncil-v2.5Beta1
-### Known Issues
+
+###### Known Issues
 + RCLootCouncil v2.4.6 and older, v2.5Beta1, v2.5Beta2 do not work for Patch 7.3.  
   This module cannot do anything about that. This module should work fine after RCLootCouncil is updated.
-
 
 ### v1.7
 ---
