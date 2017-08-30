@@ -97,6 +97,12 @@ Open Dungeon Journal and mouseover a loot. Check if the GP value shown in the to
 ######  
 + **/rc epgp**   Open the RCLootCouncil - EPGP settings
 
+## Planned Features
+######
++ Enhancement to how EP is rewarded.
+  + Add features similar to quick DKP v2 that gives different EP percentage to players offline, out of zone, different guild rank, using alt, etc.
+  + Add ZeroSum EP Award among raid members in the zone. Many guild gives player minus EP if they make mistakes, but it is unfair to the people in the zone and good for subs because subs can never make a mistake. ZeroSum EP Award will help to solve this problem by moving EP of the player who makes a mistake to other players in the raid zone. This will make the average EP of players in the raid zone and subs unchanged, so it will be fair for everyone.
+
 ## Known Issues
 + RCLootCouncil v2.4.6 and older, v2.5Beta1, v2.5Beta2 do not work for Patch 7.3.  
   This module cannot do anything about that. This module should work fine after RCLootCouncil is updated.
