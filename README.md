@@ -23,7 +23,11 @@ This is an _**UNOFFICIAL**_ module of the loot distribution addon [RCLootCouncil
 
 **Simple Bidding Feature**
 ######  
-+ Players can send their GP bidding price to the loot master by sending a note which starts with integer in the RCLootCouncil popup.(Disabled by default. Loot master can enable it in Interface->Addons->RCLootCouncil->EPGP).  
++ Players can send their GP bidding price to the loot master by sending a note which starts with integer in the RCLootCouncil popup.(Disabled by default. Loot master can enable it in Interface->Addons->RCLootCouncil->EPGP).
+
+**Sync Settings Between Guild Members**
+######  
++ This is actually the feature of RCLootCouncil itself, introduced by RCLootCouncil v2.5. Use command "/rc sync" to sync RCLootCouncil settings between guild members. The setting of this module is also synchronized because the setting of this module is a part of RCLootCouncil.   
 
 ## Custom GP Rule Tutorial
 **Introduction**
