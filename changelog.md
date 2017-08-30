@@ -1,3 +1,8 @@
+### v1.8
++ Enhanced Award Announcements (**Requires RCLootCouncil v2.5.0+**)
+  + You can add the awardee's EPGP related information to the award announcement. <br> Check Interface->Addons->RCLootCouncil->Master Looter->Announcements for more information.
+
+
 ### v1.7.2
 ---
 **You should have updated RCLootCouncil to v2.5, as older versions of RCLootCouncil does not support Patch 7.3**
@@ -8,7 +13,7 @@
 ### v1.7.1
 ---
 + Should now support SYNC feature introduced by RCLootCouncil-v2.5Beta1
- 
+
 ###### Known Issues
 + RCLootCouncil v2.4.6 and older, v2.5Beta1, v2.5Beta2 do not work for Patch 7.3.  
   This module cannot do anything about that. This module should work fine after RCLootCouncil is updated.

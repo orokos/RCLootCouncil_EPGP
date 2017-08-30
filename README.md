@@ -29,6 +29,10 @@ This is an _**UNOFFICIAL**_ module of the loot distribution addon [RCLootCouncil
 ######  
 + This is actually the feature of RCLootCouncil itself, introduced by RCLootCouncil v2.5. Use command "/rc sync" to sync RCLootCouncil settings between guild members. The setting of this module is also synchronized because the setting of this module is a part of RCLootCouncil.   
 
+**Enhanced Award Announcements** (v1.8+)
+######  
++ You can add the awardee's EPGP related information to the award announcement. Check Interface->Addons->RCLootCouncil->Master Looter->Announcements for more information.
+
 ## Custom GP Rule Tutorial
 **Introduction**
 ######  
