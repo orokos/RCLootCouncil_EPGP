@@ -576,3 +576,6 @@ LibDialog:Register("RCEPGP_CONFIRM_AWARD", {
   show_while_dead = true,
 })
 
+function RCEPGP:AddChatCommand()
+   addon:CustomChatCmd(self, "OpenOptions", LEP["chat_commands"], "EPGP", "epgp")
+end

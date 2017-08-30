@@ -317,8 +317,3 @@ function RCEPGP:OpenOptions()
    InterfaceOptionsFrame_OpenToCategory(RCEPGP.optionsFrame)
    InterfaceOptionsFrame_OpenToCategory(RCEPGP.optionsFrame)
 end
-
-function RCEPGP:AddChatCommand()
-   L["chat_commands"] = L["chat_commands"]..LEP["chat_commands"]
-   addon:CustomChatCmd(self, "OpenOptions", LEP["chat_commands"], "EPGP", "epgp")
-end
