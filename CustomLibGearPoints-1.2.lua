@@ -4,27 +4,17 @@ local addon = LibStub("AceAddon-3.0"):GetAddon("RCLootCouncil")
 local RCEPGP = addon:GetModule("RCEPGP")
 local LEP = LibStub("AceLocale-3.0"):GetLocale("RCEPGP")
 
-local functionOldLibGearPoints = {}
-local versionOldLibGearPoints = 1
-
 local MAJOR_VERSION = "LibGearPoints-1.2"
 
-function RCEPGP:BackupOldLibGearPoints()
-  versionOldLibGearPoints = LibStub.minors[MAJOR_VERSION]
-  local oldLib = LibStub:GetLibrary(MAJOR_VERSION)
-  for funcName, func in pairs(oldLib) do
+-- Backup functions of LibGearPoints from EPGP
+local functionOldLibGearPoints = {}
+local versionOldLibGearPoints = LibStub.minors[MAJOR_VERSION]
+local oldLib = LibStub:GetLibrary(MAJOR_VERSION)
+for funcName, func in pairs(oldLib) do
     functionOldLibGearPoints[funcName] = func
-  end
 end
-RCEPGP:BackupOldLibGearPoints()
 
-function RCEPGP:RestoraOldLibGearPoints()
-  LibStub.minors[MAJOR_VERSION] = versionOldLibGearPoints
-  local oldLib = LibStub:GetLibrary(MAJOR_VERSION)
-  for funcName, func in pairs(functionOldLibGearPoints) do
-    oldLib[funcName] = func
-  end
-end
+local itemInfoCache = {}  -- Cache the info of items we have seen for better performance.
 
 --------------------Start of GP Calculation -------------------------------
 
@@ -720,14 +710,14 @@ end
 
   function lib:GetNumRecentItems()
     if not RCEPGP:GetEPGPdb().customGPEnabled then
-        return functionOldLibGearPoints["GetNumRecentItems"]()
+        return functionOldLibGearPoints["GetNumRecentItems"](oldLib)
     end
     return #recent_items_queue
   end
 
   function lib:GetRecentItemLink(i)
     if not RCEPGP:GetEPGPdb().customGPEnabled then
-        return functionOldLibGearPoints["GetRecentItemLink"](i)
+        return functionOldLibGearPoints["GetRecentItemLink"](oldLib, i)
     end
     return recent_items_queue[i]
   end
@@ -735,7 +725,7 @@ end
   --- Return the currently set quality threshold.
   function lib:GetQualityThreshold()
     if not RCEPGP:GetEPGPdb().customGPEnabled then
-        return functionOldLibGearPoints["GetQualityThreshold"]()
+        return functionOldLibGearPoints["GetQualityThreshold"](oldLib)
     end
     return quality_threshold
   end
@@ -744,19 +734,18 @@ end
   -- @param itemQuality Lowest allowed item quality.
   function lib:SetQualityThreshold(itemQuality)
     if not RCEPGP:GetEPGPdb().customGPEnabled then
-        return functionOldLibGearPoints["SetQualityThreshold"](itemQuality)
+        return functionOldLibGearPoints["SetQualityThreshold"](oldLib, itemQuality)
     end
     itemQuality = itemQuality and tonumber(itemQuality)
     if not itemQuality or itemQuality > 6 or itemQuality < 0 then
       return error("Usage: SetQualityThreshold(itemQuality): 'itemQuality' - number [0,6].", 3)
     end
-
     quality_threshold = itemQuality
   end
 
   function lib:GetValue(item)
     if not RCEPGP:GetEPGPdb().customGPEnabled then
-        return functionOldLibGearPoints["GetValue"](item)
+        return functionOldLibGearPoints["GetValue"](oldLib, item)
     end
     if not item then return end
 
@@ -872,26 +861,33 @@ end
 
     local formula, err = RCEPGP:GetFormulaFunc()
 
-    local fenv =
-    {
-      ilvl = ilvl,
-      slotWeights = slotWeights,
-      isToken = isToken,
-      hasAvoid = hasAvoid,
-      hasLeech = hasLeech,
-      hasSpeed = hasSpeed,
-      hasIndes = hasIndes,
-      numSocket = numSocket,
-      rarity = rarity,
-      equipLoc = equipLoc,
-      itemID = itemID,
-      link = itemLink,
-      isNormal = RCEPGP:IsItemNormalDifficulty(itemLink) and 1 or 0,
-      isHeroic = RCEPGP:IsItemHeroicDifficulty(itemLink) and 1 or 0,
-      isMythic = RCEPGP:IsItemMythicDifficulty(itemLink) and 1 or 0,
-      isWarforged = RCEPGP:IsItemWarforged(itemLink) and 1 or 0,
-      isTitanforged = RCEPGP:IsItemTitanforged(itemLink) and 1 or 0,
-    }
+    local fenv
+
+    if itemInfoCache[itemLink] then
+        fenv = itemInfoCache[itemLink]
+    else
+        fenv =
+        {
+          ilvl = ilvl,
+          slotWeights = slotWeights,
+          isToken = isToken,
+          hasAvoid = hasAvoid,
+          hasLeech = hasLeech,
+          hasSpeed = hasSpeed,
+          hasIndes = hasIndes,
+          numSocket = numSocket,
+          rarity = rarity,
+          equipLoc = equipLoc,
+          itemID = itemID,
+          link = itemLink,
+          isNormal = RCEPGP:IsItemNormalDifficulty(itemLink) and 1 or 0,
+          isHeroic = RCEPGP:IsItemHeroicDifficulty(itemLink) and 1 or 0,
+          isMythic = RCEPGP:IsItemMythicDifficulty(itemLink) and 1 or 0,
+          isWarforged = RCEPGP:IsItemWarforged(itemLink) and 1 or 0,
+          isTitanforged = RCEPGP:IsItemTitanforged(itemLink) and 1 or 0,
+        }
+        itemInfoCache[itemLink] = fenv
+    end
     formula = setfenv(formula, fenv)
 
     local status, value = pcall(formula)
@@ -948,12 +944,7 @@ for _, item in pairs(links) do -- Load item infos into memory
     GetItemInfo(item)
 end
 
-local textLeft2 = {
-    
-}
-
 local function GetTextLeft2(link)
-    if textLeft2[link] then return textLeft2[link] end
     tooltip:SetOwner(UIParent, "ANCHOR_NONE")
     tooltip:SetHyperlink(link)
     if tooltip:NumLines() > 1 then
@@ -963,7 +954,6 @@ local function GetTextLeft2(link)
             if text:find("|c") then
                 text = text:sub(11, -3) -- remove color code
             end
-            textLeft2[link] = text
             tooltip:Hide()
             return text
         end
