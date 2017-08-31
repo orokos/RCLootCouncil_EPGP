@@ -1,4 +1,10 @@
+### v1.8.1
+---
+###### Bugfixes  
++ Fix missing localization
+
 ### v1.8
+---
 + Enhanced Award Announcements (**Requires RCLootCouncil v2.5.0+**)
   + You can add the awardee's EPGP related information to the award announcement. <br> Check Interface->Addons->RCLootCouncil->Master Looter->Announcements for more information.
 
