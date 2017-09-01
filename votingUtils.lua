@@ -376,6 +376,8 @@ function RCEPGP:AddGPEditBox()
           end
         end
       end)
+      self:SecureHook("Lib_ToggleDropDownMenu", function() editbox:ClearFocus() end)
+    end
       RCVotingFrame.frame.editbox = editbox
   end
 end
@@ -426,51 +428,134 @@ function RCEPGP:GetFinalGP(responseGP, itemGP)
   return gp
 end
 
+-- Add button attributes "RCEPGP_dynamicText", "RCEPGP_dynamicDisable", "RCEPGP_dynamicArg"
+-- RCEPGP_dynamicText: [func] Set the text of this button every frame tobe the return value of the function
+function RCEPGP:EnhanceDropDownMenu()
 
-function RCEPGP.RightClickMenu(menu, level)
-  if not addon.isMasterLooter then return end
+end
 
-  local function GetGPInfo()
-    local lootTable = RCVotingFrame:GetLootTable()
-    local name = menu.name
-    if lootTable and lootTable[session] and lootTable[session].candidates 
-      and name and lootTable[session].candidates[name] then
-      local data = lootTable[session].candidates[name]
-      local responseGP = RCEPGP:GetResponseGP(data.response, data.isTier)
-      local editboxGP = RCVotingFrame.frame.editbox:GetNumber()
-      local gp = RCEPGP:GetFinalGP(responseGP, editboxGP)
-      local item = lootTable[session].link
-      local bid = RCEPGP:GetBid(name)
-      return data, name, item, responseGP, gp, bid
-    else -- Error occurs
-      return nil, "ERROR", "ERROR", "0", 0, 0
+
+local function GetGPInfo(name)
+  local lootTable = RCVotingFrame:GetLootTable()
+  if lootTable and lootTable[session] and lootTable[session].candidates 
+    and name and lootTable[session].candidates[name] then
+    local data = lootTable[session].candidates[name]
+    local responseGP = RCEPGP:GetResponseGP(data.response, data.isTier)
+    local editboxGP = RCVotingFrame.frame.editbox:GetNumber()
+    local gp = RCEPGP:GetFinalGP(responseGP, editboxGP)
+    local item = lootTable[session].link
+    local bid = RCEPGP:GetBid(name)
+    return data, name, item, responseGP, gp, bid
+  else -- Error occurs
+    return nil, "ERROR", "ERROR", "0", 0, 0
+  end
+end
+
+-- Several special fields
+-- exist: [func] Add this entry to the menu if only true
+-- dynamicDisable: [func] Refresh the enabling status every frame according to the result of func. disable if true
+-- text: [func] Refresh the text of button evry frame according to the result of func
+-- All these entries are inserted at the start of RCLootCouncil menu
+RCEPGP.rightClickEntries = {
+  { -- Level 1
+    {},
+    {}
+  }
+}
+
+function RCEPGP:AddRightClickMenu(menu, RCEntries, myEntries)
+
+  for level, entries in ipairs(myEntries) do
+    for id=#entries, 1, -1 do
+      local entry = entries[id]
+      entry.value = entry -- Special field "entry": Assign it so we can find its menu ID from "value"
     end
   end
+
+  local function DropDownMenuGetID(entry)
+    for i=1,100 do
+      local button = _G["DropDownList1Button"..id];
+      if ( button ) then
+        ent _G["DropDownList1Button"..id].value;
+      else
+        return nil;
+      end
+      if entry == ent then
+        return i
+      end
+    end
+  end
+
+  -- Update enabling status and text every frame.
+  self:SecureHookScript(menu, "OnUpdate",
+    function()
+        if Lib_UIDropDownMenu_GetCurrentDropDown() ~= menu then return end
+        if not Lib_DropDownList1:IsShown() then return end
+
+        for level, entries in ipairs(myEntries) do
+          for id=#entries, 1, -1 do
+            local entry = entries[id]
+            entry.value = entry -- Special field "entry": Assign it so we can find its menu ID from "value"
+          end
+        end
+        local data, name, item, responseGP, gp, bid = GetGPInfo()
+        if not data then return end
+
+        -- (Optional) Button 1: Bid Button
+        local id = 1
+        if RCEPGP:GetEPGPdb().biddingEnabled then
+          if not bid then bid = "?" end
+          Lib_UIDropDownMenu_SetButtonText(1, id, L["Award"].." ("..bid.." "..LEP["GP Bid"]..")")
+          if (bid == "?") or ((not EPGP:CanIncGPBy(item, bid)) and (bid ~= 0)) then
+            Lib_UIDropDownMenu_DisableButton(1, id)
+          else
+            Lib_UIDropDownMenu_EnableButton(1, id)
+          end
+          id = id + 1 
+        end
+
+        -- Button 2: GP Button
+        local text2 = L["Award"].." ("..gp.." GP)"  
+        if string.match(responseGP, "^%d+%%") then
+          text2 = L["Award"].." ("..gp.." GP, "..responseGP..")"
+        end
+        Lib_UIDropDownMenu_SetButtonText(1, id, text2)
+        if (not EPGP:CanIncGPBy(item, gp)) and gp and (gp ~= 0) then
+          Lib_UIDropDownMenu_DisableButton(1, id)
+        else
+          Lib_UIDropDownMenu_EnableButton(1, id)
+        end
+
+        menu.noResize = false
+        Lib_UIDropDownMenu_Refresh(menu, nil, 1)
+    end)
+end
+
 
   local data, name, item, responseGP, gp, bid = GetGPInfo()
   
   if data and level == 1 then
 
-  	if RCEPGP:GetEPGPdb().biddingEnabled then
-	  	info = Lib_UIDropDownMenu_CreateInfo()
-	    info.func = function()
+    if RCEPGP:GetEPGPdb().biddingEnabled then
+      info = Lib_UIDropDownMenu_CreateInfo()
+      info.func = function()
         local data, name, item, responseGP, gp, bid = GetGPInfo()
         if not data then return end
-	      LibDialog:Spawn("RCEPGP_CONFIRM_AWARD", {
-	        session,
-	        name,
-	        data.response,
-	        nil,
-	        data.votes,
-	        data.gear1,
-	        data.gear2,
-	        data.isTier,
-	        bid,
-	        responseGP
-	    }) end
-	    info.notCheckable = true
-	    Lib_UIDropDownMenu_AddButton(info, level) -- Set Text Later
-  	end
+        LibDialog:Spawn("RCEPGP_CONFIRM_AWARD", {
+          session,
+          name,
+          data.response,
+          nil,
+          data.votes,
+          data.gear1,
+          data.gear2,
+          data.isTier,
+          bid,
+          responseGP
+      }) end
+      info.notCheckable = true
+      Lib_UIDropDownMenu_AddButton(info, level) -- Set Text Later
+    end
 
     info = Lib_UIDropDownMenu_CreateInfo()
     info.func = function()
@@ -491,52 +576,9 @@ function RCEPGP.RightClickMenu(menu, level)
     info.notCheckable = true
     Lib_UIDropDownMenu_AddButton(info, level) -- Set Text Later
 
-    if RCVotingFrame.frame.editbox and RCVotingFrame.frame.editbox:HasFocus() then
-      RCVotingFrame.frame.editbox:ClearFocus()
-    end
+
   end
 
-    -- Set and update the text and enabled status of buttons every frame
-  if (not RCEPGP:IsHooked(menu, "OnUpdate")) then
-    RCEPGP:SecureHookScript(menu, "OnUpdate",
-        function()
-            if Lib_UIDropDownMenu_GetCurrentDropDown() ~= menu then return end
-            if not Lib_DropDownList1:IsShown() then return end
-            local data, name, item, responseGP, gp, bid = GetGPInfo()
-            if not data then return end
-
-            -- (Optional) Button 1: Bid Button
-            local id = 1
-            if RCEPGP:GetEPGPdb().biddingEnabled then
-              if not bid then bid = "?" end
-              Lib_UIDropDownMenu_SetButtonText(1, id, L["Award"].." ("..bid.." "..LEP["GP Bid"]..")")
-              if (bid == "?") or ((not EPGP:CanIncGPBy(item, bid)) and (bid ~= 0)) then
-                Lib_UIDropDownMenu_DisableButton(1, id)
-              else
-                Lib_UIDropDownMenu_EnableButton(1, id)
-              end
-              id = id + 1 
-            end
-
-            -- Button 2: GP Button
-            local text2 = L["Award"].." ("..gp.." GP)"  
-            if string.match(responseGP, "^%d+%%") then
-              text2 = L["Award"].." ("..gp.." GP, "..responseGP..")"
-            end
-            Lib_UIDropDownMenu_SetButtonText(1, id, text2)
-            if (not EPGP:CanIncGPBy(item, gp)) and gp and (gp ~= 0) then
-              Lib_UIDropDownMenu_DisableButton(1, id)
-            else
-              Lib_UIDropDownMenu_EnableButton(1, id)
-            end
-
-            menu.noResize = false
-            Lib_UIDropDownMenu_Refresh(menu, nil, 1)
-        end)
-  end
-
-  RCVotingFrame.RightClickMenu(menu, level)
-end
 
 local currentAwardingGP = 0 -- Record it for annoucement of the new GP and new PR value.
 
