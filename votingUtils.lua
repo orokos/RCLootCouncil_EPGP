@@ -15,68 +15,68 @@ local originalCols = {unpack(RCVotingFrame.scrollCols)}
 local session = 1
 
 function RCEPGP:GetEPGPdb()
-  if not addon:Getdb().epgp then
-    addon:Getdb().epgp = {}
-    self:SetDefaults()
-  end
-  return addon:Getdb().epgp
+    if not addon:Getdb().epgp then
+        addon:Getdb().epgp = {}
+        self:SetDefaults()
+    end
+    return addon:Getdb().epgp
 end
 
 function RCEPGP:OnInitialize()
-   self.version = GetAddOnMetadata("RCLootCouncil_EPGP", "Version")
-   self:Enable()
+    self.version = GetAddOnMetadata("RCLootCouncil_EPGP", "Version")
+    self:Enable()
 end
 
 function RCEPGP.UpdateVotingFrame()
-  RCVotingFrame:Update()
+    RCVotingFrame:Update()
 end
 
 function RCEPGP:OnEnable()
-   EPGP.RegisterCallback(self, "StandingsChanged",
-                        RCEPGP.UpdateVotingFrame)
-   self:EnhanceDropDownMenu()
+    EPGP.RegisterCallback(self, "StandingsChanged",
+    RCEPGP.UpdateVotingFrame)
+    self:EnhanceDropDownMenu()
 
-   addon:SecureHook(RCVotingFrame, "OnEnable", self.AddGPEditBox)
-   addon:SecureHook(RCVotingFrame, "SwitchSession", function(_, s) session = s; RCEPGP:UpdateGPEditbox() end)
-   self:AddRightClickMenu(_G["RCLootCouncil_VotingFrame_RightclickMenu"], RCVotingFrame.rightClickEntries, self.rightClickEntries)
-   if ExtraUtilities then
-      addon:SecureHook(ExtraUtilities, "SetupColumns", function() self:SetupColumns() end)
-      addon:SecureHook(ExtraUtilities, "UpdateColumn", function() self:SetupColumns() end)
-   end
-   self.DisableEPGPPopup()
-   self:SecureHook(EPGP:GetModule("loot"), "OnEnable", self.DisableEPGPPopup)
-   self:OptionsTable()
-   self:AddGPOptions()
-   self:AddChatCommand()
-   self:AddAnnouncement()
-   self:SetupColumns()
+    addon:SecureHook(RCVotingFrame, "OnEnable", self.AddGPEditBox)
+    addon:SecureHook(RCVotingFrame, "SwitchSession", function(_, s) session = s; RCEPGP:UpdateGPEditbox() end)
+    self:AddRightClickMenu(_G["RCLootCouncil_VotingFrame_RightclickMenu"], RCVotingFrame.rightClickEntries, self.rightClickEntries)
+    if ExtraUtilities then
+        addon:SecureHook(ExtraUtilities, "SetupColumns", function() self:SetupColumns() end)
+        addon:SecureHook(ExtraUtilities, "UpdateColumn", function() self:SetupColumns() end)
+    end
+    self.DisableEPGPPopup()
+    self:SecureHook(EPGP:GetModule("loot"), "OnEnable", self.DisableEPGPPopup)
+    self:OptionsTable()
+    self:AddGPOptions()
+    self:AddChatCommand()
+    self:AddAnnouncement()
+    self:SetupColumns()
 end
 
 function RCEPGP:UpdateGPEditbox()
-  local lootTable = RCVotingFrame:GetLootTable()
-  if lootTable then
-    local t = lootTable[session]
-    if t then
-      local gp = GP:GetValue(t.link) or 0
-      RCVotingFrame.frame.editbox:SetNumber(gp)
+    local lootTable = RCVotingFrame:GetLootTable()
+    if lootTable then
+        local t = lootTable[session]
+        if t then
+            local gp = GP:GetValue(t.link) or 0
+            RCVotingFrame.frame.editbox:SetNumber(gp)
+        end
     end
-  end
 end
 
 
 function RCEPGP:OnDisable()
-   -- Reset cols
-   RCVotingFrame.scrollCols = originalCols
+    -- Reset cols
+    RCVotingFrame.scrollCols = originalCols
 end
 
 function RCEPGP.DisableEPGPPopup()
     if EPGP and EPGP.GetModule then
         local loot = EPGP:GetModule("loot")
         if loot and loot.db.profile.enabled then
-        	RCEPGP:Print(LEP["disable_gp_popup"])
+            RCEPGP:Print(LEP["disable_gp_popup"])
         end
         if loot and loot.db then
-        	loot.db.profile.enabled = false
+            loot.db.profile.enabled = false
         end
         if loot and loot.Disable then
             loot:Disable()
@@ -85,60 +85,60 @@ function RCEPGP.DisableEPGPPopup()
 end
 
 local function RemoveColumn(t, column)
-  for i=1, #t do
-    if t[i] and t[i].colName == column.colName then
-      table.remove(t, i)
+    for i = 1, #t do
+        if t[i] and t[i].colName == column.colName then
+            table.remove(t, i)
+        end
     end
-  end
 end
 
 local function ReinsertColumnAtTheEnd(t, column)
-  RemoveColumn(t, column)
-  table.insert(t, column)
+    RemoveColumn(t, column)
+    table.insert(t, column)
 end
 
 function RCEPGP:SetupColumns()
-   local ep =
-   { name = "EP", DoCellUpdate = self.SetCellEP, colName = "ep", sortnext = self:GetScrollColIndexFromName("response"), width = 60, align = "CENTER", defaultsort = "dsc" }
-   local gp =
-   { name = "GP", DoCellUpdate = self.SetCellGP, colName = "gp", sortnext = self:GetScrollColIndexFromName("response"), width = 50, align = "CENTER", defaultsort = "dsc" }
-   local pr =
-   { name = "PR", DoCellUpdate = self.SetCellPR, colName = "pr", width = 50, align = "CENTER", comparesort = self.PRSort, defaultsort = "dsc" }
-   local bid =
-   { name = "Bid", DoCellUpdate = self.SetCellBid, colName = "bid", sortnext = self:GetScrollColIndexFromName("response"), width = 50, align = "CENTER",
-     defaultsort = "dsc" }
+    local ep =
+    { name = "EP", DoCellUpdate = self.SetCellEP, colName = "ep", sortnext = self:GetScrollColIndexFromName("response"), width = 60, align = "CENTER", defaultsort = "dsc" }
+    local gp =
+    { name = "GP", DoCellUpdate = self.SetCellGP, colName = "gp", sortnext = self:GetScrollColIndexFromName("response"), width = 50, align = "CENTER", defaultsort = "dsc" }
+    local pr =
+    { name = "PR", DoCellUpdate = self.SetCellPR, colName = "pr", width = 50, align = "CENTER", comparesort = self.PRSort, defaultsort = "dsc" }
+    local bid =
+    { name = "Bid", DoCellUpdate = self.SetCellBid, colName = "bid", sortnext = self:GetScrollColIndexFromName("response"), width = 50, align = "CENTER",
+    defaultsort = "dsc" }
 
-   ReinsertColumnAtTheEnd(RCVotingFrame.scrollCols, ep)
-   ReinsertColumnAtTheEnd(RCVotingFrame.scrollCols, gp)
-   ReinsertColumnAtTheEnd(RCVotingFrame.scrollCols, pr)
+    ReinsertColumnAtTheEnd(RCVotingFrame.scrollCols, ep)
+    ReinsertColumnAtTheEnd(RCVotingFrame.scrollCols, gp)
+    ReinsertColumnAtTheEnd(RCVotingFrame.scrollCols, pr)
 
-   if self:GetEPGPdb().biddingEnabled then
-   	ReinsertColumnAtTheEnd(RCVotingFrame.scrollCols, bid)
-   else
-   	RemoveColumn(RCVotingFrame.scrollCols, bid)
-   end
+    if self:GetEPGPdb().biddingEnabled then
+        ReinsertColumnAtTheEnd(RCVotingFrame.scrollCols, bid)
+    else
+        RemoveColumn(RCVotingFrame.scrollCols, bid)
+    end
 
-   RCEPGP:ResponseSortPRNext()
+    RCEPGP:ResponseSortPRNext()
 
-   if RCVotingFrame.frame then
-      RCVotingFrame.frame.UpdateSt()
-   end
+    if RCVotingFrame.frame then
+        RCVotingFrame.frame.UpdateSt()
+    end
 end
 
 function RCEPGP:GetScrollColIndexFromName(colName)
-   for i,v in ipairs(RCVotingFrame.scrollCols) do
-      if v.colName == colName then
-         return i
-      end
-   end
+    for i, v in ipairs(RCVotingFrame.scrollCols) do
+        if v.colName == colName then
+            return i
+        end
+    end
 end
 
 function RCEPGP:ResponseSortPRNext()
-  local responseIdx = self:GetScrollColIndexFromName("response")
-  local prIdx = self:GetScrollColIndexFromName("pr")
-  if responseIdx then
-    RCVotingFrame.scrollCols[responseIdx].sortnext = prIdx
-  end
+    local responseIdx = self:GetScrollColIndexFromName("response")
+    local prIdx = self:GetScrollColIndexFromName("pr")
+    if responseIdx then
+        RCVotingFrame.scrollCols[responseIdx].sortnext = prIdx
+    end
 end
 
 ---------------------------------------------
@@ -149,10 +149,10 @@ end
 -- Str can contain unicode characters.
 local function UpperFirstLowerRest(str)
     local isFirstChar = true
-    local result= ""
+    local result = ""
 
     for c in str:gmatch(".[\128-\191]*") do -- string can contains unicode characters.
-    --https://stackoverflow.com/questions/22129516/string-sub-issue-with-non-english-characters
+        --https://stackoverflow.com/questions/22129516/string-sub-issue-with-non-english-characters
         if isFirstChar then
             isFirstChar = false
             result = result..c:upper()
@@ -167,28 +167,28 @@ end
 -- EPGP requires fullname (name-realm) with the correct capitialization,
 -- and realm name cannot contain space.
 function RCEPGP:GetEPGPName(inputName)
-  if not inputName then return nil end
+    if not inputName then return nil end
 
-  --------- First try to find name in the raid ------------------------------
-  local name = Ambiguate(inputName, "short") -- Convert to short name to be used as the argument to UnitFullName
-  local _, ourRealmName = UnitFullName("player") -- Get the name of our realm WITHOUT SPACE.
+    --------- First try to find name in the raid ------------------------------
+    local name = Ambiguate(inputName, "short") -- Convert to short name to be used as the argument to UnitFullName
+    local _, ourRealmName = UnitFullName("player") -- Get the name of our realm WITHOUT SPACE.
 
-  local name, realm = UnitFullName(name)         -- In order to return a name with correct capitialization, and the realm name WITHOUT SPACE.
-  if name then -- Found the name in the raid
-    if realm and realm ~= "" then
-      return name.."-"..realm
-    else
-      return name.."-"..ourRealmName
+    local name, realm = UnitFullName(name) -- In order to return a name with correct capitialization, and the realm name WITHOUT SPACE.
+    if name then -- Found the name in the raid
+        if realm and realm ~= "" then
+            return name.."-"..realm
+        else
+            return name.."-"..ourRealmName
+        end
+    else -- Name not found in raid, fix capitialiation and space in realm name manually.
+        local shortName, realmName = strsplit("-", inputName)
+        local shortName = UpperFirstLowerRest(shortName)
+        realmName = realmName:gsub(" ", "") -- Eliminate space in the name
+        return shortName.."-"..realmName
     end
-  else  -- Name not found in raid, fix capitialiation and space in realm name manually.
-    local shortName,  realmName = strsplit("-", inputName)
-    local shortName = UpperFirstLowerRest(shortName)
-    realmName = realmName:gsub(" ", "") -- Eliminate space in the name
-    return shortName.."-"..realmName
-  end
 end
 
-local COLOR_RED  = "|cFFFF0000"
+local COLOR_RED = "|cFFFF0000"
 local COLOR_GREY = "|cFF808080"
 
 function RCEPGP.SetCellEP(rowFrame, frame, data, cols, row, realrow, column, fShow, table, ...)
@@ -196,11 +196,11 @@ function RCEPGP.SetCellEP(rowFrame, frame, data, cols, row, realrow, column, fSh
     name = RCEPGP:GetEPGPName(name)
     local ep, gp, main = EPGP:GetEPGP(name)
     if not ep then
-      frame.text:SetText(COLOR_RED.."?")
+        frame.text:SetText(COLOR_RED.."?")
     elseif ep >= EPGP.db.profile.min_ep then
-      frame.text:SetText(COLOR_GREY..ep)
+        frame.text:SetText(COLOR_GREY..ep)
     else
-      frame.text:SetText(COLOR_RED..ep)
+        frame.text:SetText(COLOR_RED..ep)
     end
     data[realrow].cols[column].value = ep or 0
 end
@@ -210,9 +210,9 @@ function RCEPGP.SetCellGP(rowFrame, frame, data, cols, row, realrow, column, fSh
     name = RCEPGP:GetEPGPName(name)
     local ep, gp, main = EPGP:GetEPGP(name)
     if not gp then
-      frame.text:SetText(COLOR_GREY.."?")
+        frame.text:SetText(COLOR_GREY.."?")
     else
-      frame.text:SetText(COLOR_GREY..gp)
+        frame.text:SetText(COLOR_GREY..gp)
     end
     data[realrow].cols[column].value = gp or 0
 end
@@ -227,117 +227,117 @@ function RCEPGP.SetCellPR(rowFrame, frame, data, cols, row, realrow, column, fSh
     end
 
     if not pr then
-      frame.text:SetText("?")
+        frame.text:SetText("?")
     else
-      frame.text:SetText(string.format("%.4g", pr))
+        frame.text:SetText(string.format("%.4g", pr))
     end
 
     data[realrow].cols[column].value = pr or 0
 end
 
 function RCEPGP:GetBid(name)
-	local lootTable = RCVotingFrame:GetLootTable()
+    local lootTable = RCVotingFrame:GetLootTable()
 
-  -- nil protection
-  if session and name and lootTable and lootTable[session] 
+    -- nil protection
+    if session and name and lootTable and lootTable[session]
     and lootTable[session].candidates and lootTable[session].candidates[name] then
-      local note = lootTable[session].candidates[name].note
-    	if note then
-    		local bid = tonumber(string.match(note, "[0-9]+"))
-    		return bid
-    	end
-  end
+        local note = lootTable[session].candidates[name].note
+        if note then
+            local bid = tonumber(string.match(note, "[0-9]+"))
+            return bid
+        end
+    end
 end
 
 function RCEPGP.SetCellBid(rowFrame, frame, data, cols, row, realrow, column, fShow, table, ...)
-	local name = data[realrow].name
-	local bid = RCEPGP:GetBid(name)
-	if bid then
-		frame.text:SetText(tostring(bid))
-		data[realrow].cols[column].value = bid
-	else
-		data[realrow].cols[column].value = 0
-		frame.text:SetText("")
-	end
+    local name = data[realrow].name
+    local bid = RCEPGP:GetBid(name)
+    if bid then
+        frame.text:SetText(tostring(bid))
+        data[realrow].cols[column].value = bid
+    else
+        data[realrow].cols[column].value = 0
+        frame.text:SetText("")
+    end
 end
 
 function RCEPGP.PRSort(table, rowa, rowb, sortbycol)
-  local column = table.cols[sortbycol]
-  local a, b = table:GetRow(rowa), table:GetRow(rowb);
-  -- Extract the rank index from the name, fallback to 100 if not found
+    local column = table.cols[sortbycol]
+    local a, b = table:GetRow(rowa), table:GetRow(rowb);
+    -- Extract the rank index from the name, fallback to 100 if not found
 
-  local nameA = RCEPGP:GetEPGPName(a.name)
-  local nameB = RCEPGP:GetEPGPName(b.name)
+    local nameA = RCEPGP:GetEPGPName(a.name)
+    local nameB = RCEPGP:GetEPGPName(b.name)
 
-  local a_ep, a_gp = EPGP:GetEPGP(nameA)
-  local b_ep, b_gp = EPGP:GetEPGP(nameB)
+    local a_ep, a_gp = EPGP:GetEPGP(nameA)
+    local b_ep, b_gp = EPGP:GetEPGP(nameB)
 
-  if (not a_ep) or (not a_gp) then
-    return false
-  elseif (not b_ep) or (not b_gp) then
-    return true
-  end
+    if (not a_ep) or (not a_gp) then
+        return false
+    elseif (not b_ep) or (not b_gp) then
+        return true
+    end
 
-  local a_pr = a_ep/a_gp
-  local b_pr = b_ep/b_gp
+    local a_pr = a_ep / a_gp
+    local b_pr = b_ep / b_gp
 
-  local a_qualifies = a_ep >= EPGP.db.profile.min_ep
-  local b_qualifies = b_ep >= EPGP.db.profile.min_ep
+    local a_qualifies = a_ep >= EPGP.db.profile.min_ep
+    local b_qualifies = b_ep >= EPGP.db.profile.min_ep
 
-  if a_qualifies == b_qualifies and a_pr == b_pr then
-    if column.sortnext then
-      local nextcol = table.cols[column.sortnext];
-      if nextcol and not(nextcol.sort) then
-        if nextcol.comparesort then
-          return nextcol.comparesort(table, rowa, rowb, column.sortnext);
-        else
-          return table:CompareSort(rowa, rowb, column.sortnext);
+    if a_qualifies == b_qualifies and a_pr == b_pr then
+        if column.sortnext then
+            local nextcol = table.cols[column.sortnext];
+            if nextcol and not(nextcol.sort) then
+                if nextcol.comparesort then
+                    return nextcol.comparesort(table, rowa, rowb, column.sortnext);
+                else
+                    return table:CompareSort(rowa, rowb, column.sortnext);
+                end
+            end
         end
-      end
-    end
-    return false
-  else
-    local direction = column.sort or column.defaultsort or "dsc";
-    if direction:lower() == "asc" then
-      if a_qualifies == b_qualifies then
-        return a_pr < b_pr
-      else
-        return b_qualifies
-      end
+        return false
     else
-      if a_qualifies == b_qualifies then
-        return a_pr > b_pr
-      else
-        return a_qualifies
-      end
+        local direction = column.sort or column.defaultsort or "dsc";
+        if direction:lower() == "asc" then
+            if a_qualifies == b_qualifies then
+                return a_pr < b_pr
+            else
+                return b_qualifies
+            end
+        else
+            if a_qualifies == b_qualifies then
+                return a_pr > b_pr
+            else
+                return a_qualifies
+            end
+        end
     end
-  end
 end
 
 ----------------------------------------------------------------
 function RCEPGP.AddGPEditBox()
-  if not RCVotingFrame.frame.gpString then
-      local gpstr = RCVotingFrame.frame.content:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-      gpstr:SetPoint("CENTER", RCVotingFrame.frame.content, "TOPLEFT", 300, -60)
-      gpstr:SetText("GP: ")
-      gpstr:Show()
-      gpstr:SetTextColor(1, 1, 0, 1) -- Yellow
-      RCVotingFrame.frame.gpString = gpstr
-  end
+    if not RCVotingFrame.frame.gpString then
+        local gpstr = RCVotingFrame.frame.content:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+        gpstr:SetPoint("CENTER", RCVotingFrame.frame.content, "TOPLEFT", 300, - 60)
+        gpstr:SetText("GP: ")
+        gpstr:Show()
+        gpstr:SetTextColor(1, 1, 0, 1) -- Yellow
+        RCVotingFrame.frame.gpString = gpstr
+    end
 
 
-  local editbox_name = "RCLootCouncil_GP_EditBox"
-  if not RCVotingFrame.frame.editbox then
-      local editbox = _G.CreateFrame("EditBox", editbox_name, RCVotingFrame.frame.content, "AutoCompleteEditBoxTemplate")
-      editbox:SetWidth(40)
-      editbox:SetHeight(32)
-      editbox:SetFontObject("ChatFontNormal")
-      editbox:SetNumeric(true)
-      editbox:SetMaxLetters(5)
-      editbox:SetAutoFocus(false)
+    local editbox_name = "RCLootCouncil_GP_EditBox"
+    if not RCVotingFrame.frame.editbox then
+        local editbox = _G.CreateFrame("EditBox", editbox_name, RCVotingFrame.frame.content, "AutoCompleteEditBoxTemplate")
+        editbox:SetWidth(40)
+        editbox:SetHeight(32)
+        editbox:SetFontObject("ChatFontNormal")
+        editbox:SetNumeric(true)
+        editbox:SetMaxLetters(5)
+        editbox:SetAutoFocus(false)
 
-      local left = editbox:CreateTexture(("%sLeft"):format(editbox_name), "BACKGROUND")
-      left:SetTexture([[Interface\ChatFrame\UI-ChatInputBorder-Left2]])
+        local left = editbox:CreateTexture(("%sLeft"):format(editbox_name), "BACKGROUND")
+        left:SetTexture([[Interface\ChatFrame\UI-ChatInputBorder-Left2]])
       left:SetWidth(8)
       left:SetHeight(32)
       left:SetPoint("LEFT", -5, 0)
@@ -369,7 +369,7 @@ function RCEPGP.AddGPEditBox()
       local loseFocusTime = 3
       editbox:SetScript("OnEditFocusGained", function(self, userInput) self.lastUsedTime = GetTime() end)
       editbox:SetScript("OnTextChanged", function(self, userInput) RCVotingFrame:Update(); self.lastUsedTime = GetTime() end)
-      editbox:SetScript("OnUpdate", function(self, elapsed) 
+      editbox:SetScript("OnUpdate", function(self, elapsed)
         if self.lastUsedTime and GetTime() - self.lastUsedTime > loseFocusTime then
           self.lastUsedTime = nil
           if editbox:HasFocus() then
@@ -378,10 +378,10 @@ function RCEPGP.AddGPEditBox()
         end
       end)
       if not RCEPGP:IsHooked(_G["Lib_DropDownList1"], "OnShow") then
-        RCEPGP:SecureHookScript(_G["Lib_DropDownList1"], "OnShow", function() 
-          if RCVotingFrame.frame and RCVotingFrame.frame.editbox then 
-            RCVotingFrame.frame.editbox:ClearFocus() 
-          end 
+        RCEPGP:SecureHookScript(_G["Lib_DropDownList1"], "OnShow", function()
+          if RCVotingFrame.frame and RCVotingFrame.frame.editbox then
+            RCVotingFrame.frame.editbox:ClearFocus()
+          end
         end)
       end
       RCVotingFrame.frame.editbox = editbox
@@ -396,7 +396,7 @@ function RCEPGP:GetResponseGP(response, isTier)
   local responseGP = "100%"
 
   if isTier then
-    for k, v in pairs(addon.db.profile.tierButtons) do 
+    for k, v in pairs(addon.db.profile.tierButtons) do
       if v.text == response then
         responseGP = v.gp or responseGP
         break
@@ -406,7 +406,7 @@ function RCEPGP:GetResponseGP(response, isTier)
       end
     end
   else
-    for k, v in pairs(addon.db.profile.responses) do 
+    for k, v in pairs(addon.db.profile.responses) do
       if v.text == response then
         responseGP = v.gp or responseGP
         break
@@ -440,7 +440,7 @@ end
 -- dynamicDisable: [func] Disable or Enable the button every frame. Disable if returns true.
 -- dynamicArg: The argument to the above function.
 function RCEPGP:EnhanceDropDownMenu()
-  self:SecureHook("Lib_UIDropDownMenu_AddButton", 
+  self:SecureHook("Lib_UIDropDownMenu_AddButton",
     function(info, level)
       if ( not level ) then
         level = 1;
@@ -451,7 +451,7 @@ function RCEPGP:EnhanceDropDownMenu()
       local button = _G[listFrameName.."Button"..index]
       if info.dynamicExist and (not info.dynamicExist()) then
         listFrame.numButtons = listFrame.numButtons - 1
-      end 
+      end
       if button then
         button.dynamicText = info.dynamicText
         button.dynamicDisable = info.dynamicDisable
@@ -514,7 +514,7 @@ end
 
 local function GetGPInfo(name)
   local lootTable = RCVotingFrame:GetLootTable()
-  if lootTable and lootTable[session] and lootTable[session].candidates 
+  if lootTable and lootTable[session] and lootTable[session].candidates
     and name and lootTable[session].candidates[name] then
     local data = lootTable[session].candidates[name]
     local responseGP = RCEPGP:GetResponseGP(data.response, data.isTier)
@@ -531,7 +531,7 @@ end
 RCEPGP.rightClickEntries = {
   { -- Level 1
     { -- Button 1
-     pos = 1, 
+     pos = 1,
      dynamicExist = function() return RCEPGP:GetEPGPdb().biddingEnabled end,
      notCheckable = true,
      func = function(name)
@@ -548,7 +548,7 @@ RCEPGP.rightClickEntries = {
           data.isTier,
           bid,
           responseGP
-        }) 
+        })
         end,
       dynamicText = function(menu)
           local data, name, item, responseGP, gp, bid = GetGPInfo(menu.name)
@@ -577,11 +577,11 @@ RCEPGP.rightClickEntries = {
         data.isTier,
         gp,
         responseGP
-       }) 
+       })
       end,
       dynamicText = function(menu)
           local data, name, item, responseGP, gp, bid = GetGPInfo(menu.name)
-          local text = L["Award"].." ("..gp.." GP)"  
+          local text = L["Award"].." ("..gp.." GP)"
           if string.match(responseGP, "^%d+%%") then
             text = L["Award"].." ("..gp.." GP, "..responseGP..")"
           end
