@@ -41,7 +41,7 @@ RCCustomGP.slots = {"INVTYPE_HEAD", "INVTYPE_NECK", "INVTYPE_SHOULDER", "INVTYPE
 "INVTYPE_HAND", "INVTYPE_WAIST", "INVTYPE_LEGS", "INVTYPE_FEET", "INVTYPE_FINGER", "INVTYPE_TRINKET", "INVTYPE_RELIC", }
 
 RCCustomGP.allowedAPI = {
-    "print",
+    "print", "strsplit", "strmatch",
     "GetInventoryItemEquippedUnusable", "GetItemCooldown", "GetItemCount", "GetItemFamily", "GetItemGem", "GetItemIcon", "GetItemInfo",
     "GetItemQualityColor", "GetItemSpecInfo", "GetItemSpell", "GetItemStatDelta", "GetItemStats", "GetItemUniqueness", "GetItemUpgradeEffect",
     "GetLootRollItemInfo", "GetLootRollItemLink", "GetMacroItem", "GetNumItemUpgradeEffects", "GetNumLootItems", "IsBattlePayItem", "IsConsumableItem",
