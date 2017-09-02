@@ -798,6 +798,11 @@ function lib:GetValue(item)
     if not itemLink then return end
     UpdateRecentLoot(itemLink)
 
+    local itemID = RCCustomGP.GetItemID(itemLink)
+    if level < 463 and not CUSTOM_ITEM_DATA[itemID] then
+        return nil, nil, level, rarity, equipLoc
+    end
+
     local formula, err = RCCustomGP:GetFormulaFunc()
 
     local fenv
@@ -823,8 +828,6 @@ function lib:GetValue(item)
             fenv[funcName] = _G[funcName]
         end
     end
-    fenv["print"] = _G.print
-
 
     formula = setfenv(formula, fenv)
 
