@@ -6,6 +6,9 @@
 - **This update requires RCLootCouncil v2.5.0+. Most feature does not work in older RCLootCouncil version.**
 - Restructure the code and make it more organized.
 - When the Custom GP Formula has runtime error, the addon will print the error message.
+- Variable "equipLoc" removed
+- (Advanced user with LUA knowledge) formula now allows to use some item related APIs, such as "print", "GetItemInfo", "GetItemStats".<br>
+  Still have no access to global environment and most APIs for security reason.
 
   ###### Bugfixes
 

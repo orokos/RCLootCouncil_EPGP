@@ -28,19 +28,26 @@ RCCustomGP.GPVariables = {
     { name = "hasIndes", help = LEP["variable_hasIndes_help"], value = function(itemLink) return RCCustomGP.GetBonusInfo(itemLink).hasIndes and 1 or 0 end, },
     { name = "numSocket", help = LEP["variable_numSocket_help"], value = function(itemLink) return RCCustomGP.GetBonusInfo(itemLink).numSocket or 0 end, },
     { name = "rarity", help = LEP["variable_rarity_help"], value = function(itemLink) return select(1, RCCustomGP.GetRarityIlvlEquipLoc(itemLink)) or 0 end, },
-    { name = "equipLoc", help = LEP["variable_equipLoc_help"], value = function(itemLink) return select(3, RCCustomGP.GetRarityIlvlEquipLoc(itemLink)) or 0 end, },
     { name = "itemID", help = LEP["variable_itemID_help"], value = function(itemLink) return RCCustomGP.GetItemID(itemLink) or 0 end, },
-    { name = "link", help = LEP["variable_link_help"], value = function(itemLink) return itemLink or 0 end, },
     { name = "isNormal", help = LEP["variable_isNormal_help"], value = function(itemLink) return RCCustomGP.IsItemNormalDifficulty(itemLink) and 1 or 0 end, },
     { name = "isHeroic", help = LEP["variable_isHeroic_help"], value = function(itemLink) return RCCustomGP.IsItemHeroicDifficulty(itemLink) and 1 or 0 end, },
     { name = "isMythic", help = LEP["variable_isMythic_help"], value = function(itemLink) return RCCustomGP.IsItemMythicDifficulty(itemLink) and 1 or 0 end, },
     { name = "isWarforged", help = LEP["variable_isWarforged_help"], value = function(itemLink) return RCCustomGP.IsItemWarforged(itemLink) and 1 or 0 end, },
     { name = "isTitanforged", help = LEP["variable_isTitanforged_help"], value = function(itemLink) return RCCustomGP.IsItemTitanforged(itemLink) and 1 or 0 end, },
+    { name = "link", help = LEP["variable_link_help"], value = function(itemLink) return itemLink or 0 end, },
 }
 
 RCCustomGP.slots = {"INVTYPE_HEAD", "INVTYPE_NECK", "INVTYPE_SHOULDER", "INVTYPE_CLOAK", "INVTYPE_NECK", "INVTYPE_CHEST", "INVTYPE_NECK", "INVTYPE_WRIST",
 "INVTYPE_HAND", "INVTYPE_WAIST", "INVTYPE_LEGS", "INVTYPE_FEET", "INVTYPE_FINGER", "INVTYPE_TRINKET", "INVTYPE_RELIC", }
 
+RCCustomGP.allowedAPI = {
+    "print",
+    "GetInventoryItemEquippedUnusable", "GetItemCooldown", "GetItemCount", "GetItemFamily", "GetItemGem", "GetItemIcon", "GetItemInfo",
+    "GetItemQualityColor", "GetItemSpecInfo", "GetItemSpell", "GetItemStatDelta", "GetItemStats", "GetItemUniqueness", "GetItemUpgradeEffect",
+    "GetLootRollItemInfo", "GetLootRollItemLink", "GetMacroItem", "GetNumItemUpgradeEffects", "GetNumLootItems", "IsBattlePayItem", "IsConsumableItem",
+    "IsCurrentItem", "IsDressableItem", "IsEquippableItem", "IsEquippedItem", "IsEquippedItemType", "IsHarmfulItem", "IsHelpfulItem", "IsInventoryItemProfessionBag",
+    "IsItemInRange", "IsUsableItem", "ItemHasRange",
+}
 --------------------Start of GP Calculation -------------------------------
 
 LibStub.minors[MAJOR_VERSION] = 10200
@@ -812,7 +819,11 @@ function lib:GetValue(item)
             fenv[variableName] = variableValue
         end
         itemInfoCache[itemLink] = fenv
+        for _, funcName in ipairs(RCCustomGP.allowedAPI) do
+            fenv[funcName] = _G[funcName]
+        end
     end
+    fenv["print"] = _G.print
 
 
     formula = setfenv(formula, fenv)
