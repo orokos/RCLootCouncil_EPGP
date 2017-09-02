@@ -350,85 +350,85 @@ function RCEPGP.AddGPEditBox()
 
         local left = editbox:CreateTexture(("%sLeft"):format(editbox_name), "BACKGROUND")
         left:SetTexture([[Interface\ChatFrame\UI-ChatInputBorder-Left2]])
-      left:SetWidth(8)
-      left:SetHeight(32)
-      left:SetPoint("LEFT", -5, 0)
+        left:SetWidth(8)
+        left:SetHeight(32)
+        left:SetPoint("LEFT", -5, 0)
 
-      local right = editbox:CreateTexture(("%sRight"):format(editbox_name), "BACKGROUND")
-      right:SetTexture([[Interface\ChatFrame\UI-ChatInputBorder-Right2]])
-      right:SetWidth(8)
-      right:SetHeight(32)
-      right:SetPoint("RIGHT", 5, 0)
+        local right = editbox:CreateTexture(("%sRight"):format(editbox_name), "BACKGROUND")
+        right:SetTexture([[Interface\ChatFrame\UI-ChatInputBorder-Right2]])
+        right:SetWidth(8)
+        right:SetHeight(32)
+        right:SetPoint("RIGHT", 5, 0)
 
-      local mid = editbox:CreateTexture(("%sMid"):format(editbox_name), "BACKGROUND")
-      mid:SetTexture([[Interface\ChatFrame\UI-ChatInputBorder-Mid2]])
-      mid:SetHeight(32)
-      mid:SetPoint("TOPLEFT", left, "TOPRIGHT", 0, 0)
-      mid:SetPoint("TOPRIGHT", right, "TOPLEFT", 0, 0)
+        local mid = editbox:CreateTexture(("%sMid"):format(editbox_name), "BACKGROUND")
+        mid:SetTexture([[Interface\ChatFrame\UI-ChatInputBorder-Mid2]])
+        mid:SetHeight(32)
+        mid:SetPoint("TOPLEFT", left, "TOPRIGHT", 0, 0)
+        mid:SetPoint("TOPRIGHT", right, "TOPLEFT", 0, 0)
 
-      --local label = editbox:CreateFontString(editbox_name, "ARTWORK", "GameFontNormalSmall")
-      --label:SetPoint("RIGHT", editbox, "LEFT", - 15, 0)
-      --label:Show()
-      editbox.left = left
-      editbox.right = right
-      editbox.mid = mid
-      --editbox.label = label
+        --local label = editbox:CreateFontString(editbox_name, "ARTWORK", "GameFontNormalSmall")
+        --label:SetPoint("RIGHT", editbox, "LEFT", - 15, 0)
+        --label:Show()
+        editbox.left = left
+        editbox.right = right
+        editbox.mid = mid
+        --editbox.label = label
 
-      editbox:SetPoint("LEFT", RCVotingFrame.frame.gpString, "RIGHT", 10, 0)
-      editbox:Show()
+        editbox:SetPoint("LEFT", RCVotingFrame.frame.gpString, "RIGHT", 10, 0)
+        editbox:Show()
 
-      -- Auto release Focus after 3s editbox is not used
-      local loseFocusTime = 3
-      editbox:SetScript("OnEditFocusGained", function(self, userInput) self.lastUsedTime = GetTime() end)
-      editbox:SetScript("OnTextChanged", function(self, userInput) RCVotingFrame:Update(); self.lastUsedTime = GetTime() end)
-      editbox:SetScript("OnUpdate", function(self, elapsed)
-        if self.lastUsedTime and GetTime() - self.lastUsedTime > loseFocusTime then
-          self.lastUsedTime = nil
-          if editbox:HasFocus() then
-            editbox:ClearFocus()
-          end
-        end
-      end)
-      if not RCEPGP:IsHooked(_G["Lib_DropDownList1"], "OnShow") then
-        RCEPGP:SecureHookScript(_G["Lib_DropDownList1"], "OnShow", function()
-          if RCVotingFrame.frame and RCVotingFrame.frame.editbox then
-            RCVotingFrame.frame.editbox:ClearFocus()
-          end
+        -- Auto release Focus after 3s editbox is not used
+        local loseFocusTime = 3
+        editbox:SetScript("OnEditFocusGained", function(self, userInput) self.lastUsedTime = GetTime() end)
+        editbox:SetScript("OnTextChanged", function(self, userInput) RCVotingFrame:Update(); self.lastUsedTime = GetTime() end)
+        editbox:SetScript("OnUpdate", function(self, elapsed)
+            if self.lastUsedTime and GetTime() - self.lastUsedTime > loseFocusTime then
+                self.lastUsedTime = nil
+                if editbox:HasFocus() then
+                    editbox:ClearFocus()
+                end
+            end
         end)
-      end
-      RCVotingFrame.frame.editbox = editbox
+        if not RCEPGP:IsHooked(_G["Lib_DropDownList1"], "OnShow") then
+            RCEPGP:SecureHookScript(_G["Lib_DropDownList1"], "OnShow", function()
+                if RCVotingFrame.frame and RCVotingFrame.frame.editbox then
+                    RCVotingFrame.frame.editbox:ClearFocus()
+                end
+            end)
+        end
+        RCVotingFrame.frame.editbox = editbox
     end
 end
 
 -- "response" needs to be the response id(Number), or the button name(not response name)
 function RCEPGP:GetResponseGP(response, isTier)
-  if response == "PASS" or response == "AUTOPASS" then
-    return "0%"
-  end
-  local responseGP = "100%"
+    if response == "PASS" or response == "AUTOPASS" then
+        return "0%"
+    end
+    local responseGP = "100%"
 
-  if isTier then
-    for k, v in pairs(addon.db.profile.tierButtons) do
-      if v.text == response then
-        responseGP = v.gp or responseGP
-        break
-      elseif k == response then
-        responseGP = v.gp or responseGP
-        break
-      end
+    if isTier then
+        for k, v in pairs(addon.db.profile.tierButtons) do
+            if v.text == response then
+                responseGP = v.gp or responseGP
+                break
+            elseif k == response then
+                responseGP = v.gp or responseGP
+                break
+            end
+        end
+    else
+        for k, v in pairs(addon.db.profile.responses) do
+            if v.text == response then
+                responseGP = v.gp or responseGP
+                break
+            elseif k == response then
+                responseGP = v.gp or responseGP
+                break
+            end
+        end
     end
-  else
-    for k, v in pairs(addon.db.profile.responses) do
-      if v.text == response then
-        responseGP = v.gp or responseGP
-        break
-      elseif k == response then
-        responseGP = v.gp or responseGP
-        break
-      end
-    end
-  end
-  return responseGP
+    return responseGP
 end
 
 -- responseGP: string. example: "100%", "1524"
@@ -436,14 +436,14 @@ end
 -- Return: return type is always integer
 -- If responseGP is percentage, return responseGP*itemGP, else return responseGP
 function RCEPGP:GetFinalGP(responseGP, itemGP)
-  local gp
-  if string.match(responseGP, "^%d+$") then
-    gp = tonumber(responseGP)
-  else -- responseGP is percentage like 55%
-    local coeff = tonumber(string.match(responseGP, "%d+"))/100
-    gp = math.floor(coeff * itemGP)
-  end
-  return gp
+    local gp
+    if string.match(responseGP, "^%d+$") then
+        gp = tonumber(responseGP)
+    else -- responseGP is percentage like 55%
+        local coeff = tonumber(string.match(responseGP, "%d+"))/100
+        gp = math.floor(coeff * itemGP)
+    end
+    return gp
 end
 
 -- Add button attributes "RCEPGP_dynamicText", "RCEPGP_dynamicDisable", "RCEPGP_dynamicArg"
@@ -455,22 +455,21 @@ end
 -- Lib_UIDropDownMenu which will modify Lib_UIDropDownMenu_AddButton
 function RCEPGP:EnhanceDropDownMenu()
     if not self:IsHooked("Lib_UIDropDownMenu_AddButton") then
-        self:SecureHook("Lib_UIDropDownMenu_AddButton",
-          function(info, level)
+        self:SecureHook("Lib_UIDropDownMenu_AddButton", function(info, level)
             if ( not level ) then
-              level = 1;
+                level = 1;
             end
             local listFrame = _G["Lib_DropDownList"..level];
             local listFrameName = listFrame:GetName();
             local index = listFrame and (listFrame.numButtons) or 1;
             local button = _G[listFrameName.."Button"..index]
             if info.dynamicExist and (not info.dynamicExist()) then
-              listFrame.numButtons = listFrame.numButtons - 1
+                listFrame.numButtons = listFrame.numButtons - 1
             end
             if button then
-              button.dynamicText = info.dynamicText
-              button.dynamicDisable = info.dynamicDisable
-              button.dynamicArg = info.dynamicArg
+                button.dynamicText = info.dynamicText
+                button.dynamicDisable = info.dynamicDisable
+                button.dynamicArg = info.dynamicArg
             end
         end)
     end
@@ -483,228 +482,226 @@ end
 
 function RCEPGP:AddRightClickMenu(menu, RCEntries, myEntries)
 
-  for level, entries in ipairs(myEntries) do
-      table.sort(entries, function(i, j) return i.pos < j.pos end)
-      for id=1, #entries do
-          local entry = entries[id]
-          entry.dynamicArg = menu
-          table.insert(RCEntries[level], entry.pos, entry)
-      end
-
-      local updateInterval = 0.5
-
-  self:SecureHookScript(menu, "OnUpdate",
-    function()
-
-        if Lib_UIDropDownMenu_GetCurrentDropDown() ~= menu then return end
-        if not Lib_DropDownList1:IsShown() then
-            lastUpdateTime = nil
-            return
+    for level, entries in ipairs(myEntries) do
+        table.sort(entries, function(i, j) return i.pos < j.pos end)
+        for id=1, #entries do
+            local entry = entries[id]
+            entry.dynamicArg = menu
+            table.insert(RCEntries[level], entry.pos, entry)
         end
-        if lastUpdateTime and GetTime() - lastUpdateTime < updateInterval then return end
-        lastUpdateTime = GetTime()
 
-        for level = 1, 4 do
-            local hasDynamic = false
-            for i = 1, LIB_UIDROPDOWNMENU_MAXBUTTONS do
-                local button = _G["Lib_DropDownList"..level.."Button"..i]
-                if button then
-                    if button.dynamicText then
-                        local text = button.dynamicText(button.dynamicArg)
-                        hasDynamic = true
-                        if button.colorCode then
-                            button:SetText(button.colorCode..text.."|r")
-                        else
-                            button:SetText(text);
+        local updateInterval = 0.5
+
+        self:SecureHookScript(menu, "OnUpdate", function()
+            if Lib_UIDropDownMenu_GetCurrentDropDown() ~= menu then return end
+            if not Lib_DropDownList1:IsShown() then
+                lastUpdateTime = nil
+                return
+            end
+            if lastUpdateTime and GetTime() - lastUpdateTime < updateInterval then return end
+            lastUpdateTime = GetTime()
+
+            for level = 1, 4 do
+                local hasDynamic = false
+                for i = 1, LIB_UIDROPDOWNMENU_MAXBUTTONS do
+                    local button = _G["Lib_DropDownList"..level.."Button"..i]
+                    if button then
+                        if button.dynamicText then
+                            local text = button.dynamicText(button.dynamicArg)
+                            hasDynamic = true
+                            if button.colorCode then
+                                button:SetText(button.colorCode..text.."|r")
+                            else
+                                button:SetText(text);
+                            end
+                        end
+                        if button.dynamicDisable then
+                            local disable = button.dynamicDisable(button.dynamicArg)
+                            hasDynamic = true
+                            if disable then
+                                button:Disable()
+                            else
+                                button:Enable()
+                            end
                         end
                     end
-                    if button.dynamicDisable then
-                        local disable = button.dynamicDisable(button.dynamicArg)
-                        hasDynamic = true
-                        if disable then
-                            button:Disable()
-                        else
-                            button:Enable()
-                        end
+                    if hasDynamic then
+                        menu.noResize = false
+                        Lib_UIDropDownMenu_Refresh(menu, nil, level)
                     end
-                end
-                if hasDynamic then
-                    menu.noResize = false
-                    Lib_UIDropDownMenu_Refresh(menu, nil, level)
                 end
             end
-        end
         end)
     end
 end
 
 local function GetGPInfo(name)
-local lootTable = RCVotingFrame:GetLootTable()
-if lootTable and lootTable[session] and lootTable[session].candidates
-and name and lootTable[session].candidates[name] then
-local data = lootTable[session].candidates[name]
-local responseGP = RCEPGP:GetResponseGP(data.response, data.isTier)
-local editboxGP = RCVotingFrame.frame.editbox:GetNumber()
-local gp = RCEPGP:GetFinalGP(responseGP, editboxGP)
-local item = lootTable[session].link
-local bid = RCEPGP:GetBid(name)
-return data, name, item, responseGP, gp, bid
-else -- Error occurs
-return nil, "ERROR", "ERROR", "0", 0, 0
-end
+    local lootTable = RCVotingFrame:GetLootTable()
+    if lootTable and lootTable[session] and lootTable[session].candidates
+    and name and lootTable[session].candidates[name] then
+        local data = lootTable[session].candidates[name]
+        local responseGP = RCEPGP:GetResponseGP(data.response, data.isTier)
+        local editboxGP = RCVotingFrame.frame.editbox:GetNumber()
+        local gp = RCEPGP:GetFinalGP(responseGP, editboxGP)
+        local item = lootTable[session].link
+        local bid = RCEPGP:GetBid(name)
+        return data, name, item, responseGP, gp, bid
+    else -- Error occurs
+        return nil, "ERROR", "ERROR", "0", 0, 0
+    end
 end
 
 RCEPGP.rightClickEntries = {
-{ -- Level 1
-{ -- Button 1
-pos = 1,
-dynamicExist = function() return RCEPGP:GetEPGPdb().biddingEnabled end,
-notCheckable = true,
-func = function(name)
-local data, name, item, responseGP, gp, bid = GetGPInfo(name)
-if not data then return end
-LibDialog:Spawn("RCEPGP_CONFIRM_AWARD", {
-    session,
-    name,
-    data.response,
-    nil,
-    data.votes,
-    data.gear1,
-    data.gear2,
-    data.isTier,
-    bid,
-    responseGP
-})
-end,
-dynamicText = function(menu)
-local data, name, item, responseGP, gp, bid = GetGPInfo(menu.name)
-if not bid then bid = "?" end
-return L["Award"].." ("..bid.." "..LEP["GP Bid"]..")"
-end,
-dynamicDisable = function(menu)
-local data, name, item, responseGP, gp, bid = GetGPInfo(menu.name)
-return not bid
-end,
-},
-{ -- Button 2
-pos = 2,
-notCheckable = true,
-func = function(name)
-local data, name, item, responseGP, gp, bid = GetGPInfo(name)
-if not data then return end
-LibDialog:Spawn("RCEPGP_CONFIRM_AWARD", {
-    session,
-    name,
-    data.response,
-    nil,
-    data.votes,
-    data.gear1,
-    data.gear2,
-    data.isTier,
-    gp,
-    responseGP
-})
-end,
-dynamicText = function(menu)
-local data, name, item, responseGP, gp, bid = GetGPInfo(menu.name)
-local text = L["Award"].." ("..gp.." GP)"
-if string.match(responseGP, "^%d+%%") then
-    text = L["Award"].." ("..gp.." GP, "..responseGP..")"
-end
-return text
-end,
-dynamicDisable = function(menu)
-local data, name, item, responseGP, gp, bid = GetGPInfo(menu.name)
-return (not EPGP:CanIncGPBy(item, gp)) and gp and (gp ~= 0)
-end,
-},
-},
+    { -- Level 1
+        { -- Button 1
+            pos = 1,
+            dynamicExist = function() return RCEPGP:GetEPGPdb().biddingEnabled end,
+            notCheckable = true,
+            func = function(name)
+                local data, name, item, responseGP, gp, bid = GetGPInfo(name)
+                if not data then return end
+                LibDialog:Spawn("RCEPGP_CONFIRM_AWARD", {
+                    session,
+                    name,
+                    data.response,
+                    nil,
+                    data.votes,
+                    data.gear1,
+                    data.gear2,
+                    data.isTier,
+                    bid,
+                    responseGP
+                })
+            end,
+            dynamicText = function(menu)
+                local data, name, item, responseGP, gp, bid = GetGPInfo(menu.name)
+                if not bid then bid = "?" end
+                return L["Award"].." ("..bid.." "..LEP["GP Bid"]..")"
+            end,
+            dynamicDisable = function(menu)
+                local data, name, item, responseGP, gp, bid = GetGPInfo(menu.name)
+                return not bid
+            end,
+        },
+        { -- Button 2
+        pos = 2,
+        notCheckable = true,
+        func = function(name)
+            local data, name, item, responseGP, gp, bid = GetGPInfo(name)
+            if not data then return end
+            LibDialog:Spawn("RCEPGP_CONFIRM_AWARD", {
+                session,
+                name,
+                data.response,
+                nil,
+                data.votes,
+                data.gear1,
+                data.gear2,
+                data.isTier,
+                gp,
+                responseGP
+            })
+        end,
+        dynamicText = function(menu)
+            local data, name, item, responseGP, gp, bid = GetGPInfo(menu.name)
+            local text = L["Award"].." ("..gp.." GP)"
+            if string.match(responseGP, "^%d+%%") then
+                text = L["Award"].." ("..gp.." GP, "..responseGP..")"
+            end
+            return text
+        end,
+        dynamicDisable = function(menu)
+            local data, name, item, responseGP, gp, bid = GetGPInfo(menu.name)
+            return (not EPGP:CanIncGPBy(item, gp)) and gp and (gp ~= 0)
+        end,
+        },
+    },
 }
 
 local currentAwardingGP = 0 -- Record it for annoucement of the new GP and new PR value.
 
 function RCEPGP:GetCurrentAwardingGP()
-return currentAwardingGP
+    return currentAwardingGP
 end
 
 LibDialog:Register("RCEPGP_CONFIRM_AWARD", {
-text = "something_went_wrong",
-icon = "",
-on_show = function(self, data)
-local session, player, response, reason, votes, item1, item2, isTierRoll, gp, responseGP = unpack(data, 1, 10)
-self:SetFrameStrata("FULLSCREEN")
-local session, player = unpack(data)
-self.text:SetText(format(L["Are you sure you want to give #item to #player?"].." ("..gp.." GP)", RCLootCouncilML.lootTable[session].link, addon.Ambiguate(player)))
-if string.match(responseGP, "^%d+%%") then
-self.text:SetText(format(L["Are you sure you want to give #item to #player?"].." ("..gp.." GP, "..responseGP.."%"..")", RCLootCouncilML.lootTable[session].link, addon.Ambiguate(player)))
-end
-self.icon:SetTexture(RCLootCouncilML.lootTable[session].texture)
-end,
-buttons = {
-{ text = L["Yes"],
-on_click = function(self, data)
--- IDEA Perhaps come up with a better way of handling this
-local session, player, response, reason, votes, item1, item2, isTierRoll, gp, responseGP = unpack(data, 1, 9)
-currentAwardingGP = gp -- This varible to be used in announcement
-local item = RCLootCouncilML.lootTable[session].link -- Store it now as we wipe lootTable after Award()
-local isToken = RCLootCouncilML.lootTable[session].token
-local awarded = RCLootCouncilML:Award(session, player, response, reason, isTierRoll)
-if awarded then -- log it
-    RCLootCouncilML:TrackAndLogLoot(player, item, response, addon.target, votes, item1, item2, reason, isToken, isTierRoll)
-    if gp and gp ~= 0 then
-        EPGP:IncGPBy(RCEPGP:GetEPGPName(player), item, gp)
-    end
-end
--- We need to delay the test mode disabling so comms have a chance to be send first!
-if addon.testMode and RCLootCouncilML:HasAllItemsBeenAwarded() then RCLootCouncilML:EndSession() end
-currentAwardingGP = 0
-end,
-},
-{ text = L["No"],
-},
-},
-hide_on_escape = true,
-show_while_dead = true,
+    text = "something_went_wrong",
+    icon = "",
+    on_show = function(self, data)
+        local session, player, response, reason, votes, item1, item2, isTierRoll, gp, responseGP = unpack(data, 1, 10)
+        self:SetFrameStrata("FULLSCREEN")
+        local session, player = unpack(data)
+        self.text:SetText(format(L["Are you sure you want to give #item to #player?"].." ("..gp.." GP)", RCLootCouncilML.lootTable[session].link, addon.Ambiguate(player)))
+        if string.match(responseGP, "^%d+%%") then
+            self.text:SetText(format(L["Are you sure you want to give #item to #player?"].." ("..gp.." GP, "..responseGP.."%"..")", RCLootCouncilML.lootTable[session].link, addon.Ambiguate(player)))
+        end
+        self.icon:SetTexture(RCLootCouncilML.lootTable[session].texture)
+    end,
+    buttons = {
+        { text = L["Yes"],
+            on_click = function(self, data)
+                -- IDEA Perhaps come up with a better way of handling this
+                local session, player, response, reason, votes, item1, item2, isTierRoll, gp, responseGP = unpack(data, 1, 9)
+                currentAwardingGP = gp -- This varible to be used in announcement
+                local item = RCLootCouncilML.lootTable[session].link -- Store it now as we wipe lootTable after Award()
+                local isToken = RCLootCouncilML.lootTable[session].token
+                local awarded = RCLootCouncilML:Award(session, player, response, reason, isTierRoll)
+                if awarded then -- log it
+                    RCLootCouncilML:TrackAndLogLoot(player, item, response, addon.target, votes, item1, item2, reason, isToken, isTierRoll)
+                    if gp and gp ~= 0 then
+                        EPGP:IncGPBy(RCEPGP:GetEPGPName(player), item, gp)
+                    end
+                end
+                -- We need to delay the test mode disabling so comms have a chance to be send first!
+                if addon.testMode and RCLootCouncilML:HasAllItemsBeenAwarded() then RCLootCouncilML:EndSession() end
+                currentAwardingGP = 0
+            end,
+        },
+        { text = L["No"],
+        },
+    },
+    hide_on_escape = true,
+    show_while_dead = true,
 })
 
 function RCEPGP:AddChatCommand()
-addon:CustomChatCmd(self, "OpenOptions", LEP["chat_commands"], "EPGP", "epgp")
+    addon:CustomChatCmd(self, "OpenOptions", LEP["chat_commands"], "EPGP", "epgp")
 end
 
 function RCEPGP:AddAnnouncement()
-if RCLootCouncilML.awardStrings then -- Requires RCLootCouncil v2.5
-local function GetEPGPInfo(name)
-name = self:GetEPGPName(name)
-local ep = "?"
-local gp = "?"
-local pr = "?"
-local newgp = "?"
-local newpr = "?"
-ep, gp = EPGP:GetEPGP(name)
-if ep and gp then
-pr = string.format("%.4g", ep / gp)
-end
+    if RCLootCouncilML.awardStrings then -- Requires RCLootCouncil v2.5
+        local function GetEPGPInfo(name)
+            name = self:GetEPGPName(name)
+            local ep = "?"
+            local gp = "?"
+            local pr = "?"
+            local newgp = "?"
+            local newpr = "?"
+            ep, gp = EPGP:GetEPGP(name)
+            if ep and gp then
+                pr = string.format("%.4g", ep / gp)
+            end
 
-if ep and gp then
-newgp = math.floor(gp + self:GetCurrentAwardingGP() + 0.5)
-newpr = string.format("%.4g", ep / newgp)
-end
+            if ep and gp then
+                newgp = math.floor(gp + self:GetCurrentAwardingGP() + 0.5)
+                newpr = string.format("%.4g", ep / newgp)
+            end
 
-if not ep then ep = "?" end
-if not gp then gp = "?" end
+            if not ep then ep = "?" end
+            if not gp then gp = "?" end
 
-return ep, gp, pr, newgp, newpr
-end
+            return ep, gp, pr, newgp, newpr
+        end
 
-RCLootCouncilML.awardStrings['#diffgp'] = function(name) return self:GetCurrentAwardingGP() end
-RCLootCouncilML.awardStrings['#ep'] = function(name) return select(1, GetEPGPInfo(name)) end
-RCLootCouncilML.awardStrings['#gp'] = function(name) return select(2, GetEPGPInfo(name)) end
-RCLootCouncilML.awardStrings['#pr'] = function(name) return select(3, GetEPGPInfo(name)) end
-RCLootCouncilML.awardStrings['#newgp'] = function(name) return select(4, GetEPGPInfo(name)) end
-RCLootCouncilML.awardStrings['#newpr'] = function(name) return select(5, GetEPGPInfo(name)) end
+        RCLootCouncilML.awardStrings['#diffgp'] = function(name) return self:GetCurrentAwardingGP() end
+        RCLootCouncilML.awardStrings['#ep'] = function(name) return select(1, GetEPGPInfo(name)) end
+        RCLootCouncilML.awardStrings['#gp'] = function(name) return select(2, GetEPGPInfo(name)) end
+        RCLootCouncilML.awardStrings['#pr'] = function(name) return select(3, GetEPGPInfo(name)) end
+        RCLootCouncilML.awardStrings['#newgp'] = function(name) return select(4, GetEPGPInfo(name)) end
+        RCLootCouncilML.awardStrings['#newpr'] = function(name) return select(5, GetEPGPInfo(name)) end
 
-L["announce_awards_desc2"] = L["announce_awards_desc2"].." "..LEP["announce_awards_desc2"]
-addon.options.args.mlSettings.args.announcementsTab.args.awardAnnouncement.args.outputDesc.name = L["announce_awards_desc2"]
+        L["announce_awards_desc2"] = L["announce_awards_desc2"].." "..LEP["announce_awards_desc2"]
+        addon.options.args.mlSettings.args.announcementsTab.args.awardAnnouncement.args.outputDesc.name = L["announce_awards_desc2"]
 
-end
+    end
 end
