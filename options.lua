@@ -240,7 +240,7 @@ function RCEPGP:OptionsTable()
                                 value = tostring(defaults[info[#info]])
                             end
                             self:GetEPGPdb()[info[#info]] = value
-                            local func, err = RCEPGP:GetFormulaFunc()
+                            local func, err = RCCustomGP:GetFormulaFunc()
                             if not func then
                                 RCEPGP.epgpOptions.args.customGP.args.errorMsg.name = LEP["formula_syntax_error"]
                                 RCEPGP.epgpOptions.args.customGP.args.errorDetailedMsg.name = err
