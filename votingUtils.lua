@@ -472,10 +472,36 @@ function RCEPGP:EnhanceDropDownMenu()
             local listFrameName = listFrame:GetName();
             local index = listFrame and (listFrame.numButtons) or 1;
             local button = _G[listFrameName.."Button"..index]
-            if info.dynamicExist and (not info.dynamicExist()) then
+            if info.dynamicExist and (not info.dynamicExist()) then -- Remove button
                 listFrame.numButtons = listFrame.numButtons - 1
-            end
-            if button then
+                button.iconOnly = nil
+                button.icon = nil
+                button.iconInfo = nil;
+                button.func = nil
+                button.owner = nil
+                button.hasOpacity = nil
+                button.opacity = nil
+                button.opacityFunc = nil
+                button.cancelFunc = nil
+                button.swatchFunc = nil
+                button.keepShownOnClick = nil
+                button.tooltipTitle = nil
+                button.tooltipText = nil
+                button.arg1 = nil
+                button.arg2 = nil
+                button.hasArrow = nil
+                button.hasColorSwatch = nil
+                button.notCheckable = nil
+                button.menuList = nil
+                button.tooltipWhileDisabled = nil
+                button.tooltipOnButton = nil
+                button.noClickSound = nil
+                button.padding = nil
+                button.dynamicText = nil
+                button.dynamicDisable = nil
+                button.dynamicArg = nil
+                button:SetText("")
+            elseif button then
                 button.dynamicText = info.dynamicText
                 button.dynamicDisable = info.dynamicDisable
                 button.dynamicArg = info.dynamicArg
