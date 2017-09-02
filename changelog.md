@@ -15,6 +15,7 @@
   ###### Bugfixes
 
 - Fix an issue that change the stat weights of Custom GP Rule does not update the GP of items you have seen recently.
+- Fix bid in voting frame sometimes display incorrectly if response is received while switching session.
 
 # v1.8.1
 
