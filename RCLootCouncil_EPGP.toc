@@ -10,7 +10,7 @@
 
 Locale\Locales.xml
 votingUtils.lua
-options.lua
 CustomLibGearPoints-1.2.lua
 lootHistory.lua
+options.lua
 
