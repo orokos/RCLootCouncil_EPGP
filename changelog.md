@@ -4,8 +4,8 @@
 
 - **This update requires full restart of the game client**
 - **This update requires RCLootCouncil v2.5.0+. Now this module no longer work with older RCLootCouncil version.**
-- Auto Disable Profanity Filter(Mature Language Filter) for Chinese Simplified client.
-  - It is reported that in Patch 7.3, Chinese Simplified client filters out some number in officer's note, which causes missing of EP/GP value. The addons disable the filter by auto doing "/console SET profanityFilter "0""
+- Auto disable profanity filter(Mature Language Filter) for Chinese Simplified client.
+  - It is reported that in Patch 7.3, Chinese Simplified client filters out some number in officer's note, which causes missing of EP/GP value. The addons disable the filter by doing `/console SET profanityFilter "0"`
 - Restructure the code and make it more organized.
 - When the Custom GP Formula has runtime error, the addon will print the error message.
 - Variable "equipLoc" removed.
