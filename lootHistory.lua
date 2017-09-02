@@ -106,11 +106,6 @@ RCEPGPHistory.rightClickEntries = {
                 end
                 return text
             end,
-            dynamicDisable = function(menu)
-                local data = menu.datatable
-                local name, class, item, responseGP, gp, lastgp = GetGPInfo(data)
-                return not EPGP:CanIncGPBy(item, gp)
-            end,
         },
         {-- Button 3: Class colored name
             pos = 3,
