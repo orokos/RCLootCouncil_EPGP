@@ -3,12 +3,13 @@
 --------------------------------------------------------------------------------
 
 - **This update requires full restart of the game client**
-- **This update requires RCLootCouncil v2.5.0+. Most feature does not work in older RCLootCouncil version.**
+- **This update requires RCLootCouncil v2.5.0+. Now this module no longer work with older RCLootCouncil version.**
+- Auto Disable Profanity Filter(Mature Language Filter) for Chinese Simplified client.
+  - It is reported that in Patch 7.3, Chinese Simplified client filters out some number in officer's note, which causes missing of EP/GP value. The addons disable the filter by auto doing "/console SET profanityFilter "0""
 - Restructure the code and make it more organized.
 - When the Custom GP Formula has runtime error, the addon will print the error message.
 - Variable "equipLoc" removed.
 - Automatically enable the gp dispaly on item tooltip.
-- Fix FPS drop when rightclick menu opens.
 - (Advanced user with LUA knowledge) formula now allows to use some item related APIs, such as "print", "GetItemInfo", "GetItemStats".<br>
   Still have no access to global environment and most APIs for security reason.
 
@@ -16,6 +17,7 @@
 
 - Fix an issue that change the stat weights of Custom GP Rule does not update the GP of items you have seen recently.
 - Fix bid in voting frame sometimes display incorrectly if response is received while switching session.
+- Fix FPS drop when rightclick menu opens.
 
 # v1.8.1
 

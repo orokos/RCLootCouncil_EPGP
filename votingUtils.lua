@@ -45,6 +45,7 @@ function RCEPGP:OnEnable()
     end
     self.DisableEPGPPopup()
     self.EnableGPTooltip()
+    self.DisablezhCNProfanityFilter()
     self:SecureHook(EPGP:GetModule("loot"), "OnEnable", self.DisableEPGPPopup)
     self:OptionsTable()
     self:AddGPOptions()
@@ -69,6 +70,12 @@ end
 function RCEPGP:OnDisable()
     -- Reset cols
     RCVotingFrame.scrollCols = originalCols
+end
+
+function RCEPGP.DisablezhCNProfanityFilter()
+    if GetLocale() == "zhCN" then
+        SetCVar("profanityFilter", "0")
+    end
 end
 
 function RCEPGP.DisableEPGPPopup()
