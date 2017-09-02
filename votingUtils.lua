@@ -461,12 +461,15 @@ function RCEPGP:AddRightClickMenu(menu, RCEntries, myEntries)
     end
 
   local updateInterval = 0.5
-  local lastUpdateTime = GetTime()
+  local lastUpdateTime
   self:SecureHookScript(menu, "OnUpdate",
     function()
       if Lib_UIDropDownMenu_GetCurrentDropDown() ~= menu then return end
-      if not Lib_DropDownList1:IsShown() then return end
-      if GetTime() - lastUpdateTime < updateInterval then return end
+      if not Lib_DropDownList1:IsShown() then
+          lastUpdateTime = nil
+          return
+      end
+      if lastUpdateTime and GetTime() - lastUpdateTime < updateInterval then return end
       lastUpdateTime = GetTime()
 
       -- Do hook check and rehook if needed because other addons
