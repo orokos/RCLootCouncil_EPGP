@@ -8,6 +8,7 @@
 - When the Custom GP Formula has runtime error, the addon will print the error message.
 - Variable "equipLoc" removed.
 - Automatically enable the gp dispaly on item tooltip.
+- Fix FPS drop when rightclick menu opens.
 - (Advanced user with LUA knowledge) formula now allows to use some item related APIs, such as "print", "GetItemInfo", "GetItemStats".<br>
   Still have no access to global environment and most APIs for security reason.
 
