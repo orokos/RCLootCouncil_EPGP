@@ -1,5 +1,6 @@
 local addon = LibStub("AceAddon-3.0"):GetAddon("RCLootCouncil")
 local RCEPGP = addon:GetModule("RCEPGP")
+local RCCustomGP = RCEPGP:GetModule("RCCustomGP")
 local L = LibStub("AceLocale-3.0"):GetLocale("RCLootCouncil")
 local LEP = LibStub("AceLocale-3.0"):GetLocale("RCEPGP")
 
@@ -270,10 +271,8 @@ function RCEPGP:OptionsTable()
 
 
     -- Add Options to set slot weights
-    local slots = {"INVTYPE_HEAD", "INVTYPE_NECK", "INVTYPE_SHOULDER", "INVTYPE_CLOAK", "INVTYPE_NECK", "INVTYPE_CHEST", "INVTYPE_NECK", "INVTYPE_WRIST",
-    "INVTYPE_HAND", "INVTYPE_WAIST", "INVTYPE_LEGS", "INVTYPE_FEET", "INVTYPE_FINGER", "INVTYPE_TRINKET", "INVTYPE_RELIC", }
-    for i = 1, #slots do
-        local slot = slots[i]
+    for i = 1, #RCCustomGP.slots do
+        local slot = RCCustomGP.slots[i]
         options.args.customGP.args.slotWeights.args[slot] = {
             name = getglobal(slot),
             order = 10 + i,
@@ -287,19 +286,17 @@ function RCEPGP:OptionsTable()
     end
 
     -- Add descriptions for variables
-    local variables = {"ilvl", "slotWeights", "isToken", "numSocket", "hasAvoid", "hasSpeed", "hasLeech",
-    "hasIndes", "isNormal", "isHeroic", "isMythic", "isWarforged", "isTitanforged", "rarity", "itemID", "equipLoc", "link", }
-    for i = 1, #variables do
-        local var = variables[i]
-        options.args.customGP.args["variable"..var] = {
-            name = "|cFFFFFF00"..var.."|r",
+    for i = 1, #RCCustomGP.GPVariables do
+        local variableName = RCCustomGP.GPVariables[i].name
+        options.args.customGP.args["variable"..variableName] = {
+            name = "|cFFFFFF00"..variableName.."|r",
             order = 100 + i * 2,
             fontSize = "medium",
             type = "description",
             width = "normal",
         }
-        options.args.customGP.args["variable"..var.."help"] = {
-            name = LEP["variable_"..var.."_help"],
+        options.args.customGP.args["variable"..variableName.."help"] = {
+            name = RCCustomGP.GPVariables[i].help,
             order = 101 + i * 2,
             fontSize = "small",
             type = "description",
