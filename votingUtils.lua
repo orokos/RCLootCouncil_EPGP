@@ -32,9 +32,7 @@ function RCEPGP.UpdateVotingFrame()
 end
 
 function RCEPGP:OnEnable()
-    EPGP.RegisterCallback(self, "StandingsChanged",
-    RCEPGP.UpdateVotingFrame)
-    self:EnhanceDropDownMenu()
+    EPGP.RegisterCallback(self, "StandingsChanged", RCEPGP.UpdateVotingFrame)
 
     addon:SecureHook(RCVotingFrame, "OnEnable", self.AddGPEditBox)
     addon:SecureHook(RCVotingFrame, "SwitchSession", function(_, s) session = s; RCEPGP:UpdateGPEditbox() end)
@@ -452,27 +450,6 @@ end
 -- dynamicText: [func] Set the text of this button every frame to be the return value of the function
 -- dynamicDisable: [func] Disable or Enable the button every frame. Disable if returns true.
 -- dynamicArg: The argument to the above function.
-function RCEPGP:EnhanceDropDownMenu()
-  self:SecureHook("Lib_UIDropDownMenu_AddButton",
-    function(info, level)
-      if ( not level ) then
-        level = 1;
-      end
-      local listFrame = _G["Lib_DropDownList"..level];
-      local listFrameName = listFrame:GetName();
-      local index = listFrame and (listFrame.numButtons) or 1;
-      local button = _G[listFrameName.."Button"..index]
-      if info.dynamicExist and (not info.dynamicExist()) then
-        listFrame.numButtons = listFrame.numButtons - 1
-      end
-      if button then
-        button.dynamicText = info.dynamicText
-        button.dynamicDisable = info.dynamicDisable
-        button.dynamicArg = info.dynamicArg
-      end
-    end)
-end
-
 function RCEPGP:AddRightClickMenu(menu, RCEntries, myEntries)
 
   for level, entries in ipairs(myEntries) do
@@ -491,6 +468,33 @@ function RCEPGP:AddRightClickMenu(menu, RCEntries, myEntries)
       if not Lib_DropDownList1:IsShown() then return end
       if GetTime() - lastUpdateTime < updateInterval then return end
       lastUpdateTime = GetTime()
+
+      -- Do hook check and rehook if needed because other addons
+      -- may also includes UIDropDownMenu
+      local hooked, func = self:IsHooked("Lib_UIDropDownMenu_AddButton")
+      if not hooked or func ~= Lib_UIDropDownMenu_AddButton then
+          self:Unhook("Lib_UIDropDownMenu_AddButton")
+          self:SecureHook("Lib_UIDropDownMenu_AddButton",
+            function(info, level)
+              if ( not level ) then
+                level = 1;
+              end
+              local listFrame = _G["Lib_DropDownList"..level];
+              local listFrameName = listFrame:GetName();
+              local index = listFrame and (listFrame.numButtons) or 1;
+              local button = _G[listFrameName.."Button"..index]
+              if info.dynamicExist and (not info.dynamicExist()) then
+                listFrame.numButtons = listFrame.numButtons - 1
+              end
+              if button then
+                button.dynamicText = info.dynamicText
+                button.dynamicDisable = info.dynamicDisable
+                button.dynamicArg = info.dynamicArg
+              end
+            end)
+      end
+
+
       for level=1, 4 do
         local hasDynamic = false
         for i=1, LIB_UIDROPDOWNMENU_MAXBUTTONS do
