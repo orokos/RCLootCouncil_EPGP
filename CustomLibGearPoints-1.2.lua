@@ -2,7 +2,7 @@
 -- http://code.google.com/p/epgp/wiki/GearPoints
 local addon = LibStub("AceAddon-3.0"):GetAddon("RCLootCouncil")
 local RCEPGP = addon:GetModule("RCEPGP")
-local RCCustomGP = RCEPGP:NewModule("RCCustomGP")
+local RCCustomGP = RCEPGP:NewModule("RCCustomGP", "AceConsole-3.0")
 local LEP = LibStub("AceLocale-3.0"):GetLocale("RCEPGP")
 
 local MAJOR_VERSION = "LibGearPoints-1.2"
@@ -19,23 +19,23 @@ local itemInfoCache = {} -- Cache the info of items we have seen for better perf
 
 
 RCCustomGP.GPVariables = {
-    { name = "ilvl", help = LEP["variable_ilvl_help"], value = function(itemLink) return select(2, RCCustomGP.GetRarityIlvlEquipLoc(itemLink)) end, },
-    { name = "slotWeights", help = LEP["variable_slotWeights_help"], value = function(itemLink) return RCCustomGP.GetSlotWeights(itemLink) end, },
-    { name = "isToken", help = LEP["variable_isToken_help"], value = function(itemLink) return RCCustomGP.IsItemToken(itemLink) end, },
-    { name = "hasAvoid", help = LEP["variable_hasAvoid_help"], value = function(itemLink) return RCCustomGP.GetBonusInfo(itemLink).hasAvoid end, },
-    { name = "hasLeech", help = LEP["variable_hasLeech_help"], value = function(itemLink) return RCCustomGP.GetBonusInfo(itemLink).hasLeech end, },
-    { name = "hasSpeed", help = LEP["variable_hasSpeed_help"], value = function(itemLink) return RCCustomGP.GetBonusInfo(itemLink).hasSpeed end, },
-    { name = "hasIndes", help = LEP["variable_hasIndes_help"], value = function(itemLink) return RCCustomGP.GetBonusInfo(itemLink).hasIndes end, },
-    { name = "numSocket", help = LEP["variable_numSocket_help"], value = function(itemLink) return RCCustomGP.GetBonusInfo(itemLink).numSocket end, },
-    { name = "rarity", help = LEP["variable_rarity_help"], value = function(itemLink) return select(1, RCCustomGP.GetRarityIlvlEquipLoc(itemLink)) end, },
-    { name = "equipLoc", help = LEP["variable_equipLoc_help"], value = function(itemLink) return select(3, RCCustomGP.GetRarityIlvlEquipLoc(itemLink)) end, },
-    { name = "itemID", help = LEP["variable_itemID_help"], value = function(itemLink) return RCCustomGP.GetItemID(itemLink) end, },
-    { name = "link", help = LEP["variable_link_help"], value = function(itemLink) return itemLink end, },
-    { name = "isNormal", help = LEP["variable_isNormal_help"], value = function(itemLink) return RCEPGP.IsItemNormalDifficulty(itemLink) and 1 or 0 end, },
-    { name = "isHeroic", help = LEP["variable_isHeroic_help"], value = function(itemLink) return RCEPGP.IsItemHeroicDifficulty(itemLink) and 1 or 0 end, },
-    { name = "isMythic", help = LEP["variable_isMythic_help"], value = function(itemLink) return RCEPGP.IsItemMythicDifficulty(itemLink) and 1 or 0 end, },
-    { name = "isWarforged", help = LEP["variable_isWarforged_help"], value = function(itemLink) return RCEPGP.IsItemWarforged(itemLink) and 1 or 0 end, },
-    { name = "isTitanforged", help = LEP["variable_isTitanforged_help"], value = function(itemLink) return RCEPGP.IsItemTitanforged(itemLink) and 1 or 0 end, },
+    { name = "ilvl", help = LEP["variable_ilvl_help"], value = function(itemLink) return select(2, RCCustomGP.GetRarityIlvlEquipLoc(itemLink)) or 0 end, },
+    { unCached = true, name = "slotWeights", help = LEP["variable_slotWeights_help"], value = function(itemLink) return RCCustomGP.GetSlotWeights(itemLink) or 0 end, },
+    { name = "isToken", help = LEP["variable_isToken_help"], value = function(itemLink) return RCCustomGP.IsItemToken(itemLink) and 1 or 0 end, },
+    { name = "hasAvoid", help = LEP["variable_hasAvoid_help"], value = function(itemLink) return RCCustomGP.GetBonusInfo(itemLink).hasAvoid and 1 or 0 end, },
+    { name = "hasLeech", help = LEP["variable_hasLeech_help"], value = function(itemLink) return RCCustomGP.GetBonusInfo(itemLink).hasLeech and 1 or 0 end, },
+    { name = "hasSpeed", help = LEP["variable_hasSpeed_help"], value = function(itemLink) return RCCustomGP.GetBonusInfo(itemLink).hasSpeed and 1 or 0 end, },
+    { name = "hasIndes", help = LEP["variable_hasIndes_help"], value = function(itemLink) return RCCustomGP.GetBonusInfo(itemLink).hasIndes and 1 or 0 end, },
+    { name = "numSocket", help = LEP["variable_numSocket_help"], value = function(itemLink) return RCCustomGP.GetBonusInfo(itemLink).numSocket or 0 end, },
+    { name = "rarity", help = LEP["variable_rarity_help"], value = function(itemLink) return select(1, RCCustomGP.GetRarityIlvlEquipLoc(itemLink)) or 0 end, },
+    { name = "equipLoc", help = LEP["variable_equipLoc_help"], value = function(itemLink) return select(3, RCCustomGP.GetRarityIlvlEquipLoc(itemLink)) or 0 end, },
+    { name = "itemID", help = LEP["variable_itemID_help"], value = function(itemLink) return RCCustomGP.GetItemID(itemLink) or 0 end, },
+    { name = "link", help = LEP["variable_link_help"], value = function(itemLink) return itemLink or 0 end, },
+    { name = "isNormal", help = LEP["variable_isNormal_help"], value = function(itemLink) return RCCustomGP.IsItemNormalDifficulty(itemLink) and 1 or 0 end, },
+    { name = "isHeroic", help = LEP["variable_isHeroic_help"], value = function(itemLink) return RCCustomGP.IsItemHeroicDifficulty(itemLink) and 1 or 0 end, },
+    { name = "isMythic", help = LEP["variable_isMythic_help"], value = function(itemLink) return RCCustomGP.IsItemMythicDifficulty(itemLink) and 1 or 0 end, },
+    { name = "isWarforged", help = LEP["variable_isWarforged_help"], value = function(itemLink) return RCCustomGP.IsItemWarforged(itemLink) and 1 or 0 end, },
+    { name = "isTitanforged", help = LEP["variable_isTitanforged_help"], value = function(itemLink) return RCCustomGP.IsItemTitanforged(itemLink) and 1 or 0 end, },
 }
 
 RCCustomGP.slots = {"INVTYPE_HEAD", "INVTYPE_NECK", "INVTYPE_SHOULDER", "INVTYPE_CLOAK", "INVTYPE_NECK", "INVTYPE_CHEST", "INVTYPE_NECK", "INVTYPE_WRIST",
@@ -787,6 +787,8 @@ function lib:GetValue(item)
     end
     if not item then return end
 
+    local _, itemLink, rarity, level, _, itemClass, itemSubClass, _, equipLoc = GetItemInfo(item)
+    if not itemLink then return end
     UpdateRecentLoot(itemLink)
 
     local formula, err = RCCustomGP:GetFormulaFunc()
@@ -795,10 +797,17 @@ function lib:GetValue(item)
 
     if itemInfoCache[itemLink] then
         fenv = itemInfoCache[itemLink]
+        for _, entry in ipairs(RCCustomGP.GPVariables) do
+            if entry.unCached then
+                local variableName = entry.name
+                local variableValue = entry.value(itemLink)
+                fenv[variableName] = variableValue
+            end
+        end
     else
         fenv = {}
         for _, entry in ipairs(RCCustomGP.GPVariables) do
-            local varaibleName = entry.name
+            local variableName = entry.name
             local variableValue = entry.value(itemLink)
             fenv[variableName] = variableValue
         end
@@ -812,9 +821,9 @@ function lib:GetValue(item)
 
     local high
     if status then -- No Error
-        high = value
+        high = tonumber(value)
     else -- Error
-        formula = loadstring(RCEPGP.defaults.formula)
+        formula = RCCustomGP:GetDefaultFormulaFunc()
         formula = setfenv(formula, fenv)
         high = formula()
         RCCustomGP:AnnounceRuntimeError(value)
@@ -832,7 +841,15 @@ function RCCustomGP:GetFormulaFunc()
         formula, err = loadstring(RCEPGP:GetEPGPdb().formula)
     end
     if not formula then
-        formula, err = loadstring(RCEPGP.defaults.formula)
+        formula, err = RCCustomGP:GetDefaultFormulaFunc()
+    end
+    return formula, err
+end
+
+function RCCustomGP:GetDefaultFormulaFunc()
+    local formula, err = loadstring(RCEPGP.defaults.formula)
+    if not formula then
+        formula, err = loadstring("return "..RCEPGP.defaults.formula)
     end
     return formula, err
 end
@@ -905,6 +922,7 @@ end
 
 function RCCustomGP.GetRarityIlvlEquipLoc(itemLink)
     local _, itemLink, rarity, level, _, itemClass, itemSubClass, _, equipLoc = GetItemInfo(itemLink)
+    local itemBonuses = ItemUtils:BonusIDs(itemLink)
     if equipLoc == "" and itemSubClass == GetRelicSubClassString() then
         equipLoc = "INVTYPE_RELIC"
     end
@@ -920,22 +938,22 @@ end
 
 function RCCustomGP.GetBonusInfo(itemLink)
     local itemBonuses = ItemUtils:BonusIDs(itemLink)
-    local hasAvoid = 0
-    local hasLeech = 0
-    local hasSpeed = 0
-    local hasIndes = 0
+    local hasAvoid = false
+    local hasLeech = false
+    local hasSpeed = false
+    local hasIndes = false
     local numSocket = 0
 
     for _, value in pairs(itemBonuses) do
         local type = ITEM_BONUS_TYPE[value]
         if type == "AVOIDANCE" then
-            hasAvoid = 1
+            hasAvoid = true
         elseif type == "LEECH" then
-            hasLeech = 1
+            hasLeech = true
         elseif type == "SPEED" then
-            hasSpeed = 1
+            hasSpeed = true
         elseif type == "INDESTRUCT" then
-            hasIndes = 1
+            hasIndes = true
         elseif type == "SOCKET" then
             numSocket = numSocket + 1
         end
@@ -949,6 +967,7 @@ function RCCustomGP.GetSlotWeights(itemLink)
         return tonumber(RCEPGP:GetEPGPdb()[equipLoc])
     end
 end
+
 function RCCustomGP.IsItemToken(itemLink)
     return not not CUSTOM_ITEM_DATA[RCCustomGP.GetItemID(itemLink)]
 end

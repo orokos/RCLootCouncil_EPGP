@@ -44,6 +44,7 @@ function RCEPGP:OnEnable()
         addon:SecureHook(ExtraUtilities, "UpdateColumn", function() self:SetupColumns() end)
     end
     self.DisableEPGPPopup()
+    self.EnableGPTooltip()
     self:SecureHook(EPGP:GetModule("loot"), "OnEnable", self.DisableEPGPPopup)
     self:OptionsTable()
     self:AddGPOptions()
@@ -80,6 +81,18 @@ function RCEPGP.DisableEPGPPopup()
         end
         if loot and loot.Disable then
             loot:Disable()
+        end
+    end
+end
+
+function RCEPGP.EnableGPTooltip()
+    if EPGP and EPGP.GetModule then
+        local gptooltip = EPGP:GetModule("gptooltip")
+        if gptooltip and gptooltip.db then
+            gptooltip.db.profile.enabled = true
+        end
+        if gptooltip and gptooltip.Enable then
+            gptooltip:Enable()
         end
     end
 end
