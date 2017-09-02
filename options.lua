@@ -4,7 +4,13 @@ local RCCustomGP = RCEPGP:GetModule("RCCustomGP", true)
 
 -- v1.9 needs full client restart
 if not RCCustomGP then
-    addon:Print("v1.9 Update requires full restart of the client. Some features of the addon don't work update client restarts.")
+    StaticPopupDialogs["RCEPGP_V1.9_NEED_RESTART"] = {
+        text = "RCLootCouncil-EPGP v1.9 update requires full restart of the client. Some features of the addon don't work until client restarts.",
+        button1 = "I'll restart the client.",
+        whileDead = true,
+        hideOnEscape = true,
+    }
+    StaticPopup_Show ("RCEPGP_V1.9_NEED_RESTART")
     return
 end
 ------------------------------
