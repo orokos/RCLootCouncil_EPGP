@@ -1,6 +1,14 @@
 local addon = LibStub("AceAddon-3.0"):GetAddon("RCLootCouncil")
 local RCEPGP = addon:GetModule("RCEPGP")
-local RCCustomGP = RCEPGP:GetModule("RCCustomGP")
+local RCCustomGP = RCEPGP:GetModule("RCCustomGP", true)
+
+-- v1.9 needs full client restart
+if not RCCustomGP then
+    addon:Print("v1.9 Update requires full restart of the client. Some features of the addon don't work update client restarts.")
+    return
+end
+------------------------------
+
 local L = LibStub("AceLocale-3.0"):GetLocale("RCLootCouncil")
 local LEP = LibStub("AceLocale-3.0"):GetLocale("RCEPGP")
 
