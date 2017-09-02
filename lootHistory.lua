@@ -12,8 +12,8 @@ local LootHistory = addon:GetModule("RCLootHistory")
 local lootDB = addon:GetHistoryDB()
 
 function RCEPGPHistory:OnInitialize()
-	local rightClickMenu = _G["RCLootCouncil_LootHistory_RightclickMenu"]
-	Lib_UIDropDownMenu_Initialize(rightClickMenu, self.RightClickMenu, "MENU")
+	local rightClickMenu = 
+	RCEPGP:AddRightClickMenu(_G["RCLootCouncil_LootHistory_RightclickMenu"], LootHistory.rightClickEntries, RCEPGPHistory.rightClickEntries)
 end
 
 function RCEPGPHistory:GetLastGPAmount(name, item)
@@ -43,118 +43,97 @@ function RCEPGPHistory:GetEPGPNameByGuild(name)
 	return name
 end
 
-function RCEPGPHistory.RightClickMenu(menu, level)
-	if menu.datatable then
-		local function GetGPInfo()
-			local data = menu.datatable
-			if data then
-				local entry = lootDB[data.name][data.num]
-				local name = RCEPGP:GetEPGPName(data.name)
-				local class = entry.class
-				local isTier = entry.tokenRoll
-				local item = entry.lootWon
-				local responseID = entry.responseID
-				local responseGP = RCEPGP:GetResponseGP(responseID, isTier)
-				local itemgp = GP:GetValue(item) or 0
-				local gp = RCEPGP:GetFinalGP(responseGP, itemgp)
-				local lastgp = RCEPGPHistory:GetLastGPAmount(name, item)
-				return name, class, item, responseGP, gp, lastgp
-			end
-		end
 
-		if level == 1 then
-
-			-- Button 1: Undo Button
-			local name, class, item, responseGP, gp, lastgp = GetGPInfo()
-			info = Lib_UIDropDownMenu_CreateInfo()
-			info.func = function()
-							local name, class, item, responseGP, gp, lastgp = GetGPInfo()
-							LibDialog:Spawn("RCEPGP_AWARD_GP", {
-									name = name,
-							        gp = -lastgp,
-							        class = class,
-							        item = item,
-				    		}) 
-						end
-			info.notCheckable = true
-		    Lib_UIDropDownMenu_AddButton(info, level) -- Set Text Later
-
-		   	-- Button 2: GP Button
-			info = Lib_UIDropDownMenu_CreateInfo()
-			info.func = function()
-							local name, class, item, responseGP, gp, lastgp = GetGPInfo()
-							LibDialog:Spawn("RCEPGP_AWARD_GP", {
-									name = name,
-							        gp = gp,
-							        class = class,
-							        item = item,
-				    		}) 
-						end
-			info.notCheckable = true
-		    Lib_UIDropDownMenu_AddButton(info, level) -- Set Text Later
-
-			-- Button 3: Class-colored name
-			info = Lib_UIDropDownMenu_CreateInfo()
-			info.notCheckable = true
-			info.notClickable = true
-			Lib_UIDropDownMenu_AddButton(info, level) -- Set Text Later
-
-		    -- Button 4: Empty Lib_UIDropDownMenu_EnableButton
-		    info = Lib_UIDropDownMenu_CreateInfo()
-			info.notCheckable = true
-			info.disabled = true
-		    Lib_UIDropDownMenu_AddButton(info, level)
-		end
-			
-		-- Set and update the text and enabled status of buttons every frame
-		if (not RCEPGPHistory:IsHooked(menu, "OnUpdate")) then
-			RCEPGPHistory:SecureHookScript(menu, "OnUpdate",
-				function()
-					if Lib_UIDropDownMenu_GetCurrentDropDown() ~= menu then return end
-					if not Lib_DropDownList1:IsShown() then return end
-					if not menu.datatable then return end
-					
-					local name, class, item, responseGP, gp, lastgp = GetGPInfo()
-
-					-- Button 1: Undo Button
-					local id = 1
-					Lib_UIDropDownMenu_SetButtonText(1, id, string.format(LEP["Undo GP"].." (%s)", -lastgp))
-		    		if (not EPGP:CanIncGPBy(item, -lastgp)) then
-		    			Lib_UIDropDownMenu_DisableButton(1, id)
-		    		else
-		    			Lib_UIDropDownMenu_EnableButton(1, id)
-		    		end
-		    		id = id + 1
-
-		    		-- Button 2: GP Button
-					local text2 = string.format(LEP["Award GP (Default: %s)"], gp)
-					if string.match(responseGP, "^%d+%%") then
-		      			text2 = string.format(LEP["Award GP (Default: %s)"], gp..", "..responseGP)
-		    		end
-		    		Lib_UIDropDownMenu_SetButtonText(1, id, text2)
-		    		if (not EPGP:CanIncGPBy(item, gp)) then
-			    		Lib_UIDropDownMenu_DisableButton(1, id)
-			    	else
-			    		Lib_UIDropDownMenu_EnableButton(1, id)
-			    	end
-			    	id = id + 1
-
-		    		-- Button 3: Class-colored name
-					local text3 = ""
-					local color = addon:GetClassColor(class)
-					local colorCode = "|cff"..addon:RGBToHex(color.r, color.g, color.b)
-					text3 = string.format("%s%s|r", colorCode, Ambiguate(name, "short"))
-					Lib_UIDropDownMenu_SetButtonText(1, id, text3)
-					id = id + 1
-
-		    		menu.noResize = false
-			    	Lib_UIDropDownMenu_Refresh(menu, nil, 1)
-				end)
-		end
+local function GetGPInfo(data)
+	if data then
+		local entry = lootDB[data.name][data.num]
+		local name = RCEPGP:GetEPGPName(data.name)
+		local class = entry.class
+		local isTier = entry.tokenRoll
+		local item = entry.lootWon
+		local responseID = entry.responseID
+		local responseGP = RCEPGP:GetResponseGP(responseID, isTier)
+		local itemgp = GP:GetValue(item) or 0
+		local gp = RCEPGP:GetFinalGP(responseGP, itemgp)
+		local lastgp = RCEPGPHistory:GetLastGPAmount(name, item)
+		return name, class, item, responseGP, gp, lastgp
 	end
-
-	LootHistory.RightClickMenu(menu, level)
 end
+
+RCEPGPHistory.rightClickEntries = {
+  { -- Level 1
+    { -- Button 1: Undo button
+     pos = 1, 
+     notCheckable = true,
+     func = function(data)
+				local name, class, item, responseGP, gp, lastgp = GetGPInfo(data)
+				LibDialog:Spawn("RCEPGP_AWARD_GP", {
+						name = name,
+				        gp = -lastgp,
+				        class = class,
+				        item = item,
+				}) 
+        end,
+      dynamicText = function(menu)
+      	  local data = menu.datatable
+          local name, class, item, responseGP, gp, lastgp = GetGPInfo(data)
+          return string.format(LEP["Undo GP"].." (%s)", -lastgp)
+        end,
+      dynamicDisable = function(menu)
+      	  local data = menu.datatable
+          local name, class, item, responseGP, gp, lastgp = GetGPInfo(data)
+          return not EPGP:CanIncGPBy(item, -lastgp)
+        end,
+    },
+    { -- Button 2: GP Button
+     pos = 2,
+     notCheckable = true,
+     func = function(data)
+		local name, class, item, responseGP, gp, lastgp = GetGPInfo(data)
+		LibDialog:Spawn("RCEPGP_AWARD_GP", {
+				name = name,
+		        gp = gp,
+		        class = class,
+		        item = item,
+		}) 
+	  end,
+      dynamicText = function(menu)
+            	local data = menu.datatable
+          local name, class, item, responseGP, gp, lastgp = GetGPInfo(data)
+		  local text = string.format(LEP["Award GP (Default: %s)"], gp)
+		  if string.match(responseGP, "^%d+%%") then
+	  		text = string.format(LEP["Award GP (Default: %s)"], gp..", "..responseGP)
+		  end
+		  return text
+        end,
+      dynamicDisable = function(menu)
+      	local data = menu.datatable
+          local name, class, item, responseGP, gp, lastgp = GetGPInfo(data)
+          return not EPGP:CanIncGPBy(item, gp)
+        end,
+    },
+    {-- Button 3: Class colored name
+     pos = 3,
+     notCheckable = true,
+     notClickable = true,
+      dynamicText = function(menu)
+        local data = menu.datatable
+        local name, class, item, responseGP, gp, lastgp = GetGPInfo(data)
+		local text = ""
+		local color = addon:GetClassColor(class)
+		local colorCode = "|cff"..addon:RGBToHex(color.r, color.g, color.b)
+		text = string.format("%s%s|r", colorCode, Ambiguate(name, "short"))
+		return text
+	   end,
+	},
+	{-- Button 4 :Empty button
+      pos = 4,
+      text = "",
+      notCheckable = true,
+      disabled = true
+	},
+  },
+}
 
 -- Mostly copy from EPGP/popup.lua
 LibDialog:Register("RCEPGP_AWARD_GP", {

@@ -461,7 +461,6 @@ function RCEPGP:EnhanceDropDownMenu()
 end
 
 function RCEPGP:AddRightClickMenu(menu, RCEntries, myEntries)
-  menu.noResize = true
 
   for level, entries in ipairs(myEntries) do
     table.sort(entries, function(i, j) return i.pos < j.pos end)
@@ -471,10 +470,14 @@ function RCEPGP:AddRightClickMenu(menu, RCEntries, myEntries)
       table.insert(RCEntries[level], entry.pos, entry)
     end
 
+  local updateInterval = 0.5
+  local lastUpdateTime = GetTime()
   self:SecureHookScript(menu, "OnUpdate",
     function()
       if Lib_UIDropDownMenu_GetCurrentDropDown() ~= menu then return end
       if not Lib_DropDownList1:IsShown() then return end
+      if GetTime() - lastUpdateTime < updateInterval then return end
+      lastUpdateTime = GetTime()
       for level=1, 4 do
         local hasDynamic = false
         for i=1, LIB_UIDROPDOWNMENU_MAXBUTTONS do
@@ -500,6 +503,7 @@ function RCEPGP:AddRightClickMenu(menu, RCEntries, myEntries)
             end
           end
           if hasDynamic then
+            menu.noResize = false
             Lib_UIDropDownMenu_Refresh(menu, nil, level)
           end
         end
