@@ -1,8 +1,22 @@
+local addon = LibStub("AceAddon-3.0"):GetAddon("RCLootCouncil")
+local RCCustomEPGP = addon:GetModule("RCCustomEPGP")
+local RCCustomEP = RCCustomEPGP:NewModule("RCCustomEP", "AceConsole-3.0")
+local LEP = LibStub("AceLocale-3.0"):GetLocale("RCCustomEPGP")
 
+
+RCCustomEP.EPVariables = {
+    {name = "online", label = "Online", cond = function(name) return RCCustomEP.IsOnline(name) end},
+    {name = "isInZone", label = "In Zone", cond = function(name) return RCCustomEP.IsInZone(name) end},
+    {name - "zone"}
+}
+
+RCCustomEP.allowedAPI = {
+    "print", "strsplit", "strmatch",
+}
 
 local playersInfo = {}
 
-function RCEP:UpdateGuildInfo()
+function RCCustomEP:UpdateGuildInfo()
     for i = 1, GetNumGuildMembers() do
         local fullName, rank, rankIndex, level, class, zone, note, officernote, online,
         status, classFileName, achievementPoints, achievementRank, isMobile, canSoR, reputation = GetGuildRosterInfo(i)
@@ -34,7 +48,7 @@ function RCEP:UpdateGuildInfo()
     end
 end
 
-function RCEP:UpdateRaidInfo()
+function RCCustomEP:UpdateRaidInfo()
     for i = 1, 40 do
         local name, rank, subgroup, level, class, classFileName, zone, online, isDead, groupRole, isML = GetRaidRosterInfo(i)
         if not playersInfo[fullName] then
@@ -57,14 +71,14 @@ function RCEP:UpdateRaidInfo()
     end
 end
 
-function RCEP:GetUnitInfo(fullName, category)
+function RCCustomEP:GetUnitInfo(fullName, category)
     if not playersInfo[fullName] then
         return nil
     end
     return playersInfo[fullName][category]
 end
 
-function RCEP:GetPlayerFullName()
+function RCCustomEP:GetPlayerFullName()
     local name, realm = UnitFullName("player")
     return name.."-"..realm
 end
@@ -73,19 +87,17 @@ end
 ---------------------------------------------------------
 
 
-function RCEP.IsOffline(fullName)
-    return not RCEP:GetUnitInfo(fullName, "online")
+function RCCustomEP.IsOnline(fullName)
+    return not RCCustomEP:GetUnitInfo(fullName, "online")
 end
 
-function RCEP.IsNotInZone(fullName)
-    local myFullName = RCEP:GetPlayerFullName()
-    local myZone = RCEP:GetUnitInfo(myFullName, "zone")
-    local zone = RCEP:GetUnitInfo(fullName, "zone")
-    return zone ~= myZone
+function RCCustomEP.IsInZone(fullName)
+    local myFullName = RCCustomEP:GetPlayerFullName()
+    local myZone = RCCustomEP:GetUnitInfo(myFullName, "zone")
+    local zone = RCCustomEP:GetUnitInfo(fullName, "zone")
+    return zone == myZone
 end
 
-local conditionals = {
-    {name = "offline", label = "Offline", cond = RCEP.IsOffline},
-    {name = "isNotInZone", label = "Not In Zone", cond = RCEP.IsInZone},
-
-}
+function RCCustomEP.GetZone(fullName)
+    return RCCustomEP:GetUnitInfo(fullName, "zone") or "UNKNOWN"
+end
