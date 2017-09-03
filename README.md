@@ -70,7 +70,6 @@ This is an _**UNOFFICIAL**_ module of the loot distribution addon [RCLootCouncil
 + `isTitanforged` Integer. 1 if the item is titanforged, 0 otherwise.
 + `rarity`  Integer. The rarity of the item. 3-Rare, 4-Epic, 5-Legendary
 + `itemID` Integer. The item id of the item.
-+ `equipLoc`  String. The non-localized string representing the equipment slot. Recommend to use variable _"slotWeights"_ instead if possible.
 + `link` String. The full item link of the item.
 
 **Rules And Formulas Examples**
@@ -112,10 +111,8 @@ Open Dungeon Journal and mouseover a loot. Check if the GP value shown in the to
   + Add ZeroSum EP Award among raid members in the zone. Many guild gives player minus EP if they make mistakes, but it is unfair to the people in the zone and good for subs because subs can never make a mistake. ZeroSum EP Award will help to solve this problem by moving EP of the player who makes a mistake to other players in the raid zone. This will make the average EP of players in the raid zone and subs unchanged, so it will be fair for everyone.
 
 ## Known Issues
-+ RCLootCouncil v2.4.6 and older, v2.5Beta1, v2.5Beta2 do not work for Patch 7.3.  
-  This module cannot do anything about that. This module should work fine after RCLootCouncil is updated.
 + This module always put columns "EP", "GP" and "PR" at the rightmost of voting frame. You cant use "RCLootCouncil - ExtraUtilities" to disable, set width or position of these columns at the moment. This module does not affect other columns from ExtraUtilities.
-+ Missing translation. Only English, Chinese Simplified and Chinese traditional are fully localized right now. I can only translate language I know. Help to localize this project [here](https://wow.curseforge.com/projects/rclootcouncil-epgp/localization)
++ Need translation for many languages. Only English, Chinese Simplified and Chinese traditional are fully localized right now. I can only translate language I know. Help to localize this project [here](https://wow.curseforge.com/projects/rclootcouncil-epgp/localization)
 
 ## Bug Report
 + Appreciate any bug report, especially when this addon is not working for you. I will work on the bugs ASAP if I know the bug exists. I am not always the Master Looter in the guild, so I may not know the bug exists.

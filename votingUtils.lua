@@ -43,10 +43,9 @@ function RCEPGP:OnEnable()
         addon:SecureHook(ExtraUtilities, "SetupColumns", function() self:SetupColumns() end)
         addon:SecureHook(ExtraUtilities, "UpdateColumn", function() self:SetupColumns() end)
     end
-    self.DisableEPGPPopup()
+    self:DisableGPPopup()
     self.EnableGPTooltip()
     self.DisablezhCNProfanityFilter()
-    self:SecureHook(EPGP:GetModule("loot"), "OnEnable", self.DisableEPGPPopup)
     self:OptionsTable()
     self:AddGPOptions()
     self:AddChatCommand()
@@ -78,17 +77,36 @@ function RCEPGP.DisablezhCNProfanityFilter()
     end
 end
 
-function RCEPGP.DisableEPGPPopup()
+-- We only want to disable GP popup of EPGP(dkp reloaded) when RCLootCouncil Voting Frame is opening.
+-- Restore to previous setting of EPGP loot popup when Voting Frame closes.
+local isDisablingEPGPPopup = false
+local isEPGPPopupEnabled = false
+function RCEPGP:DisableGPPopup()
     if EPGP and EPGP.GetModule then
         local loot = EPGP:GetModule("loot")
-        if loot and loot.db.profile.enabled then
-            RCEPGP:Print(LEP["disable_gp_popup"])
-        end
-        if loot and loot.db then
-            loot.db.profile.enabled = false
-        end
-        if loot and loot.Disable then
-            loot:Disable()
+        if loot then
+            self:SecureHook(RCVotingFrame, "Show", function()
+                local loot = EPGP:GetModule("loot")
+                if not isDisablingEPGPPopup then
+                    isEPGPPopupEnabled = loot.db.profile.enabled
+                end
+                loot.db.profile.enabled = false
+                loot:Disable()
+                isDisablingEPGPPopup = true
+            end)
+
+            self:SecureHook(RCVotingFrame, "Hide", function()
+                C_Timer.After(5, function() -- Delay it because loot event may be triggered slight after Session ends.
+                    local loot = EPGP:GetModule("loot")
+                    loot.db.profile.enabled = isEPGPPopupEnabled
+                    if isEPGPPopupEnabled then
+                        loot:Enable()
+                    else
+                        loot:Disable()
+                    end
+                    isDisablingEPGPPopup = false
+                end)
+            end)
         end
     end
 end
