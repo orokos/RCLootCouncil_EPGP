@@ -51,7 +51,6 @@ function RCEPGP:OnEnable()
     self:AddChatCommand()
     self:AddAnnouncement()
     self:SetupColumns()
-    self:RegisterEvent("PLAYER_ENTERING_WORLD")
 end
 
 function RCEPGP:UpdateGPEditbox()
@@ -473,67 +472,65 @@ function RCEPGP:GetFinalGP(responseGP, itemGP)
     return gp
 end
 
--- Add button attributes "RCEPGP_dynamicText", "RCEPGP_dynamicDisable", "RCEPGP_dynamicArg"
+-- Add button attributes "RCEPGP_dynamicText", "RCEPGP_dynamicDisabled", "RCEPGP_dynamicArg"
 -- dynamicExist: [func] if return false, this button does not exist.
 -- dynamicText: [func] Set the text of this button every frame to be the return value of the function
--- dynamicDisable: [func] Disable or Enable the button every frame. Disable if returns true.
+-- dynamicDisabled: [func] Disable or Enable the button every frame. Disable if returns true.
 -- dynamicArg: The argument to the above function.
--- REQUIRES DELAYED ENABLE because other addon can also includes
--- Lib_UIDropDownMenu which will modify Lib_UIDropDownMenu_AddButton
-function RCEPGP:EnhanceDropDownMenu()
-    if not self:IsHooked("Lib_UIDropDownMenu_AddButton") then
-        self:SecureHook("Lib_UIDropDownMenu_AddButton", function(info, level)
-            if ( not level ) then
-                level = 1;
-            end
-            local listFrame = _G["Lib_DropDownList"..level];
-            local listFrameName = listFrame:GetName();
-            local index = listFrame and (listFrame.numButtons) or 1;
-            local button = _G[listFrameName.."Button"..index]
-            if info.dynamicExist and (not info.dynamicExist()) then -- Remove button
-                listFrame.numButtons = listFrame.numButtons - 1
-                button.iconOnly = nil
-                button.icon = nil
-                button.iconInfo = nil;
-                button.func = nil
-                button.owner = nil
-                button.hasOpacity = nil
-                button.opacity = nil
-                button.opacityFunc = nil
-                button.cancelFunc = nil
-                button.swatchFunc = nil
-                button.keepShownOnClick = nil
-                button.tooltipTitle = nil
-                button.tooltipText = nil
-                button.arg1 = nil
-                button.arg2 = nil
-                button.hasArrow = nil
-                button.hasColorSwatch = nil
-                button.notCheckable = nil
-                button.menuList = nil
-                button.tooltipWhileDisabled = nil
-                button.tooltipOnButton = nil
-                button.noClickSound = nil
-                button.padding = nil
-                button.dynamicText = nil
-                button.dynamicDisable = nil
-                button.dynamicArg = nil
-                button:SetText("")
-            elseif button then
-                button.dynamicText = info.dynamicText
-                button.dynamicDisable = info.dynamicDisable
-                button.dynamicArg = info.dynamicArg
-            end
-        end)
-    end
-end
-
-function RCEPGP:PLAYER_ENTERING_WORLD()
-    self:EnhanceDropDownMenu()
-end
-
-
+local lastHookedLib_UIDropDownMenu_AddButton = nil
 function RCEPGP:AddRightClickMenu(menu, RCEntries, myEntries)
+
+    local rehookFrame = _G["RCEPGP_Rehook_AddButton"] or CreateFrame("FRAME", "RCEPGP_Rehook_AddButton")
+    -- Keep to rehook because other addon can modify Lib_UIDropDownMenu_AddButton
+    rehookFrame:SetScript("OnUpdate", function()
+        if lastHookedLib_UIDropDownMenu_AddButton ~= Lib_UIDropDownMenu_AddButton then
+            self:Unhook("Lib_UIDropDownMenu_AddButton")
+            self:SecureHook("Lib_UIDropDownMenu_AddButton", function(info, level)
+                if ( not level ) then
+                    level = 1;
+                end
+                local listFrame = _G["Lib_DropDownList"..level];
+                local listFrameName = listFrame:GetName();
+                local index = listFrame and (listFrame.numButtons) or 1;
+                local button = _G[listFrameName.."Button"..index]
+                if info.dynamicExist and (not info.dynamicExist()) then -- Remove button
+                    listFrame.numButtons = listFrame.numButtons - 1
+                    button.iconOnly = nil
+                    button.icon = nil
+                    button.iconInfo = nil;
+                    button.func = nil
+                    button.owner = nil
+                    button.hasOpacity = nil
+                    button.opacity = nil
+                    button.opacityFunc = nil
+                    button.cancelFunc = nil
+                    button.swatchFunc = nil
+                    button.keepShownOnClick = nil
+                    button.tooltipTitle = nil
+                    button.tooltipText = nil
+                    button.arg1 = nil
+                    button.arg2 = nil
+                    button.hasArrow = nil
+                    button.hasColorSwatch = nil
+                    button.notCheckable = nil
+                    button.menuList = nil
+                    button.tooltipWhileDisabled = nil
+                    button.tooltipOnButton = nil
+                    button.noClickSound = nil
+                    button.padding = nil
+                    button.dynamicText = nil
+                    button.dynamicDisabled = nil
+                    button.dynamicArg = nil
+                    button:SetText("")
+                elseif button then
+                    button.dynamicText = info.dynamicText
+                    button.dynamicDisabled = info.dynamicDisabled
+                    button.dynamicArg = info.dynamicArg
+                end
+            end)
+            lastHookedLib_UIDropDownMenu_AddButton = Lib_UIDropDownMenu_AddButton
+        end
+    end)
 
     for level, entries in ipairs(myEntries) do
         table.sort(entries, function(i, j) return i.pos < j.pos end)
@@ -544,41 +541,43 @@ function RCEPGP:AddRightClickMenu(menu, RCEntries, myEntries)
         end
 
         local updateInterval = 0.5
-
+        local lastUpdateTime = nil
         self:SecureHookScript(menu, "OnUpdate", function()
+            if lastUpdateTime and GetTime() - lastUpdateTime < updateInterval then return end
             if Lib_UIDropDownMenu_GetCurrentDropDown() ~= menu then return end
             if not Lib_DropDownList1:IsShown() then
                 lastUpdateTime = nil
                 return
             end
-            if lastUpdateTime and GetTime() - lastUpdateTime < updateInterval then return end
             lastUpdateTime = GetTime()
 
             for level = 1, 4 do
-                local hasDynamic = false
+                local dynamicTextChanged = false
                 for i = 1, LIB_UIDROPDOWNMENU_MAXBUTTONS do
                     local button = _G["Lib_DropDownList"..level.."Button"..i]
                     if button then
                         if button.dynamicText then
                             local text = button.dynamicText(button.dynamicArg)
-                            hasDynamic = true
+                            local oldText = button:GetText()
+                            if text ~= oldText then
+                                dynamicTextChanged = true
+                            end
                             if button.colorCode then
                                 button:SetText(button.colorCode..text.."|r")
                             else
                                 button:SetText(text);
                             end
                         end
-                        if button.dynamicDisable then
-                            local disable = button.dynamicDisable(button.dynamicArg)
-                            hasDynamic = true
-                            if disable then
+                        if button.dynamicDisabled then
+                            local disabled = button.dynamicDisabled(button.dynamicArg)
+                            if disabled then
                                 button:Disable()
                             else
                                 button:Enable()
                             end
                         end
                     end
-                    if hasDynamic then
+                    if dynamicTextChanged then -- For performance reason
                         menu.noResize = false
                         Lib_UIDropDownMenu_Refresh(menu, nil, level)
                     end
@@ -600,7 +599,7 @@ local function GetGPInfo(name)
         local bid = RCEPGP:GetBid(name)
         return data, name, item, responseGP, gp, bid
     else -- Error occurs
-        return nil, "ERROR", "ERROR", "0", 0, 0
+        return nil, "UNKNOWN", "UNKNOWN", "UNKNOWN", 0, 0 -- nil protection
     end
 end
 
@@ -631,7 +630,7 @@ RCEPGP.rightClickEntries = {
                 if not bid then bid = "?" end
                 return L["Award"].." ("..bid.." "..LEP["GP Bid"]..")"
             end,
-            dynamicDisable = function(menu)
+            dynamicDisabled = function(menu)
                 local data, name, item, responseGP, gp, bid = GetGPInfo(menu.name)
                 return not bid
             end,
@@ -663,7 +662,7 @@ RCEPGP.rightClickEntries = {
             end
             return text
         end,
-        dynamicDisable = function(menu)
+        dynamicDisabled = function(menu)
             local data, name, item, responseGP, gp, bid = GetGPInfo(menu.name)
             return (not EPGP:CanIncGPBy(item, gp)) and gp and (gp ~= 0)
         end,

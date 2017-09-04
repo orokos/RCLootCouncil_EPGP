@@ -52,12 +52,13 @@ local function GetGPInfo(data)
         local isTier = entry.tokenRoll
         local item = entry.lootWon
         local responseID = entry.responseID
-        local responseGP = RCEPGP:GetResponseGP(responseID, isTier)
+        local responseGP = RCEPGP:GetResponseGP(responseID, isTier) or 0
         local itemgp = GP:GetValue(item) or 0
-        local gp = RCEPGP:GetFinalGP(responseGP, itemgp)
-        local lastgp = RCEPGPHistory:GetLastGPAmount(name, item)
+        local gp = RCEPGP:GetFinalGP(responseGP, itemgp) or 0
+        local lastgp = RCEPGPHistory:GetLastGPAmount(name, item) or 0
         return name, class, item, responseGP, gp, lastgp
     end
+    return "UNKNOWN", "UNKNOWN", "UNKNOWN", 0, 0, 0 -- nil protection
 end
 
 RCEPGPHistory.rightClickEntries = {
@@ -77,9 +78,9 @@ RCEPGPHistory.rightClickEntries = {
             dynamicText = function(menu)
                 local data = menu.datatable
                 local name, class, item, responseGP, gp, lastgp = GetGPInfo(data)
-                return string.format(LEP["Undo GP"].." (%s)", - lastgp)
+                return string.format(LEP["Undo GP"].." (%s)", -lastgp)
             end,
-            dynamicDisable = function(menu)
+            dynamicDisabled = function(menu)
                 local data = menu.datatable
                 local name, class, item, responseGP, gp, lastgp = GetGPInfo(data)
                 return not EPGP:CanIncGPBy(item, - lastgp)
