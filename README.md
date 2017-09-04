@@ -12,6 +12,7 @@ This is an _**UNOFFICIAL**_ module of the loot distribution addon [RCLootCouncil
 + Show sorted EP, GP and PR value of raid members in RCLootCouncil Voting Frame  
 + Loot master can assign percentage GP value to the different responses from the raid members. The setting is in Interface->Addons->RCLootCouncil->Master Looter->Buttons and Responses. The final gp value calculated by the addon normally is itemGP*responseGPPercentage.  
 + Award GP automatically without any extra click. Simply click the first button of the rightclick menu in the RCLootCouncil Voting Frame to award item and GP value at the same time.
++ If the raid member wants to change response after he has responded, and that change will affect the final GP value, Master Looter can use "Change Response" button in the rightclick menu to change his response.
 
 **Create Your Own GP Rule**
 ######  
