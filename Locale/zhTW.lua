@@ -42,5 +42,4 @@ L["variable_isHeroic_help"] = "整數. 1如果物品來自英雄難度,否則為
 L["variable_isMythic_help"] = "整數. 1如果物品來自傳奇難度,否則為0."
 L["variable_isWarforged_help"] = "整數. 1如果物品戰鑄,否則為0."
 L["variable_isTitanforged_help"] = "整數. 1如果物品泰坦造物,否則為0."
-L["announce_awards_desc2"] = "\nRCLootCouncil-EPGP: #diffgp - 玩家從物品獲取的GP量. #ep - 玩家的EP值. #gp - 玩家獲取物品前的GP值. #pr - 玩家獲取物品前的PR值. #newgp - 玩家獲取物品后的GP值. #newpr - 玩家獲取物品后的PR值."
-
+L["announce_awards_desc2"] = "\nRCLootCouncil-EPGP: #diffgp# - 玩家從物品獲取的GP量. #ep# - 玩家的EP值. #gp# - 玩家獲取物品前的GP值. #pr# - 玩家獲取物品前的PR值. #newgp# - 玩家獲取物品后的GP值. #newpr# - 玩家獲取物品后的PR值."

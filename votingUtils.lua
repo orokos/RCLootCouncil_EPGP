@@ -1,3 +1,4 @@
+local version = "2.0.0"
 local addon = LibStub("AceAddon-3.0"):GetAddon("RCLootCouncil")
 local RCEPGP = addon:NewModule("RCEPGP", "AceComm-3.0", "AceConsole-3.0", "AceHook-3.0", "AceEvent-3.0", "AceTimer-3.0")
 local EPGP = LibStub("AceAddon-3.0"):GetAddon("EPGP")
@@ -31,6 +32,20 @@ function RCEPGP.UpdateVotingFrame()
     RCVotingFrame:Update()
 end
 
+function RCEPGP:CompareVersion(v1, v2)
+    local a1, b1, c1 = strsplit(".", v1)
+    a1 = tonumber(a1 or 0); b1 = tonumber(b1 or 0); c1 = tonumber(c1 or 0)
+    local a2, b2, c2 = strsplit(".", v2)
+    a2 = tonumber(a2 or 0); b2 = tonumber(b2 or 0); c2 = tonumber(c2 or 0)
+    if a1 < a2 then return -1 end
+    if a1 > a2 then return 1 end
+    if b1 < b2 then return -1 end
+    if b1 > b2 then return 1 end
+    if c1 < c2 then return -1 end
+    if c1 > c2 then return 1 end
+    return 0
+end
+
 function RCEPGP:OnEnable()
     EPGP.RegisterCallback(self, "StandingsChanged", RCEPGP.UpdateVotingFrame)
 
@@ -51,6 +66,15 @@ function RCEPGP:OnEnable()
     self:AddChatCommand()
     self:AddAnnouncement()
     self:SetupColumns()
+
+    local lastVersion = RCEPGP:GetEPGPdb().version
+    if not lastVersion then lastVersion = "1.9.2" end
+    self:SecureHook(RCLootCouncil, "UpdateDB", function() RCEPGP:GetEPGPdb().version = version end)
+
+    if self:CompareVersion(lastVersion, "2.0.0") == -1 then
+        self:UpdateAnnounceKeyword_v2_0_0()
+    end
+    RCEPGP:GetEPGPdb().version = version
 end
 
 function RCEPGP:UpdateGPEditbox()
@@ -745,15 +769,30 @@ function RCEPGP:AddAnnouncement()
             return ep, gp, pr, newgp, newpr
         end
 
-        RCLootCouncilML.awardStrings['#diffgp'] = function(name) return self:GetCurrentAwardingGP() end
-        RCLootCouncilML.awardStrings['#ep'] = function(name) return select(1, GetEPGPInfo(name)) end
-        RCLootCouncilML.awardStrings['#gp'] = function(name) return select(2, GetEPGPInfo(name)) end
-        RCLootCouncilML.awardStrings['#pr'] = function(name) return select(3, GetEPGPInfo(name)) end
-        RCLootCouncilML.awardStrings['#newgp'] = function(name) return select(4, GetEPGPInfo(name)) end
-        RCLootCouncilML.awardStrings['#newpr'] = function(name) return select(5, GetEPGPInfo(name)) end
+        RCLootCouncilML.awardStrings['#diffgp#'] = function(name) return self:GetCurrentAwardingGP() end
+        RCLootCouncilML.awardStrings['#ep#'] = function(name) return select(1, GetEPGPInfo(name)) end
+        RCLootCouncilML.awardStrings['#gp#'] = function(name) return select(2, GetEPGPInfo(name)) end
+        RCLootCouncilML.awardStrings['#pr#'] = function(name) return select(3, GetEPGPInfo(name)) end
+        RCLootCouncilML.awardStrings['#newgp#'] = function(name) return select(4, GetEPGPInfo(name)) end
+        RCLootCouncilML.awardStrings['#newpr#'] = function(name) return select(5, GetEPGPInfo(name)) end
 
         L["announce_awards_desc2"] = L["announce_awards_desc2"].." "..LEP["announce_awards_desc2"]
         addon.options.args.mlSettings.args.announcementsTab.args.awardAnnouncement.args.outputDesc.name = L["announce_awards_desc2"]
 
+    end
+end
+
+function RCEPGP:UpdateAnnounceKeyword_v2_0_0()
+    for i=1, #addon:Getdb().awardText do
+        local text = addon:Getdb().awardText[i].text
+        if text then
+            text = text:gsub('#diffgp', '#diffgp#')
+            text = text:gsub('#ep', '#ep#')
+            text = text:gsub('#gp', '#gp#')
+            text = text:gsub('#pr', '#pr#')
+            text = text:gsub('#newgp', '#newgp#')
+            text = text:gsub('#newpr', '#newpr#')
+            addon:Getdb().awardText[i].text = text
+        end
     end
 end

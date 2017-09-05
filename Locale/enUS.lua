@@ -43,4 +43,4 @@ L["variable_isHeroic_help"] = "Integer. 1 if the item is from heroic difficulty,
 L["variable_isMythic_help"] = "Integer. 1 if the item is from mythic difficulty, 0 otherwise."
 L["variable_isWarforged_help"] = "Integer. 1 if the item is warforged, 0 otherwise."
 L["variable_isTitanforged_help"] = "Integer. 1 if the item is titanforged, 0 otherwise."
-L["announce_awards_desc2"] = "\nRCLootCouncil-EPGP: #diffgp for the amount of GP the player gains from the item. #ep for the EP of player. #gp for the GP of player before getting the item. #pr for the PR of player before getting the item. #newgp for the GP of player after getting the item. #newpr for the PR of player after getting the item."
+L["announce_awards_desc2"] = "\nRCLootCouncil-EPGP: #diffgp# for the amount of GP the player gains from the item. #ep# for the EP of player. #gp# for the GP of player before getting the item. #pr# for the PR of player before getting the item. #newgp# for the GP of player after getting the item. #newpr# for the PR of player after getting the item."
