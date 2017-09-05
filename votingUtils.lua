@@ -75,6 +75,7 @@ function RCEPGP:OnEnable()
 
     if self:CompareVersion(lastVersion, "2.0.0") == -1 then
         self:UpdateAnnounceKeyword_v2_0_0()
+        self:ShowNeedRestartDialog("2.0.0")
     end
     RCEPGP:GetEPGPdb().version = version
 
@@ -825,4 +826,14 @@ function RCEPGP:OnCommReceived(prefix, serializedMsg, distri, sender)
             end
         end
     end
+end
+
+function RCEPGP:ShowNeedRestartDialog()
+    StaticPopupDialogs["RCEPGP_NEED_RESTART"] = {
+        text = "RCLootCouncil-EPGP v%s update requires full restart of the client. Some features of the addon don't work until client restarts.",
+        button1 = "I'll restart the client.",
+        whileDead = true,
+        hideOnEscape = true,
+    }
+    StaticPopup_Show ("RCEPGP_NEED_RESTART", version)
 end

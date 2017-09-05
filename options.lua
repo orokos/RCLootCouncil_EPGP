@@ -3,17 +3,6 @@ local RCEPGP = addon:GetModule("RCEPGP")
 local RCCustomGP = RCEPGP:GetModule("RCCustomGP", true)
 local RCCustomEP = RCEPGP:GetModule("RCCustomEP", true)
 
--- v1.9 needs full client restart
-if not RCCustomGP then
-    StaticPopupDialogs["RCEPGP_V1.9_NEED_RESTART"] = {
-        text = "RCLootCouncil-EPGP v1.9 update requires full restart of the client. Some features of the addon don't work until client restarts.",
-        button1 = "I'll restart the client.",
-        whileDead = true,
-        hideOnEscape = true,
-    }
-    StaticPopup_Show ("RCEPGP_V1.9_NEED_RESTART")
-    return
-end
 ------------------------------
 
 local L = LibStub("AceLocale-3.0"):GetLocale("RCLootCouncil")
