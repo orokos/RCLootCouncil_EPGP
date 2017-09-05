@@ -1,4 +1,5 @@
 local version = "2.0.0"
+local tocVersion = GetAddOnMetadata("RCLootCouncil_EPGP", "Version")
 local addon = LibStub("AceAddon-3.0"):GetAddon("RCLootCouncil")
 local RCEPGP = addon:NewModule("RCEPGP", "AceComm-3.0", "AceConsole-3.0", "AceHook-3.0", "AceEvent-3.0", "AceTimer-3.0", "AceSerializer-3.0")
 local EPGP = LibStub("AceAddon-3.0"):GetAddon("EPGP")
@@ -75,7 +76,9 @@ function RCEPGP:OnEnable()
 
     if self:CompareVersion(lastVersion, "2.0.0") == -1 then
         self:UpdateAnnounceKeyword_v2_0_0()
-        self:ShowNeedRestartDialog("2.0.0")
+    end
+    if self:CompareVersion(tocVersion, "2.0.0") == -1 then
+        self:ShowNeedRestartDialog(version)
     end
     RCEPGP:GetEPGPdb().version = version
 
