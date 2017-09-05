@@ -1,6 +1,6 @@
 local version = "2.0.0"
 local addon = LibStub("AceAddon-3.0"):GetAddon("RCLootCouncil")
-local RCEPGP = addon:NewModule("RCEPGP", "AceComm-3.0", "AceConsole-3.0", "AceHook-3.0", "AceEvent-3.0", "AceTimer-3.0")
+local RCEPGP = addon:NewModule("RCEPGP", "AceComm-3.0", "AceConsole-3.0", "AceHook-3.0", "AceEvent-3.0", "AceTimer-3.0", "AceSerializer-3.0")
 local EPGP = LibStub("AceAddon-3.0"):GetAddon("EPGP")
 local GS = LibStub("LibGuildStorage-1.2")
 local L = LibStub("AceLocale-3.0"):GetLocale("RCLootCouncil")
@@ -14,6 +14,8 @@ local RCVotingFrame = addon:GetModule("RCVotingFrame")
 local originalCols = {unpack(RCVotingFrame.scrollCols)}
 
 local session = 1
+
+local prefix = "RCLC_EPGP"
 
 function RCEPGP:GetEPGPdb()
     if not addon:Getdb().epgp then
@@ -75,6 +77,11 @@ function RCEPGP:OnEnable()
         self:UpdateAnnounceKeyword_v2_0_0()
     end
     RCEPGP:GetEPGPdb().version = version
+
+    self:RegisterEvent("PLAYER_LOGIN", function() C_Timer.After(10, function() self:SendVersion("GUILD") end) end)
+    self:RegisterEvent("GROUP_JOINED", function() C_Timer.After(5, function() self:SendVersion("RAID") end) end)
+
+    self:RegisterChatCommand(prefix, "OnCommReceived")
 end
 
 function RCEPGP:UpdateGPEditbox()
@@ -793,6 +800,29 @@ function RCEPGP:UpdateAnnounceKeyword_v2_0_0()
             text = text:gsub('#newgp', '#newgp#')
             text = text:gsub('#newpr', '#newpr#')
             addon:Getdb().awardText[i].text = text
+        end
+    end
+end
+
+function RCEPGP:SendVersion(channel)
+    if not IsInGuild() and channel == "GUILD" then return end
+    if not IsInGroup() and (channel == "RAID" or channel == "PARTY") then return end
+    local serializedMsg = self:Serialize("version", version)
+    self:SendCommMessage(prefix, serializedMsg, channel)
+end
+
+local newVersionDetected = {}
+function RCEPGP:OnCommReceived(prefix, serializedMsg, distri, sender)
+    local test, command, data = self:Deserialize(serializedMsg)
+    if test then
+        if command == "version" then
+            local otherVersion = data
+            if self:CompareVersion(version, otherVersion) == -1 then
+                if not newVersionDetected[otherVersion] then
+                    addon:Print(string.format("New Version %s detected. Please update the addon.", otherVersion))
+                end
+                newVersionDetected[otherVersion] = true
+            end
         end
     end
 end
