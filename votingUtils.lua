@@ -53,9 +53,8 @@ function RCEPGP:OnEnable()
     EPGP.RegisterCallback(self, "StandingsChanged", RCEPGP.UpdateVotingFrame)
 
     addon:SecureHook(RCVotingFrame, "OnEnable", self.AddGPEditBox)
-    local oldSwitchSession = RCVotingFrame.SwitchSession
     -- v1.9 change: Prehook instead of posthook to fix wrong bid display
-    self:RawHook(RCVotingFrame, "SwitchSession", function(self, s) session = s; RCEPGP:UpdateGPEditbox(); oldSwitchSession(RCVotingFrame, s) end)
+    self:Hook(RCVotingFrame, "SwitchSession", function(self, s) session = s; RCEPGP:UpdateGPEditbox(); end)
     self:AddRightClickMenu(_G["RCLootCouncil_VotingFrame_RightclickMenu"], RCVotingFrame.rightClickEntries, self.rightClickEntries)
     if ExtraUtilities then
         addon:SecureHook(ExtraUtilities, "SetupColumns", function() self:SetupColumns() end)
