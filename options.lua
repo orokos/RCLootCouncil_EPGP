@@ -27,6 +27,7 @@ local defaults = {
     INVTYPE_RELIC = 0.667,
     formula = "1000 * 2 ^ (-915/30) * 2 ^ (ilvl/30) * slotWeights + hasSpeed * 25 + numSocket * 200",
     EPFormulas = {{name = "default", desc = "Whatever", formula = "100"}},
+    sendEPGPSettings = true,
 }
 
 RCEPGP.defaults = defaults
@@ -179,7 +180,7 @@ function RCEPGP:OptionsTable()
                 args = {
                     gpOptions = {
                         name = LEP["gpOptions"],
-                        order = 4,
+                        order = 3,
                         type = "group",
                         inline = true,
                         args = {
@@ -196,6 +197,23 @@ function RCEPGP:OptionsTable()
                             },
                         },
                     },
+                    sync = {
+                        name = "Sync",
+                        order = 4,
+                        type = "group",
+                        inline = true,
+                        args = {
+                            sendEPGPSettings = {
+                                name = "Send EPGP(dkp reloaded) settings",
+                                desc = "If checked, '/rc sync' also sync EPGP(dkp reloaded) settings",
+                                order = 1,
+                                type = "toggle",
+                                width = "full",
+                                get = Getter,
+                                set = Setter,
+                            },
+                        },
+                    },
                     bidding = {
                         name = LEP["Bidding"],
                         order = 5,
@@ -204,17 +222,12 @@ function RCEPGP:OptionsTable()
                         args = {
                             biddingEnabled = {
                                 name = LEP["Enable Bidding"],
+                                desc = LEP["bidding_desc"],
                                 order = 1,
                                 type = "toggle",
                                 width = "full",
                                 get = function() return self:GetEPGPdb().biddingEnabled end,
                                 set = function(info, value) self:GetEPGPdb().biddingEnabled = value; RCEPGP:SetupColumns() end,
-                            },
-                            biddingDesc = {
-                                name = LEP["bidding_desc"],
-                                order = 2,
-                                type = "description",
-                                width = "full",
                             },
                         },
                     },

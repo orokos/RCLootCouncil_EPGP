@@ -86,6 +86,9 @@ function RCEPGP:OnEnable()
     self:RegisterEvent("GROUP_JOINED", function() C_Timer.After(5, function() self:SendVersion("RAID") end) end)
 
     self:RegisterChatCommand(prefix, "OnCommReceived")
+
+    self:EPGPDkpReloadedSettingToRC()
+    self:RCToEPGPDkpReloadedSetting()
 end
 
 function RCEPGP:UpdateGPEditbox()
@@ -839,4 +842,29 @@ function RCEPGP:ShowNeedRestartDialog()
         hideOnEscape = true,
     }
     StaticPopup_Show ("RCEPGP_NEED_RESTART", version)
+end
+
+function RCEPGP:EPGPDkpReloadedSettingToRC()
+    self:GetEPGPdb().EPGPDkpReloadedDB = {}
+    self:GetEPGPdb().EPGPDkpReloadedDB.children = {}
+    if EPGP.db and EPGP.db.children then
+        for module, entry in pairs(EPGP.db.children) do
+            self:GetEPGPdb().EPGPDkpReloadedDB.children[module] = {}
+            -- link the table to the table of EPGP settings.
+            self:GetEPGPdb().EPGPDkpReloadedDB.children[module].profile = EPGP.db.children[module].profile
+        end
+    end
+end
+
+function RCEPGP:RCToEPGPDkpReloadedSetting()
+    if self:GetEPGPdb().EPGPDkpReloadedDB and self:GetEPGPdb().EPGPDkpReloadedDB.children then
+        for module, entry in pairs(self:GetEPGPdb().EPGPDkpReloadedDB.children) do
+            if self:GetEPGPdb().EPGPDkpReloadedDB.children[module].profile then
+                for key, value in pairs(self:GetEPGPdb().EPGPDkpReloadedDB.children[module].profile) do
+                    EPGP.db.children[module].profile[key] = value
+                end
+            end
+        end
+    end
+    RCEPGP:EPGPDkpReloadedSettingToRC()
 end
