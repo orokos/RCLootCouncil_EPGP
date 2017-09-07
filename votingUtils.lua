@@ -9,6 +9,7 @@ local LEP = LibStub("AceLocale-3.0"):GetLocale("RCEPGP")
 local GP = LibStub("LibGearPoints-1.2")
 local LibDialog = LibStub("LibDialog-1.0")
 local RCLootCouncilML = addon:GetModule("RCLootCouncilML")
+RCEPGP.version = version
 
 local ExtraUtilities = addon:GetModule("RCExtraUtilities", true) -- nil if ExtraUtilites not enabled.
 local RCVotingFrame = addon:GetModule("RCVotingFrame")
@@ -16,7 +17,7 @@ local originalCols = {unpack(RCVotingFrame.scrollCols)}
 
 local session = 1
 
-local prefix = "RCLC_EPGP"
+local PREFIX = "RCLC_EPGP"
 
 function RCEPGP:GetEPGPdb()
     if not addon:Getdb().epgp then
@@ -27,7 +28,6 @@ function RCEPGP:GetEPGPdb()
 end
 
 function RCEPGP:OnInitialize()
-    self.version = GetAddOnMetadata("RCLootCouncil_EPGP", "Version")
     self:Enable()
 end
 
@@ -81,10 +81,10 @@ function RCEPGP:OnEnable()
     end
     RCEPGP:GetEPGPdb().version = version
 
-    self:RegisterEvent("PLAYER_LOGIN", function() C_Timer.After(10, function() self:SendVersion("GUILD") end) end)
+    self:RegisterEvent("PLAYER_LOGIN", function() C_Timer.After(5, function() self:SendVersion("GUILD") end) end)
     self:RegisterEvent("GROUP_JOINED", function() C_Timer.After(5, function() self:SendVersion("RAID") end) end)
 
-    self:RegisterChatCommand(prefix, "OnCommReceived")
+    self:RegisterComm(PREFIX)
 
     self:EPGPDkpReloadedSettingToRC()
     self:RCToEPGPDkpReloadedSetting()
@@ -811,23 +811,25 @@ function RCEPGP:UpdateAnnounceKeyword_v2_0_0()
 end
 
 function RCEPGP:SendVersion(channel)
+    print("SendVersion")
     if not IsInGuild() and channel == "GUILD" then return end
     if not IsInGroup() and (channel == "RAID" or channel == "PARTY") then return end
-    local serializedMsg = self:Serialize("version", version)
-    self:SendCommMessage(prefix, serializedMsg, channel)
+    local serializedMsg = self:Serialize("version", RCEPGP.version)
+    local _, a, b = self:Deserialize(serializedMsg)
+    print(a)
+    print(b)
+    self:SendCommMessage(PREFIX, serializedMsg, "GUILD", "")
 end
 
-local newVersionDetected = {}
+local newestVersionDetected = RCEPGP.version
 function RCEPGP:OnCommReceived(prefix, serializedMsg, distri, sender)
     local test, command, data = self:Deserialize(serializedMsg)
     if test then
         if command == "version" then
             local otherVersion = data
-            if self:CompareVersion(version, otherVersion) == -1 then
-                if not newVersionDetected[otherVersion] then
-                    addon:Print(string.format("New Version %s detected. Please update the addon.", otherVersion))
-                end
-                newVersionDetected[otherVersion] = true
+            if self:CompareVersion(newestVersionDetected, otherVersion) == -1 then
+                self:Print(string.format("New Version %s detected. Please update the addon.", otherVersion))
+                newestVersionDetected = otherVersion
             end
         end
     end
