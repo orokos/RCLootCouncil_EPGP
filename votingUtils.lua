@@ -88,6 +88,12 @@ function RCEPGP:OnEnable()
 
     self:EPGPDkpReloadedSettingToRC()
     self:RCToEPGPDkpReloadedSetting()
+
+    for _, entry in ipairs(RCVotingFrame.rightClickEntries[1]) do
+        if entry.text == L["Award"] then
+            entry.text = L["Award"].." (0 GP)"
+        end
+    end
 end
 
 function RCEPGP:UpdateGPEditbox()
