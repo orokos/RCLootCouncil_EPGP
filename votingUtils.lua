@@ -850,9 +850,11 @@ function RCEPGP:EPGPDkpReloadedSettingToRC()
     self:GetEPGPdb().EPGPDkpReloadedDB.children = {}
     if EPGP.db and EPGP.db.children then
         for module, entry in pairs(EPGP.db.children) do
-            self:GetEPGPdb().EPGPDkpReloadedDB.children[module] = {}
-            -- link the table to the table of EPGP settings.
-            self:GetEPGPdb().EPGPDkpReloadedDB.children[module].profile = EPGP.db.children[module].profile
+            if module ~= "log" then -- Not gonna sync "log" module because it is too big. Probably will sync it with RCHistory Later.
+                self:GetEPGPdb().EPGPDkpReloadedDB.children[module] = {}
+                -- link the table to the table of EPGP settings.
+                self:GetEPGPdb().EPGPDkpReloadedDB.children[module].profile = EPGP.db.children[module].profile
+            end
         end
     end
 end
