@@ -813,13 +813,10 @@ function RCEPGP:UpdateAnnounceKeyword_v2_0_0()
 end
 
 function RCEPGP:SendVersion(channel)
-    print("SendVersion")
     if not IsInGuild() and channel == "GUILD" then return end
     if not IsInGroup() and (channel == "RAID" or channel == "PARTY") then return end
     local serializedMsg = self:Serialize("version", RCEPGP.version)
     local _, a, b = self:Deserialize(serializedMsg)
-    print(a)
-    print(b)
     self:SendCommMessage(PREFIX, serializedMsg, "GUILD", "")
 end
 
