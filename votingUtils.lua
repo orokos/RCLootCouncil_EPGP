@@ -89,11 +89,7 @@ function RCEPGP:OnEnable()
     self:EPGPDkpReloadedSettingToRC()
     self:RCToEPGPDkpReloadedSetting()
 
-    for _, entry in ipairs(RCVotingFrame.rightClickEntries[1]) do
-        if entry.text == L["Award"] then
-            entry.text = L["Award"].." (0 GP)"
-        end
-    end
+    self:Add0GPSuffixToRCAwardButtons()
 end
 
 function RCEPGP:UpdateGPEditbox()
@@ -876,4 +872,15 @@ function RCEPGP:RCToEPGPDkpReloadedSetting()
         end
     end
     RCEPGP:EPGPDkpReloadedSettingToRC()
+end
+
+function RCEPGP:Add0GPSuffixToRCAwardButtons()
+    for _, entry in ipairs(RCVotingFrame.rightClickEntries[1]) do
+        if entry.text == L["Award"] then
+            entry.text = L["Award"].." (0 GP)"
+        end
+        if entry.text == L["Award for ..."] then
+            entry.text = L["Award for ..."].." (0 GP)"
+        end
+    end
 end
