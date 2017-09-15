@@ -649,7 +649,7 @@ end
 RCEPGP.rightClickEntries = {
     { -- Level 1
         { -- Button 1
-            pos = 1,
+            pos = 2,
             dynamicExist = function() return RCEPGP:GetEPGPdb().biddingEnabled end,
             notCheckable = true,
             func = function(name)
@@ -679,7 +679,7 @@ RCEPGP.rightClickEntries = {
             end,
         },
         { -- Button 2
-        pos = 2,
+        pos = 3,
         notCheckable = true,
         func = function(name)
             local data, name, item, responseGP, gp, bid = GetGPInfo(name)

@@ -63,8 +63,22 @@ end
 
 RCEPGPHistory.rightClickEntries = {
     { -- Level 1
-        { -- Button 1: Undo button
+        {-- Button 1: Class colored name
             pos = 1,
+            notCheckable = true,
+            notClickable = true,
+            dynamicText = function(menu)
+                local data = menu.datatable
+                local name, class, item, responseGP, gp, lastgp = GetGPInfo(data)
+                local text = ""
+                local color = addon:GetClassColor(class)
+                local colorCode = "|cff"..addon:RGBToHex(color.r, color.g, color.b)
+                text = string.format("%s%s|r", colorCode, Ambiguate(name, "short"))
+                return text
+            end,
+        },
+        { -- Button 2: Undo button
+            pos = 2,
             notCheckable = true,
             func = function(data)
                 local name, class, item, responseGP, gp, lastgp = GetGPInfo(data)
@@ -86,8 +100,8 @@ RCEPGPHistory.rightClickEntries = {
                 return not EPGP:CanIncGPBy(item, - lastgp)
             end,
         },
-        { -- Button 2: GP Button
-            pos = 2,
+        { -- Button 3: GP Button
+            pos = 3,
             notCheckable = true,
             func = function(data)
                 local name, class, item, responseGP, gp, lastgp = GetGPInfo(data)
@@ -105,20 +119,6 @@ RCEPGPHistory.rightClickEntries = {
                 if string.match(responseGP, "^%d+%%") then
                     text = string.format(LEP["Award GP (Default: %s)"], gp..", "..responseGP)
                 end
-                return text
-            end,
-        },
-        {-- Button 3: Class colored name
-            pos = 3,
-            notCheckable = true,
-            notClickable = true,
-            dynamicText = function(menu)
-                local data = menu.datatable
-                local name, class, item, responseGP, gp, lastgp = GetGPInfo(data)
-                local text = ""
-                local color = addon:GetClassColor(class)
-                local colorCode = "|cff"..addon:RGBToHex(color.r, color.g, color.b)
-                text = string.format("%s%s|r", colorCode, Ambiguate(name, "short"))
                 return text
             end,
         },
