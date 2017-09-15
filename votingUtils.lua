@@ -805,12 +805,12 @@ function RCEPGP:UpdateAnnounceKeyword_v2_0_0()
     for i=1, #addon:Getdb().awardText do
         local text = addon:Getdb().awardText[i].text
         if text then
-            if text == text:gsub('#diffgp#', '') then text = text:gsub('#diffgp', '#diffgp#') end
-            if text == text:gsub('#ep#', '') then text = text:gsub('#ep', '#ep#') end
-            if text == text:gsub('#gp#', '') then text = text:gsub('#gp', '#gp#') end
-            if text == text:gsub('#pr#', '') then text = text:gsub('#pr', '#pr#') end
-            if text == text:gsub('#newgp#', '') then text = text:gsub('#newgp', '#newgp#') end
-            if text == text:gsub('#newpr#', '') then text = text:gsub('#newpr', '#newpr#') end
+            if not text:find('#diffgp#') then text = text:gsub('#diffgp', '#diffgp#') end
+            if not text:find('#ep#') then text = text:gsub('#ep', '#ep#') end
+            if not text:find('#gp#') then text = text:gsub('#gp', '#gp#') end
+            if not text:find('#pr#') then text = text:gsub('#pr', '#pr#') end
+            if not text:find('#newgp#') then text = text:gsub('#newgp', '#newgp#') end
+            if not text:find('#newpr#') then text = text:gsub('#newpr', '#newpr#') end
             addon:Getdb().awardText[i].text = text
         end
     end
