@@ -97,7 +97,6 @@ function RCEPGP:AddGPOptions()
                 if string.match(value, "^%d+%%$") or string.match(value, "^%d+$") then
                     addon.db.profile.responses[i].gp = tostring(value)
                 end
-                RCEPGP:SendMessage("RCGPResponseChanged")
             end,
             hidden = function() return addon.db.profile.numButtons < i end,
         }
