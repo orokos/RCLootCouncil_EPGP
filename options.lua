@@ -135,6 +135,35 @@ function RCEPGP:AddGPOptions()
         addon.options.args.mlSettings.args.buttonsTab.args.tierButtonsOptions.args["gp" .. k] = gp
     end
 
+    -- Relic Buttons/Responses
+    if addon.db.profile.responses.relic then
+    	for k, v in pairs(addon.db.profile.responses.relic) do
+            addon.options.args.mlSettings.args.buttonsTab.args.relicButtonsOptions.args["button" .. k].order = v.sort * 4 + 1
+            addon.options.args.mlSettings.args.buttonsTab.args.relicButtonsOptions.args["color" .. k].order = v.sort * 4 + 2
+            addon.options.args.mlSettings.args.buttonsTab.args.relicButtonsOptions.args["color" .. k].width = "half"
+            addon.options.args.mlSettings.args.buttonsTab.args.relicButtonsOptions.args["text" .. k].order = v.sort * 4 + 3
+            gp = {
+                order = v.sort * 4 + 4,
+                name = "GP",
+                desc = LEP["gp_value_help"],
+                type = "input",
+                width = "half",
+                get = function() return addon.db.profile.relicButtons[v.sort].gp or "100%" end,
+                set = function(info, value)
+                    if not value then value = "100%" end
+                    value = tostring(value)
+                    if string.match(value, "^%d+%%$") or string.match(value, "^%d+$") then
+                        addon:ConfigTableChanged("responses");addon.db.profile.relicButtons[v.sort].gp = tostring(value)
+                    end
+                end,
+                hidden = function() return not addon.db.profile.relicButtonsEnabled or addon.db.profile.relicNumButtons < v.sort end,
+            }
+            if not addon.db.profile.relicButtons[v.sort].gp then
+                addon.db.profile.relicButtons[v.sort].gp = "100%"
+            end
+            addon.options.args.mlSettings.args.buttonsTab.args.relicButtonsOptions.args["gp" .. k] = gp
+    	end
+    end
 
     addon.options.args.settings.args.profiles = LibStub("AceDBOptions-3.0"):GetOptionsTable(addon.db)
     LibStub("AceConfigRegistry-3.0"):RegisterOptionsTable("RCLootCouncil", addon.options)
