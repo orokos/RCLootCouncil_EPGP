@@ -321,10 +321,12 @@ function RCEPGP:OptionsTable()
                 type = "group",
                 args = {
                         desc = {
-                                name = "TODO DESC",
+                                order = 1,
+                                name = LEP["customEP_desc"],
                                 type = "description",
                         },
                         add = {
+                            order = 2,
                             name = "Add Formula",
                             type = "execute",
                             disabled = function() return #RCEPGP:GetEPGPdb().EPFormulas >= RCCustomEP.MaxFormulas end,
@@ -337,6 +339,18 @@ function RCEPGP:OptionsTable()
 
                     },
             },
+           epVariablesTab = {
+               name = LEP["Custom EP Variables"],
+               order = 3,
+               type = "group",
+               args = {
+                   desc = {
+                           order = 1,
+                           name = LEP["customEPVariable_desc"],
+                           type = "description",
+                   },
+               },
+           }
         },
     }
 
@@ -491,7 +505,7 @@ function RCEPGP:OptionsTable()
         }
     end
 
-    -- Add descriptions for variables
+    -- Add descriptions for GP variables
     for i = 1, #RCCustomGP.GPVariables do
         local variableName = RCCustomGP.GPVariables[i].name
         options.args.gpTab.args.customGP.args["variable"..variableName] = {
@@ -508,6 +522,29 @@ function RCEPGP:OptionsTable()
             type = "description",
             width = "double",
         }
+    end
+
+    -- Add descriptions for EP variables
+    local EPVariablesDisplayed = {}
+    for i = 1, #RCCustomEP.EPVariables do
+        local variableName = RCCustomEP.EPVariables[i].display_name or RCCustomEP.EPVariables[i].name
+        if not EPVariablesDisplayed[variableName] then
+            EPVariablesDisplayed[variableName] = true
+            options.args.epVariablesTab.args["variable"..variableName] = {
+                name = "|cFFFFFF00"..variableName.."|r",
+                order = 100 + i * 2,
+                fontSize = "medium",
+                type = "description",
+                width = "normal",
+            }
+            options.args.epVariablesTab.args["variable"..variableName.."help"] = {
+                name = RCCustomEP.EPVariables[i].help,
+                order = 101 + i * 2,
+                fontSize = "small",
+                type = "description",
+                width = "double",
+            }
+        end
     end
 
     self.epgpOptions = options

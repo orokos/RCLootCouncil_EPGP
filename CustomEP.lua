@@ -15,60 +15,60 @@ RCCustomEP.inputEPAmount = 0
 RCCustomEP.MaxFormulas = 100
 
 RCCustomEP.EPVariables = {
-    {name = "isOnline", help = "Online", value = function(name) return RCCustomEP:GetUnitInfo(name, "online") and 1 or 0 end, },
-    {name = "guildName", help = "Is In Guild", value = function(name) return RCCustomEP:GetUnitInfo(name, "guildName") end, },
-    {name = "zone", help = "Name of Zone", value = function(name) return RCCustomEP:GetUnitInfo(name, "zone") or "UNKNOWN" end, },
-    {name = "zoneId", help = "Zone Id", value = function(name) return RCCustomEP:GetMapIDByName(RCCustomEP:GetUnitInfo(name, "zone") or "UNKNOWN") end, },
-    {name = "isInRaid", help = "", value = function(name) return (name and UnitInRaid(Ambiguate(name, "short"))) and 1 or 0 end, },
-    {name = "isStandby", help = "", value = function(name) return (name and EPGP:IsMemberInExtrasList(name)) and 1 or 0 end, },
-    {name = "isMain", help = "", value = function(name) return RCCustomEP.IsMain(name) and 1 or 0 end, },
-    {name = "isMaxLevel", help = "", value = function(name) return RCCustomEP:GetUnitInfo(name, "level") == GetMaxPlayerLevel() and 1 or 0 end, },
-    {name = "rank", help = "Rank", value = function(name) return RCCustomEP:GetUnitInfo(name, "guildRankIndex") or 10 end, },
-    {name = "isTank", help = "Is Tank", value = function(name) return RCCustomEP:GetUnitInfo(name, "role") == "TANK" and 1 or 0 end},
-    {name = "isHealer", help = "Is Healer", value = function(name) return RCCustomEP:GetUnitInfo(name, "role") == "HEALER" and 1 or 0 end},
-    {name = "isDPS", help = "Is DPS", value = function(name) return RCCustomEP:GetUnitInfo(name, "role") == "DAMAGER" and 1 or 0 end},
-    {name = "isMeleeDPS", help = "Is Melee DPS", value = function(name) return RCCustomEP:GetSpecRole(name) == "melee" and 1 or 0 end},
-    {name = "isRangedDPS", help = "Is Ranged DPS", value = function(name) return RCCustomEP:GetSpecRole(name) == "ranged" and 1 or 0 end},
-    {name = "level", help = "", value = function(name) return RCCustomEP:GetUnitInfo(name, "level") or 1 end,},
-    {name = "class", help = "", value = function(name) return RCCustomEP:GetUnitInfo(name, "class") or "UNKNOWN" end,},
-    {name = "ep", help = "ep", value = function(name) return select(1, EPGP:GetEPGP(name)) or 0 end, },
-    {name = "gp", help = "ep", value = function(name) return select(2, EPGP:GetEPGP(name)) or 0 end, },
-    {name = "pr", help = "pr", value = function(name) local ep, gp = EPGP:GetEPGP(name); if ep and gp then return ep/gp else return 0 end end, },
-    {name = "isInputName", help = "", value = function(name) return (name and name == RCCustomEP.inputName) and 1 or 0 end, },
+    {name = "isOnline", help = LEP["variable_isOnline_help"], value = function(name) return RCCustomEP:GetUnitInfo(name, "online") and 1 or 0 end, },
+    {name = "guildName", help = LEP["variable_guildName_help"], value = function(name) return RCCustomEP:GetUnitInfo(name, "guildName") or "UNKNOWN" end, },
+    {name = "zone", help = LEP["variable_zone_help"], value = function(name) return RCCustomEP:GetUnitInfo(name, "zone") or "UNKNOWN" end, },
+    {name = "zoneId", help = LEP["variable_zoneId_help"], value = function(name) return RCCustomEP:GetMapIDByName(RCCustomEP:GetUnitInfo(name, "zone") or "UNKNOWN") end, },
+    {name = "isInRaid", help = LEP["variable_isInRaid_help"], value = function(name) return (name and UnitInRaid(Ambiguate(name, "short"))) and 1 or 0 end, },
+    {name = "isStandby", help = LEP["variable_isStandby_help"], value = function(name) return (name and EPGP:IsMemberInExtrasList(name)) and 1 or 0 end, },
+    {name = "isMain", help = LEP["variable_isMain_help"], value = function(name) return RCCustomEP.IsMain(name) and 1 or 0 end, },
+    {name = "isMaxLevel", help = LEP["variable_isMaxLevel_help"], value = function(name) return RCCustomEP:GetUnitInfo(name, "level") == GetMaxPlayerLevel() and 1 or 0 end, },
+    {name = "rank", help = LEP["variable_rank_help"], value = function(name) return RCCustomEP:GetUnitInfo(name, "guildRankIndex") or 10 end, },
+    {name = "isTank", help = LEP["variable_isTank_help"], value = function(name) return RCCustomEP:GetUnitInfo(name, "role") == "TANK" and 1 or 0 end},
+    {name = "isHealer", help = LEP["variable_isHealer_help"], value = function(name) return RCCustomEP:GetUnitInfo(name, "role") == "HEALER" and 1 or 0 end},
+    {name = "isDPS", help = LEP["variable_isDPS_help"], value = function(name) return RCCustomEP:GetUnitInfo(name, "role") == "DAMAGER" and 1 or 0 end},
+    {name = "isMeleeDPS", help = LEP["variable_isMeleeDPS_help"], value = function(name) return RCCustomEP:GetSpecRole(name) == "melee" and 1 or 0 end},
+    {name = "isRangedDPS", help = LEP["variable_isRangedDPS_help"], value = function(name) return RCCustomEP:GetSpecRole(name) == "ranged" and 1 or 0 end},
+    {name = "level", help = LEP["variable_level_help"], value = function(name) return RCCustomEP:GetUnitInfo(name, "level") or 1 end,},
+    {name = "class", help = LEP["variable_class_help"], value = function(name) return RCCustomEP:GetUnitInfo(name, "class") or "UNKNOWN" end,},
+    {name = "ep", help = LEP["variable_ep_help"], value = function(name) return select(1, EPGP:GetEPGP(name)) or 0 end, },
+    {name = "gp", help = LEP["variable_gp_help"], value = function(name) return select(2, EPGP:GetEPGP(name)) or 0 end, },
+    {name = "pr", help = LEP["variable_pr_help"], value = function(name) local ep, gp = EPGP:GetEPGP(name); if ep and gp then return ep/gp else return 0 end end, },
+    {name = "isInputName", help = LEP["variable_isInputName_help"], value = function(name) return (name and name == RCCustomEP.inputName) and 1 or 0 end, },
 }
 
 -- isRank0, ..., isRank9
 for i=0,9 do
-    table.insert(RCCustomEP.EPVariables, {name = "isRank"..i, help = "", value = function(name) return RCCustomEP:GetUnitInfo(name, "guildRankIndex") == i and 1 or 0 end, })
+    table.insert(RCCustomEP.EPVariables, {name = "isRank"..i, display_name = "isRank0, isRank1,..., isRank9", help = LEP["variable_isRankX_help"], value = function(name) return RCCustomEP:GetUnitInfo(name, "guildRankIndex") == i and 1 or 0 end, })
 end
 
 -- mainXXX variables
 for i, entry in ipairs(RCCustomEP.EPVariables) do
-    if (not entry.once) and (not entry.name:find("main")) then
-        table.insert(RCCustomEP.EPVariables, {name = "main"..entry.name, help = "", value = function(name) local _, _, main = EPGP:GetEPGP(name); main = main or name; return entry.value(main) end, })
+    if (not entry.name:find("main")) then
+        table.insert(RCCustomEP.EPVariables, {name = "main"..entry.name, display_name = "main", help = LEP["variable_main_prefix_help"], value = function(name) local _, _, main = EPGP:GetEPGP(name); main = main or name; return entry.value(main) end, })
     end
 end
 
 -- sameXXX variables
 for i, entry in ipairs(RCCustomEP.EPVariables) do
-    if (not entry.once) and (not entry.name:find("same")) then
-        table.insert(RCCustomEP.EPVariables, {name = "same"..entry.name, help = "", value = function(name) return entry.value(RCCustomEP:GetPlayerFullName()) == entry.value(main) and 1 or 0 end, })
+    if (not entry.name:find("same")) then
+        table.insert(RCCustomEP.EPVariables, {name = "same"..entry.name, display_name = "same", help = LEP["variable_same_prefix_help"], value = function(name) return entry.value(RCCustomEP:GetPlayerFullName()) == entry.value(main) and 1 or 0 end, })
     end
 end
 
 for i, entry in ipairs(RCCustomEP.EPVariables) do
-    if (not entry.once) and (not entry.name:find("inputname")) then
-        table.insert(RCCustomEP.EPVariables, {once = true, name = "inputname"..entry.name, help = "", value = function() if not RCCustomEP.inputName then return 0 end; return entry.value(RCCustomEP.inputName) end, })
+    if (not entry.name:find("inputname")) then
+        table.insert(RCCustomEP.EPVariables, {name = "inputname"..entry.name, display_name = "inputname", help = LEP["variable_inputname_prefix_help"], value = function() if not RCCustomEP.inputName then return 0 end; return entry.value(RCCustomEP.inputName) end, })
     end
 end
 
-table.insert(RCCustomEP.EPVariables, {name = "minep", help = "", value = function() return EPGP.db.profile.min_ep end, })
-table.insert(RCCustomEP.EPVariables, {name = "decay", help = "", value = function() return EPGP.db.profile.decay_p end, }) -- Integer
-table.insert(RCCustomEP.EPVariables, {name = "baseGP", help = "", value = function() return EPGP.db.profile.base_gp end, })
-table.insert(RCCustomEP.EPVariables, {name = "inputEPAmount", help = "", value = function() return RCCustomEP.inputEPAmount end, })
+table.insert(RCCustomEP.EPVariables, {name = "minep", help = LEP["variable_minep_help"], value = function() return EPGP.db.profile.min_ep end, })
+table.insert(RCCustomEP.EPVariables, {name = "decay", help = LEP["variable_decay_help"], value = function() return EPGP.db.profile.decay_p end, }) -- Integer
+table.insert(RCCustomEP.EPVariables, {name = "baseGP", help = LEP["variable_baseGP_help"], value = function() return EPGP.db.profile.base_gp end, })
+table.insert(RCCustomEP.EPVariables, {name = "inputEPAmount", help = LEP["variable_inputEPAmount_help"], value = function() return RCCustomEP.inputEPAmount end, })
 
 -- Special count function
-table.insert(RCCustomEP.EPVariables, {name = "count", help = "", value = function(name, fenv) return function(formulaStr) return RCCustomEP.CountFunction(formulaStr, name, fenv) end end, })
+table.insert(RCCustomEP.EPVariables, {name = "count", help = LEP["variable_count_help"], value = function(name, fenv) return function(formulaStr) return RCCustomEP.CountFunction(formulaStr, name, fenv) end end, })
 
 RCCustomEP.allowedAPI = {
     "print", "strsplit", "strmatch", "math"
