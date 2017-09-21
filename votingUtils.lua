@@ -466,13 +466,23 @@ function RCEPGP.AddGPEditBox()
 end
 
 -- "response" needs to be the response id(Number), or the button name(not response name)
-function RCEPGP:GetResponseGP(response, isTier)
+function RCEPGP:GetResponseGP(response, isTier, isRelic)
     if response == "PASS" or response == "AUTOPASS" then
         return "0%"
     end
     local responseGP = "100%"
 
-    if isTier then
+    if isRelic and addon.db.profile.relicButtons then
+        for k, v in pairs(addon.db.profile.relicButtons) do
+            if v.text == response then
+                responseGP = v.gp or responseGP
+                break
+            elseif k == response then
+                responseGP = v.gp or responseGP
+                break
+            end
+        end
+    elseif isTier then
         for k, v in pairs(addon.db.profile.tierButtons) do
             if v.text == response then
                 responseGP = v.gp or responseGP
@@ -631,7 +641,7 @@ local function GetGPInfo(name)
     if lootTable and lootTable[session] and lootTable[session].candidates
     and name and lootTable[session].candidates[name] then
         local data = lootTable[session].candidates[name]
-        local responseGP = RCEPGP:GetResponseGP(data.response, data.isTier)
+        local responseGP = RCEPGP:GetResponseGP(data.response, data.isTier, data.isRelic)
         local editboxGP = RCVotingFrame.frame.editbox:GetNumber()
         local gp = RCEPGP:GetFinalGP(responseGP, editboxGP)
         local item = lootTable[session].link
