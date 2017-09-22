@@ -6,7 +6,8 @@ local EPGP = LibStub("AceAddon-3.0"):GetAddon("EPGP")
 local LibSpec = LibStub("LibGroupInSpecT-1.1")
 
 local isInGuild = {}
-local allInfos = {}
+local allInfos = {} -- not including calendar infos.
+local calendarInfos = {}
 
 
 RCCustomEP.inputName = ""
@@ -68,7 +69,11 @@ table.insert(RCCustomEP.EPVariables, {name = "baseGP", help = LEP["variable_base
 table.insert(RCCustomEP.EPVariables, {name = "inputEPAmount", help = LEP["variable_inputEPAmount_help"], value = function() return RCCustomEP.inputEPAmount end, })
 
 -- Special count function
-table.insert(RCCustomEP.EPVariables, {name = "count", help = LEP["variable_count_help"], value = function(name, fenv) return function(formulaStr) return RCCustomEP.CountFunction(formulaStr, name, fenv) end end, })
+table.insert(RCCustomEP.EPVariables, {name = "count", help = LEP["variable_count_help"], value = function(name, fenv) return function(formulaStr) return RCCustomEP.CountFunction(name, fenv, formulaStr) end end, })
+
+-- CalendarCheckFunction
+table.insert(RCCustomEP.EPVariables, {name = "calendarSignedUp", help = LEP["variable_calendarSignedUp_help"], value = function(name, fenv) return function(titleKeyword) return RCCustomEP.CalendarSignedUpFunction(name, fenv, titleKeyword) end end, })
+
 
 RCCustomEP.allowedAPI = {
     "print", "strsplit", "strmatch", "math"
@@ -135,8 +140,107 @@ function RCCustomEP:OnInitialize()
         end
     end)
     self:RegisterEvent("GUILD_ROSTER_UPDATE")
+    self:RegisterEvent("CALENDAR_UPDATE_EVENT_LIST", "UPDATE_CALENDAR")
+    self:RegisterEvent("CALENDAR_OPEN_EVENT", "OPEN_CALENDAR")
+    self:RegisterEvent("CALENDAR_UPDATE_INVITE_LIST", "UPDATE_CALENDAR")
     GuildRoster()
+    OpenCalendar()
+    C_Timer.After(10, function() RCCustomEP:UPDATE_CALENDAR() end)
     LibSpec:Rescan()
+end
+
+function RCCustomEP:UPDATE_CALENDAR(nextIndex)
+    if not nextIndex or type(nextIndex) ~= 'number' then nextIndex = 1 end
+    if _G.CalendarFrame and (not self:IsHooked(_G.CalendarFrame, "OnHide")) then
+        self:SecureHookScript(_G.CalendarFrame, "OnHide", function() RCCustomEP:UPDATE_CALENDAR(1) end)
+    end
+    if _G.CalendarFrame and _G.CalendarFrame:IsShown() then
+        return -- Don't update when Blizzard calendar is shown
+    end
+
+    local weekday, month, day, year = CalendarGetDate()
+    local existEvents = {}
+
+    for i=1, CalendarGetNumDayEvents(0, day) do
+        local title, hour, min, calendarType = CalendarGetDayEvent(0, day, i)
+        if title and (calendarType == "PLAYER" or calendarType == "GUILD_EVENT") then
+            existEvents[title] = true
+        end
+    end
+
+    for title, _ in pairs(calendarInfos) do
+        if (not existEvents[title]) and calendarInfos[title] then
+            wipe(calendarInfos[title])
+            calendarInfos[title] = nil
+        end
+    end
+
+    for i=nextIndex, CalendarGetNumDayEvents(0, day) do
+        local title, hour, min, calendarType = CalendarGetDayEvent(0, day, i)
+        if title and (calendarType == "PLAYER" or calendarType == "GUILD_EVENT") then
+            CalendarOpenEvent(0, day, i) -- handles the rest in OPEN_CALENDAR
+            return
+        end
+    end
+end
+
+function RCCustomEP:OPEN_CALENDAR()
+    if _G.CalendarFrame and _G.CalendarFrame:IsShown() then
+        return -- Don't update when Blizzard calendar is shown
+    end
+
+
+    local title, description, creator, eventType, repeatOption, maxSize, textureIndex, weekday, month, day, year, hour, minute,
+          lockoutWeekday, lockoutMonth, lockoutDay, lockoutYear, lockoutHour, lockoutMinute, locked, autoApprove, pendingInvite,
+          inviteStatus, inviteType, calendarType = CalendarGetEventInfo()
+
+    if title and (calendarType == "PLAYER" or calendarType == "GUILD_EVENT") then
+        if not calendarInfos[title] then
+            calendarInfos[title] = {}
+        end
+        calendarInfos[title].month = month
+        calendarInfos[title].day = day
+        calendarInfos[title].year = year
+        calendarInfos[title].hour = hour
+        calendarInfos[title].minute = minute
+
+        if not calendarInfos[title].signupList then
+            calendarInfos[title].signupList = {}
+        end
+
+        local existMembers = {}
+        for i = 1, CalendarEventGetNumInvites() do
+            local name, level, className, classFileName, inviteStatus, modStatus, inviteIsMine, inviteType = CalendarEventGetInvite(i)
+            if name then
+                name = RCCustomEP:GetFullName(name)
+                existMembers[name] = true
+                local info
+                if not calendarInfos[title].signupList[name] then
+                    calendarInfos[title].signupList[name] = {}
+                end
+                info = calendarInfos[title].signupList[name]
+                local weekday, month, day, year, hour, minute = CalendarEventGetInviteResponseTime(i)
+                info.month = month
+                info.day = day
+                info.year = year
+                info.hour = hour
+                info.minute = minute
+                info.inviteStatus = inviteStatus --_G.CALENDAR_INVITESTATUS_OUT _G.CALENDAR_INVITESTATUS_TENTATIVE
+                info.modStatus = modStatus
+                info.inviteIsMine = inviteIsMine
+            end
+        end
+
+        for name, _ in pairs(calendarInfos[title].signupList) do -- Remove people no longer signed up.
+            if not existMembers[name] and calendarInfos[title].signupList[name] then
+                wipe(calendarInfos[title].signupList[name])
+                calendarInfos[title].signupList[name] = nil
+            end
+        end
+
+        local monthOffset, day, index = CalendarGetEventIndex()
+        C_Timer.After(2, function() RCCustomEP:UPDATE_CALENDAR(index+1) end) -- process the next event
+    end
 end
 
 local function deleteInvalidInfos()
@@ -148,6 +252,7 @@ local function deleteInvalidInfos()
 end
 
 local lastUpdateTime
+local isInGuildTemp = {}
 function RCCustomEP:GUILD_ROSTER_UPDATE()
     if lastUpdateTime and GetTime() - lastUpdateTime < 2 then
         return
@@ -155,12 +260,13 @@ function RCCustomEP:GUILD_ROSTER_UPDATE()
     lastUpdateTime = GetTime()
 
     local guildName, _, _ = GetGuildInfo("player")
-    local isInGuildTemp = {}
+    wipe(isInGuildTemp)
     for i = 1, GetNumGuildMembers() do
         local fullName, rank, rankIndex, level, class, zone, note, officernote, online,
         status, classFileName, achievementPoints, achievementRank, isMobile, canSoR, reputation = GetGuildRosterInfo(i)
         if fullName then
             isInGuildTemp[fullName] = true
+            isInGuild[fullName] = true
             if not allInfos[fullName] then
                 allInfos[fullName] = {}
             end
@@ -186,7 +292,11 @@ function RCCustomEP:GUILD_ROSTER_UPDATE()
             end
         end
     end
-    isInGuild = isInGuildTemp
+    for fullName, _ in pairs(isInGuild) do
+        if not isInGuildTemp[fullName] then
+            isInGuild[fullName] = nil
+        end
+    end
     deleteInvalidInfos()
     GuildRoster()
 end
@@ -251,7 +361,7 @@ end
 
 local countFuncCount = {}
 RCCustomEP.counting = true
-function RCCustomEP.CountFunction(formulaStr, name, fenv)
+function RCCustomEP.CountFunction(name, fenv, formulaStr)
     if not formulaStr then return 0 end
     if not countFuncCount[formulaStr] then
         countFuncCount[formulaStr] = {}
@@ -278,6 +388,20 @@ function RCCustomEP.CountFunction(formulaStr, name, fenv)
     end
 end
 
+
+function RCCustomEP.CalendarSignedUpFunction(name, fenv, titleKeyword)
+    for title, entry in pairs(calendarInfos) do
+        if (not titleKeyword) or string.find(title, titleKeyword) then
+            if entry.signupList and entry.signupList[name] then
+                if entry.signupList[name].inviteStatus ~=-_G.CALENDAR_INVITESTATUS_OUT
+                   and entry.signupList[name].inviteStatus ~= _G.CALENDAR_INVITESTATUS_TENTATIVE then
+                       return 1
+                end
+            end
+        end
+    end
+    return 0
+end
 ---------------------------------------------------------
 
 -- tank, melee, ranged, healer
