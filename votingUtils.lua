@@ -15,6 +15,15 @@ local ExtraUtilities = addon:GetModule("RCExtraUtilities", true) -- nil if Extra
 local RCVotingFrame = addon:GetModule("RCVotingFrame")
 local originalCols = {unpack(RCVotingFrame.scrollCols)}
 
+local funcRCLootCouncil_Spawn_RCLOOTCOUNCIL_CONFIRM_AWARD
+
+for _, entry in pairs(RCVotingFrame.rightClickEntries[1]) do
+    if entry.text == L["Award"] then
+        funcRCLootCouncil_Spawn_RCLOOTCOUNCIL_CONFIRM_AWARD = entry.func
+        break
+    end
+end
+
 local session = 1
 
 local PREFIX = "RCLC_EPGP"
@@ -661,18 +670,21 @@ RCEPGP.rightClickEntries = {
             func = function(name)
                 local data, name, item, responseGP, gp, bid = GetGPInfo(name)
                 if not data then return end
-                LibDialog:Spawn("RCEPGP_CONFIRM_AWARD", {
-                    session,
-                    name,
-                    data.response,
-                    nil,
-                    data.votes,
-                    data.gear1,
-                    data.gear2,
-                    data.isTier,
-                    bid,
-                    responseGP
-                })
+
+                -- Get the original input of dialog
+                local dialogInput = {}
+                RCEPGP:RawHook(LibDialog, "Spawn", function(self, ref, data)
+                    for key, value in pairs(data) do
+                        dialogInput[key] = value
+                    end
+                end)
+                funcRCLootCouncil_Spawn_RCLOOTCOUNCIL_CONFIRM_AWARD(name, data)
+                RCEPGP:Unhook(LibDialog, "Spawn")
+
+                dialogInput.gp = bid
+                dialogInput.responseGP = responseGP
+
+                LibDialog:Spawn("RCEPGP_CONFIRM_AWARD", dialogInput)
             end,
             dynamicText = function(menu)
                 local data, name, item, responseGP, gp, bid = GetGPInfo(menu.name)
@@ -690,18 +702,21 @@ RCEPGP.rightClickEntries = {
         func = function(name)
             local data, name, item, responseGP, gp, bid = GetGPInfo(name)
             if not data then return end
-            LibDialog:Spawn("RCEPGP_CONFIRM_AWARD", {
-                session,
-                name,
-                data.response,
-                nil,
-                data.votes,
-                data.gear1,
-                data.gear2,
-                data.isTier,
-                gp,
-                responseGP
-            })
+
+            -- Get the original input of dialog
+            local dialogInput = {}
+            RCEPGP:RawHook(LibDialog, "Spawn", function(self, ref, data)
+                for key, value in pairs(data) do
+                    dialogInput[key] = value
+                end
+            end)
+            funcRCLootCouncil_Spawn_RCLOOTCOUNCIL_CONFIRM_AWARD(name, data)
+            RCEPGP:Unhook(LibDialog, "Spawn")
+
+            dialogInput.gp = gp
+            dialogInput.responseGP = responseGP
+
+            LibDialog:Spawn("RCEPGP_CONFIRM_AWARD", dialogInput)
         end,
         dynamicText = function(menu)
             local data, name, item, responseGP, gp, bid = GetGPInfo(menu.name)
@@ -725,45 +740,62 @@ function RCEPGP:GetCurrentAwardingGP()
     return currentAwardingGP
 end
 
+
+-- Dialog input is the same as RCLOOTCOUNCIL_CONFIRM_AWARD, plus "gp" and "resonseGP".
 LibDialog:Register("RCEPGP_CONFIRM_AWARD", {
     text = "something_went_wrong",
     icon = "",
     on_show = function(self, data)
-        local session, player, response, reason, votes, item1, item2, isTierRoll, gp, responseGP = unpack(data, 1, 10)
-        self:SetFrameStrata("FULLSCREEN")
-        local session, player = unpack(data)
-        self.text:SetText(format(L["Are you sure you want to give #item to #player?"].." ("..gp.." GP)", RCLootCouncilML.lootTable[session].link, addon.Ambiguate(player)))
-        if string.match(responseGP, "^%d+%%") then
-            self.text:SetText(format(L["Are you sure you want to give #item to #player?"].." ("..gp.." GP, "..responseGP.."%"..")", RCLootCouncilML.lootTable[session].link, addon.Ambiguate(player)))
+        if LibDialog.delegates["RCLOOTCOUNCIL_CONFIRM_AWARD"].on_show then
+            LibDialog.delegates["RCLOOTCOUNCIL_CONFIRM_AWARD"].on_show(self, data)
         end
-        self.icon:SetTexture(RCLootCouncilML.lootTable[session].texture)
+
+        local gp, responseGP = data.gp, data.responseGP
+        local text = self.text:GetText()
+        if gp then
+            if string.match(responseGP, "^%d+%%") then
+                text = text.." ("..gp.." GP, "..responseGP..")"
+            else
+                text = text.." ("..gp.." GP)"
+            end
+        end
+        self.text:SetText(text)
     end,
     buttons = {
         { text = L["Yes"],
             on_click = function(self, data)
-                -- IDEA Perhaps come up with a better way of handling this
-                local session, player, response, reason, votes, item1, item2, isTierRoll, gp, responseGP = unpack(data, 1, 9)
-                currentAwardingGP = gp -- This varible to be used in announcement
-                local item = RCLootCouncilML.lootTable[session].link -- Store it now as we wipe lootTable after Award()
-                local isToken = RCLootCouncilML.lootTable[session].token
-                local awarded = RCLootCouncilML:Award(session, player, response, reason, isTierRoll)
-                if awarded then -- log it
-                    RCLootCouncilML:TrackAndLogLoot(player, item, response, addon.target, votes, item1, item2, reason, isToken, isTierRoll)
-                    if gp and gp ~= 0 then
-                        EPGP:IncGPBy(RCEPGP:GetEPGPName(player), item, gp)
-                    end
-                end
-                -- We need to delay the test mode disabling so comms have a chance to be send first!
-                if addon.testMode and RCLootCouncilML:HasAllItemsBeenAwarded() then RCLootCouncilML:EndSession() end
+                currentAwardingGP = data and data.gp or 0
+                LibDialog.delegates["RCLOOTCOUNCIL_CONFIRM_AWARD"].buttons[1].on_click(self, data) -- GP award is happening in this line by a posthook to RCLootCouncil:SendCommand
                 currentAwardingGP = 0
             end,
         },
         { text = L["No"],
+            on_click = function(self, data)
+                if LibDialog.delegates["RCLOOTCOUNCIL_CONFIRM_AWARD"].buttons[2].on_click then
+                    LibDialog.delegates["RCLOOTCOUNCIL_CONFIRM_AWARD"].buttons[2].on_click(self, data)
+                end
+            end,
         },
     },
     hide_on_escape = true,
     show_while_dead = true,
 })
+
+-- Add GP when the item is awarded.
+RCEPGP:SecureHook(addon, "SendCommand", function(self, target, command, ...)
+    if command == "awarded" then
+        local session = select(1, ...)
+        local winner = select(2, ...)
+        if winner then
+            winner = RCEPGP:GetEPGPName(winner)
+            local gp = RCEPGP:GetCurrentAwardingGP()
+            local item = RCVotingFrame:GetLootTable() and RCVotingFrame:GetLootTable()[session] and RCVotingFrame:GetLootTable()[session].link
+            if item and gp and gp ~= 0 then
+                EPGP:IncGPBy(winner, item, gp)
+            end
+        end
+    end
+end)
 
 function RCEPGP:AddChatCommand()
     addon:CustomChatCmd(self, "OpenOptions", LEP["chat_commands"], "EPGP", "epgp")
