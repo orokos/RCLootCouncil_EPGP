@@ -10,6 +10,7 @@ local GP = LibStub("LibGearPoints-1.2")
 local LibDialog = LibStub("LibDialog-1.0")
 local RCLootCouncilML = addon:GetModule("RCLootCouncilML")
 RCEPGP.version = version
+RCEPGP.debug = false
 
 local ExtraUtilities = addon:GetModule("RCExtraUtilities", true) -- nil if ExtraUtilites not enabled.
 local RCVotingFrame = addon:GetModule("RCVotingFrame")
@@ -922,4 +923,16 @@ function RCEPGP:Add0GPSuffixToRCAwardButtons()
             entry.text = L["Award for ..."].." (0 GP)"
         end
     end
+end
+
+-- Unlikely RClootCouncil:Debug, we don't record it in log here.
+-- Use RCLootCouncil:DebugLog to record log.
+function RCEPGP:Debug(msg, ...)
+	if RCEPGP.debug then
+		if select("#", ...) > 0 then
+			print("|cffcb6700rcepgpdebug:|r "..tostring(msg).."|cffff6767", ...)
+		else
+			print("|cffcb6700rcepgpdebug:|r "..tostring(msg).."|r")
+		end
+	end
 end
