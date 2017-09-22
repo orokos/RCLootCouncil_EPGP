@@ -123,6 +123,7 @@ function RCEPGP.DisablezhCNProfanityFilter()
     if GetLocale() == "zhCN" then
         SetCVar("profanityFilter", "0")
     end
+    RCEPGP:DebugPrint("Diable profanity filter of zhCN client.")
 end
 
 -- We only want to disable GP popup of EPGP(dkp reloaded) when RCLootCouncil Voting Frame is opening.
@@ -141,6 +142,7 @@ function RCEPGP:DisableGPPopup()
                 loot.db.profile.enabled = false
                 loot:Disable()
                 isDisablingEPGPPopup = true
+                RCEPGP:DebugPrint("GP Popup of EPGP(dkp reloaded) disabled")
             end)
 
             self:SecureHook(RCVotingFrame, "Hide", function()
@@ -149,8 +151,10 @@ function RCEPGP:DisableGPPopup()
                     loot.db.profile.enabled = isEPGPPopupEnabled
                     if isEPGPPopupEnabled then
                         loot:Enable()
+                        RCEPGP:DebugPrint("GP Popup of EPGP(dkp reloaded) enabled")
                     else
                         loot:Disable()
+                        RCEPGP:DebugPrint("GP Popup of EPGP(dkp reloaded) disabled")
                     end
                     isDisablingEPGPPopup = false
                 end)
@@ -513,6 +517,7 @@ function RCEPGP:GetResponseGP(response, isTier, isRelic)
             end
         end
     end
+    RCEPGP:DebugPrint("GetResponseGP returns ", responseGP, "arguments: ", response, isTier, isRelic)
     return responseGP
 end
 
@@ -588,6 +593,7 @@ function RCEPGP:AddRightClickMenu(menu, RCEntries, myEntries)
                 end
             end)
             lastHookedLib_UIDropDownMenu_AddButton = Lib_UIDropDownMenu_AddButton
+            RCEPGP:DebugPrint("Rehooked Lib_UIDropDownMenu_AddButton.")
         end
     end)
 
@@ -793,6 +799,7 @@ RCEPGP:SecureHook(addon, "SendCommand", function(self, target, command, ...)
             local item = RCVotingFrame:GetLootTable() and RCVotingFrame:GetLootTable()[session] and RCVotingFrame:GetLootTable()[session].link
             if item and gp and gp ~= 0 then
                 EPGP:IncGPBy(winner, item, gp)
+                RCEPGP:Debug("Awarded GP: ", winner, item, gp)
             end
         end
     end
@@ -836,8 +843,8 @@ function RCEPGP:AddAnnouncement()
 
         L["announce_awards_desc2"] = L["announce_awards_desc2"].." "..LEP["announce_awards_desc2"]
         addon.options.args.mlSettings.args.announcementsTab.args.awardAnnouncement.args.outputDesc.name = L["announce_awards_desc2"]
-
     end
+    RCEPGP:Debug("Added EPGP award text keyword.")
 end
 
 function RCEPGP:UpdateAnnounceKeyword_v2_0_0()
@@ -853,6 +860,7 @@ function RCEPGP:UpdateAnnounceKeyword_v2_0_0()
             addon:Getdb().awardText[i].text = text
         end
     end
+    RCEPGP:Debug("Updated award text keyword to v2.0.0.")
 end
 
 function RCEPGP:SendVersion(channel)
@@ -860,7 +868,8 @@ function RCEPGP:SendVersion(channel)
     if not IsInGroup() and (channel == "RAID" or channel == "PARTY") then return end
     local serializedMsg = self:Serialize("version", RCEPGP.version)
     local _, a, b = self:Deserialize(serializedMsg)
-    self:SendCommMessage(PREFIX, serializedMsg, "GUILD", "")
+    self:SendCommMessage(PREFIX, serializedMsg, channel)
+    RCEPGP:Debug("Sent version ", serializedMsg, channel)
 end
 
 local newestVersionDetected = RCEPGP.version
@@ -873,6 +882,7 @@ function RCEPGP:OnCommReceived(prefix, serializedMsg, distri, sender)
                 self:Print(string.format("New Version %s detected. Please update the addon.", otherVersion))
                 newestVersionDetected = otherVersion
             end
+            RCEPGP:DebugPrint("Other version received by comm: ", otherVersion)
         end
     end
 end
@@ -899,6 +909,7 @@ function RCEPGP:EPGPDkpReloadedSettingToRC()
             end
         end
     end
+    RCEPGP:Debug("Save EPGP(dkp reloaded) settings to RCLootCouncil Saved Variables.")
 end
 
 function RCEPGP:RCToEPGPDkpReloadedSetting()
@@ -912,6 +923,7 @@ function RCEPGP:RCToEPGPDkpReloadedSetting()
         end
     end
     RCEPGP:EPGPDkpReloadedSettingToRC()
+    RCEPGP:Debug("Restore EPGP(dkp reloaded) settings from RCLootCouncil Saved Variables.")
 end
 
 function RCEPGP:Add0GPSuffixToRCAwardButtons()
@@ -923,11 +935,18 @@ function RCEPGP:Add0GPSuffixToRCAwardButtons()
             entry.text = L["Award for ..."].." (0 GP)"
         end
     end
+    RCEPGP:DebugPrint("Added 0GP suffix to RC Award Buttons.")
 end
 
--- Unlikely RClootCouncil:Debug, we don't record it in log here.
--- Use RCLootCouncil:DebugLog to record log.
+-- debug print and log
 function RCEPGP:Debug(msg, ...)
+    if RCEPGP.debug then
+        RCEPGP:DebugPrint(msg, ...)
+    end
+    addon:DebugLog("EPGP: ", msg, ...)
+end
+
+function RCEPGP:DebugPrint(msg, ...)
 	if RCEPGP.debug then
 		if select("#", ...) > 0 then
 			print("|cffcb6700rcepgpdebug:|r "..tostring(msg).."|cffff6767", ...)
