@@ -5,6 +5,10 @@ local LEP = LibStub("AceLocale-3.0"):GetLocale("RCEPGP")
 local EPGP = LibStub("AceAddon-3.0"):GetAddon("EPGP")
 local LibSpec = LibStub("LibGroupInSpecT-1.1")
 
+
+local hasPlayerLogin = false
+local timeDiff = 0 -- Time difference between realm time and UTC in sec
+
 local isInGuild = {}
 local allInfos = {} -- not including calendar infos.
 local calendarInfos = {}
@@ -37,6 +41,7 @@ RCCustomEP.EPVariables = {
     {name = "pr", help = LEP["variable_pr_help"], value = function(name) local ep, gp = EPGP:GetEPGP(name); if ep and gp then return ep/gp else return 0 end end, },
     {name = "isInputName", help = LEP["variable_isInputName_help"], value = function(name) return (name and name == RCCustomEP.inputName) and 1 or 0 end, },
 }
+-- TODO: isNormalRaid, isHeroicRaid, isMythicRaid
 
 -- isRank0, ..., isRank9
 for i=0,9 do
@@ -119,13 +124,13 @@ function RCCustomEP:OnInitialize()
         local command, arg1, arg2, arg3, arg4, arg5, arg6 = self:GetArgs(msg, 7)
 
         if command == "massep" then
-            -- /rc massep  [reason] [amount] [formulaIndexOrName] [inputName] [debug]
+            -- /rc massep  [reason] [amount] [formulaIndexOrName] [inputName] [AfterSecond/HH:MM:SS/HH:MM, realm time, 24hour format]
             if arg4 == "%t" then
                 arg4 = RCCustomEP:GetFullName("target")
             end
             EPGP:IncMassEPBy(arg1, tonumber(arg2), arg3, arg4, arg5)
         elseif command == "recurep" then
-            -- /rc massep [intervalMin] [reason] [amount] [formulaIndexOrName] [inputName] [debug]
+            -- /rc massep [intervalMin] [reason] [amount] [formulaIndexOrName] [inputName] [AfterSecond/HH:MM:SS/HH:MM, realm time, 24hour format]
             if arg5 == "%t" then
                 arg5 = RCCustomEP:GetFullName("target")
             end
@@ -143,6 +148,7 @@ function RCCustomEP:OnInitialize()
     self:RegisterEvent("CALENDAR_UPDATE_EVENT_LIST", "UPDATE_CALENDAR")
     self:RegisterEvent("CALENDAR_OPEN_EVENT", "OPEN_CALENDAR")
     self:RegisterEvent("CALENDAR_UPDATE_INVITE_LIST", "UPDATE_CALENDAR")
+    self:RegisterEvent("PLAYER_LOGIN")
     GuildRoster()
     OpenCalendar()
     C_Timer.After(10, function() RCCustomEP:UPDATE_CALENDAR() end)
@@ -182,6 +188,37 @@ function RCCustomEP:UPDATE_CALENDAR(nextIndex)
             return
         end
     end
+end
+
+function RCCustomEP:GetRealmTimeDiff() -- Time difference between realm time and UTC in sec
+    local curDate = date("!*t")
+    local curTime = time(curDate)
+    local hour, min = GetGameTime()
+    local weekday, month, day, year = CalendarGetDate()
+    local newDate = {}
+    newDate["year"] = year
+    newDate["month"] = month
+    newDate["day"] = day
+    newDate["hour"] = hour
+    newDate["min"] = min
+    newDate["sec"] = curDate["sec"]
+    newDate["isdst"] = curDate["isdst"]
+    local result = (math.floor(((time(newDate) - curTime))/900+0.5))*900 -- 15min precision.
+    return result
+end
+
+function RCCustomEP:GetEndTime(time) -- "time" is a string which is sec/HH:MM/HH:MM:SS, return a number representing the end time (either now+time if time is number or the "time")
+    local now = time(date("!*t")) -- current UTC time
+    if tonumber(time) then
+        return now + tonumber(time) + timeDiff
+    elseif time:
+    end
+end
+
+function RCCustomEP:PLAYER_LOGIN()
+    hasPlayerLogin = true
+    timeDiff = RCCustomEP:GetRealmTimeDiff()
+    print("RealmTimeDiff "..timeDiff)
 end
 
 function RCCustomEP:OPEN_CALENDAR()
