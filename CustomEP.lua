@@ -40,8 +40,10 @@ RCCustomEP.EPVariables = {
     {name = "gp", help = LEP["variable_gp_help"], value = function(name) return select(2, EPGP:GetEPGP(name)) or 0 end, },
     {name = "pr", help = LEP["variable_pr_help"], value = function(name) local ep, gp = EPGP:GetEPGP(name); if ep and gp then return ep/gp else return 0 end end, },
     {name = "isInputName", help = LEP["variable_isInputName_help"], value = function(name) return (name and name == RCCustomEP.inputName) and 1 or 0 end, },
+    {name = "isNormalRaid", help = "", value = function(name) local diff = GetRaidDifficultyID(); return diff == 1 or diff == 3 or diff == 4 or diff == 14 end},
+    {name = "isHeroicRaid", help = "", value = function(name) local diff = GetRaidDifficultyID(); return diff == 2 or diff == 5 or diff == 6 or diff == 15 end},
+    {name = "isMythicRaid", help = "", value = function(name) local diff = GetRaidDifficultyID(); return diff == 16 or diff == 23 end},
 }
--- TODO: isNormalRaid, isHeroicRaid, isMythicRaid
 
 -- isRank0, ..., isRank9
 for i=0,9 do
@@ -211,7 +213,6 @@ function RCCustomEP:GetEndTime(time) -- "time" is a string which is sec/HH:MM/HH
     local now = time(date("!*t")) -- current UTC time
     if tonumber(time) then
         return now + tonumber(time) + timeDiff
-    elseif time:
     end
 end
 
