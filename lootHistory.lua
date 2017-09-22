@@ -142,6 +142,7 @@ LibDialog:Register("RCEPGP_AWARD_GP", {
       on_click = function(self, data, reason)
         local gp = tonumber(self.editboxes[1]:GetText())
         EPGP:IncGPBy(data.name, data.item, gp)
+        RCEPGP:Debug("Award GP In History table", data.name, data.item, gp)
       end,
     },
     {

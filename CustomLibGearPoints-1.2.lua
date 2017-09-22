@@ -822,6 +822,7 @@ function lib:GetValue(item)
             local variableName = entry.name
             local variableValue = entry.value(itemLink)
             fenv[variableName] = variableValue
+            RCEPGP:DebugPrint("CustomGPVariable", variableName, variableValue)
         end
         itemInfoCache[itemLink] = fenv
         for _, funcName in ipairs(RCCustomGP.allowedAPI) do
@@ -844,6 +845,7 @@ function lib:GetValue(item)
     end
 
     high = math.floor(0.5 + high)
+    RCEPGP:DebugPrint("ItemGP", itemLink, high)
     return high, nil, level, rarity, equipLoc
 end
 
