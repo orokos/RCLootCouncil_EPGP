@@ -310,6 +310,7 @@ function RCEPGP:OptionsTable()
                                 width = "full",
                                 get = Getter,
                                 set = function(info, value)
+                                    wipe(RCCustomGP.gpCache)
                                     if value == "" then
                                         value = tostring(defaults[info[#info]])
                                     end
@@ -528,7 +529,7 @@ function RCEPGP:OptionsTable()
             width = "half",
             validate = ValidateStatWeights,
             get = Getter,
-            set = Setter,
+            set = function(info, value) wipe(RCCustomGP.gpCache); Setter(info, value) end,
             disabled = CustomGPDisabled,
         }
     end

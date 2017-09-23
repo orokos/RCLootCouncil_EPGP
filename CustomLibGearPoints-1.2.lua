@@ -16,6 +16,10 @@ for funcName, func in pairs(oldLib) do
 end
 
 local itemInfoCache = {} -- Cache the info of items we have seen for better performance.
+local gpCache = {} -- Cache the GP of items for even better performance. The gpCache must be wiped whenever the GP formula or slotweights changes.
+
+RCCustomGP.itemInfoCache = itemInfoCache
+RCCustomGP.gpCache = gpCache
 
 
 RCCustomGP.GPVariables = {
@@ -798,6 +802,10 @@ function lib:GetValue(item)
     if not itemLink then return end
     UpdateRecentLoot(itemLink)
 
+    if gpCache[itemLink] then -- Return GP directly if it is cached.
+        return gpCache[itemLink]
+    end
+
     local itemID = RCCustomGP.GetItemID(itemLink)
     if level < 463 and not CUSTOM_ITEM_DATA[itemID] then
         return nil, nil, level, rarity, equipLoc
@@ -845,7 +853,8 @@ function lib:GetValue(item)
     end
 
     high = math.floor(0.5 + high)
-    RCEPGP:DebugPrint("ItemGP", itemLink, high)
+    RCEPGP:DebugPrint("ItemGPUpdate", itemLink, high)
+    gpCache[itemLink] = high
     return high, nil, level, rarity, equipLoc
 end
 
