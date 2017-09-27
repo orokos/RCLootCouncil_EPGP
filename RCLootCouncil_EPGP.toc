@@ -16,3 +16,4 @@ CustomLibGearPoints-1.2.lua
 CustomEP.lua
 lootHistory.lua
 options.lua
+CustomEPGUI.lua

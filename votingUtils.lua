@@ -616,6 +616,10 @@ function RCEPGP:AddRightClickMenu(menu, RCEntries, myEntries)
             end
             lastUpdateTime = GetTime()
 
+            -- TODO modify next line.
+            Lib_UIDropDownMenu_Refresh(menu, nil, 1)
+            print("Refresh")
+
             for level = 1, 4 do
                 local dynamicTextChanged = false
                 for i = 1, LIB_UIDROPDOWNMENU_MAXBUTTONS do
@@ -693,6 +697,10 @@ RCEPGP.rightClickEntries = {
 
                 LibDialog:Spawn("RCEPGP_CONFIRM_AWARD", dialogInput)
             end,
+            text = function()
+                print("refreshtext")
+                return "WTF"
+            end,
             dynamicText = function(menu)
                 local data, name, item, responseGP, gp, bid = GetGPInfo(menu.name)
                 if not bid then bid = "?" end
@@ -724,6 +732,10 @@ RCEPGP.rightClickEntries = {
             dialogInput.responseGP = responseGP
 
             LibDialog:Spawn("RCEPGP_CONFIRM_AWARD", dialogInput)
+        end,
+        text = function()
+            print("refreshtext")
+            return "WTF"
         end,
         dynamicText = function(menu)
             local data, name, item, responseGP, gp, bid = GetGPInfo(menu.name)

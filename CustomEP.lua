@@ -7,7 +7,7 @@ local LibSpec = LibStub("LibGroupInSpecT-1.1")
 
 
 local hasPlayerLogin = false
-local timeDiff = 0 -- Time difference between realm time and UTC in sec
+RCCustomEP.realmTimeDiff = 0 -- Time difference between realm time and UTC in sec
 
 local isInGuild = {}
 local allInfos = {} -- not including calendar infos.
@@ -86,6 +86,14 @@ RCCustomEP.allowedAPI = {
     "print", "strsplit", "strmatch", "math"
 }
 
+function RCCustomEP:GetMassEPQueue()
+    local db = RCEPGP:GetEPGPdb()
+    if not db.massEPQueue then
+        db.massEPQueue = {}
+    end
+    return db.massEPQueue
+end
+
 function RCCustomEP:GetEPFormulaFunc(indexOrName)
     local formulaStr
     if RCEPGP:GetEPGPdb().EPFormulas[indexOrName] then
@@ -105,7 +113,7 @@ function RCCustomEP:GetEPFormulaFunc(indexOrName)
     if not func then
         func, err = loadstring(formulaStr)
     end
-    return func, err
+    return func, err, formulaStr
 end
 
 function RCCustomEP:GetFullName(name)
@@ -120,25 +128,35 @@ function RCCustomEP:GetFullName(name)
 end
 
 function RCCustomEP:OnInitialize()
+    RCCustomEP:AddChatCommand()
+    self:RegisterEvent("GUILD_ROSTER_UPDATE")
+    self:RegisterEvent("CALENDAR_UPDATE_EVENT_LIST", "UPDATE_CALENDAR")
+    self:RegisterEvent("CALENDAR_OPEN_EVENT", "OPEN_CALENDAR")
+    self:RegisterEvent("CALENDAR_UPDATE_INVITE_LIST", "UPDATE_CALENDAR")
+    self:RegisterEvent("PLAYER_LOGIN")
+    GuildRoster()
+    C_Timer.After(10, function() RCCustomEP:UPDATE_CALENDAR() end)
+    LibSpec:Rescan()
+end
 
+function RCCustomEP:AddChatCommand()
     local oldChatCommand = RCLootCouncil.ChatCommand
+
+    -- TODO: helper text
     self:RawHook(addon, "ChatCommand", function(self, msg)
         local command, arg1, arg2, arg3, arg4, arg5, arg6 = self:GetArgs(msg, 7)
 
         if command == "massep" then
-            -- /rc massep  [reason] [amount] [formulaIndexOrName] [inputName] [AfterSecond/HH:MM:SS/HH:MM, realm time, 24hour format]
-            if arg4 == "%t" then
-                arg4 = RCCustomEP:GetFullName("target")
-            end
+            -- /rc massep  [reason] [amount] [formulaIndexOrName] [inputName] [ScheduleTime AfterSecond/HH:MM:SS/HH:MM, realm time, 24hour format]
+
             EPGP:IncMassEPBy(arg1, tonumber(arg2), arg3, arg4, arg5)
         elseif command == "recurep" then
-            -- /rc massep [intervalMin] [reason] [amount] [formulaIndexOrName] [inputName] [AfterSecond/HH:MM:SS/HH:MM, realm time, 24hour format]
-            if arg5 == "%t" then
-                arg5 = RCCustomEP:GetFullName("target")
-            end
+            -- /rc massep [intervalMin] [reason] [amount] [formulaIndexOrName] [inputName] [ScheduleTime AfterSecond/HH:MM:SS/HH:MM, realm time, 24hour format]
             if tonumber(arg1) then
-                EPGP.db.profile.recurring_ep_period_mins = tonumber(arg1)
-                EPGP:StartRecurringEP(arg2, tonumber(arg3), arg4, arg5, arg6)
+                EPGP:StartRecurringEP(arg2, tonumber(arg3), tonumber(arg1), arg4, arg5, arg6)
+            else
+                EPGP:Print("[intervalMin] must be a number.")
+                return
             end
         elseif command == "stoprecur" then
             EPGP:StopRecurringEP()
@@ -146,25 +164,26 @@ function RCCustomEP:OnInitialize()
             oldChatCommand(self, msg)
         end
     end)
-    self:RegisterEvent("GUILD_ROSTER_UPDATE")
-    self:RegisterEvent("CALENDAR_UPDATE_EVENT_LIST", "UPDATE_CALENDAR")
-    self:RegisterEvent("CALENDAR_OPEN_EVENT", "OPEN_CALENDAR")
-    self:RegisterEvent("CALENDAR_UPDATE_INVITE_LIST", "UPDATE_CALENDAR")
-    self:RegisterEvent("PLAYER_LOGIN")
-    GuildRoster()
-    OpenCalendar()
-    C_Timer.After(10, function() RCCustomEP:UPDATE_CALENDAR() end)
-    LibSpec:Rescan()
 end
 
+local timeLastCalendarUpdate = GetTime()
+local indexLastCalendarUpdate = 1
 function RCCustomEP:UPDATE_CALENDAR(nextIndex)
     if not nextIndex or type(nextIndex) ~= 'number' then nextIndex = 1 end
+    if GetTime() - timeLastCalendarUpdate < 10 and nextIndex <= indexLastCalendarUpdate then
+        C_Timer.After(10-GetTime()+timeLastCalendarUpdate+1, function() RCCustomEP:UPDATE_CALENDAR(nextIndex) end)
+        return
+    end
+    timeLastCalendarUpdate = GetTime()
+    indexLastCalendarUpdate = nextIndex
     if _G.CalendarFrame and (not self:IsHooked(_G.CalendarFrame, "OnHide")) then
         self:SecureHookScript(_G.CalendarFrame, "OnHide", function() RCCustomEP:UPDATE_CALENDAR(1) end)
     end
     if _G.CalendarFrame and _G.CalendarFrame:IsShown() then
         return -- Don't update when Blizzard calendar is shown
     end
+
+    RCEPGP:DebugPrint("RCCustomEP", "UPDATE_CALENDAR")
 
     local weekday, month, day, year = CalendarGetDate()
     local existEvents = {}
@@ -209,17 +228,52 @@ function RCCustomEP:GetRealmTimeDiff() -- Time difference between realm time and
     return result
 end
 
-function RCCustomEP:GetEndTime(time) -- "time" is a string which is sec/HH:MM/HH:MM:SS, return a number representing the end time (either now+time if time is number or the "time")
+function RCCustomEP:GetUTCEndTime(realmTime) -- "realmTime" is a string which is sec/HH:MM/HH:MM:SS,(realm time)
+                                    -- return a number representing the UTC end time (either now+time if "realmTime" is number or the time string )
     local now = time(date("!*t")) -- current UTC time
-    if tonumber(time) then
-        return now + tonumber(time) + timeDiff
+    local isUTCdst = date("!*t").isdst
+    if tonumber(realmTime) then -- realmTime is a number, representing a time diff.
+        return now + tonumber(realmTime)
+    elseif type(realmTime)=='string' then
+        local weekday, month, day, year = CalendarGetDate()
+        local hour, min = string.match(time, "(%d+):(%d+)")
+        local _, _, sec = string.match(time, "(%d+):(%d+):(%d+)")
+        if not sec then sec = 0 end
+        if hour and min and sec then
+            hour, min, sec = tonumber(hour), tonumber(min), tonumber(sec)
+            local endTime = time({ hour=hour, min=min, sec=sec, day=day, month=month, year=year, isdst=isUTCdst })
+            endTime = endTime - RCCustomEP.realmTimeDiff
+            if endTime < now then
+                endTime = endTime + 24*60*60
+            end
+            return endTime
+        end
     end
 end
 
 function RCCustomEP:PLAYER_LOGIN()
     hasPlayerLogin = true
-    timeDiff = RCCustomEP:GetRealmTimeDiff()
-    print("RealmTimeDiff "..timeDiff)
+    RCCustomEP.realmTimeDiff = RCCustomEP:GetRealmTimeDiff()
+    RCEPGP:DebugPrint("PLAYER_LOGIN")
+    RCEPGP:DebugPrint("RealmTimeDiff ", RCCustomEP.realmTimeDiff)
+    RCCustomEP:RemoveExpiredEntryInQueue()
+end
+
+function RCCustomEP:RemoveExpiredEntryInQueue()
+    local queue = RCCustomEP:GetMassEPQueue()
+    local deletedOneEntry
+    repeat
+        deletedOneEntry = false
+        for key, entry in pairs(queue) do
+            if entry.UTCEndTime and entry.UTCEndTime < time(date("!*t")) then
+                table.remove(queue, key)
+                 addon:SendMessage("RCCustomEPQueueRemoved", entry)
+                -- TODO: Debug info
+                deletedOneEntry = true
+                break
+            end
+        end
+    until deletedOneEntry == false
 end
 
 function RCCustomEP:OPEN_CALENDAR()
@@ -227,10 +281,15 @@ function RCCustomEP:OPEN_CALENDAR()
         return -- Don't update when Blizzard calendar is shown
     end
 
-
     local title, description, creator, eventType, repeatOption, maxSize, textureIndex, weekday, month, day, year, hour, minute,
           lockoutWeekday, lockoutMonth, lockoutDay, lockoutYear, lockoutHour, lockoutMinute, locked, autoApprove, pendingInvite,
           inviteStatus, inviteType, calendarType = CalendarGetEventInfo()
+
+    local weekday2, month2, day2, year2 = CalendarGetDate()
+    if weekday ~= weekday2 or month ~= month2 or day ~= day2 or year ~= year2 then -- Only process event on today.
+        return
+    end
+    RCEPGP:DebugPrint("RCCustomEP", "OPEN_CALENDAR", tostring(title))
 
     if title and (calendarType == "PLAYER" or calendarType == "GUILD_EVENT") then
         if not calendarInfos[title] then
@@ -297,6 +356,12 @@ function RCCustomEP:GUILD_ROSTER_UPDATE()
     end
     lastUpdateTime = GetTime()
 
+    if (not GetNumGuildMembers()) or (GetNumGuildMembers() == 0) then
+        RCEPGP:DebugPrint("RCCustomEP", "GUILD_ROSTER_UPDATE", "but no infomation is fetched.")
+        return
+    end
+    RCEPGP:DebugPrint("RCCustomEP", "GUILD_ROSTER_UPDATE")
+
     local guildName, _, _ = GetGuildInfo("player")
     wipe(isInGuildTemp)
     for i = 1, GetNumGuildMembers() do
@@ -333,6 +398,7 @@ function RCCustomEP:GUILD_ROSTER_UPDATE()
     for fullName, _ in pairs(isInGuild) do
         if not isInGuildTemp[fullName] then
             isInGuild[fullName] = nil
+            RCEPGP:DebugPrint("RCCustomEP", fullName.." is no longer in the guild. removed.")
         end
     end
     deleteInvalidInfos()
@@ -340,6 +406,7 @@ function RCCustomEP:GUILD_ROSTER_UPDATE()
 end
 
 function RCCustomEP:UpdateRaidInfo()
+    RCEPGP:DebugPrint("RCCustomEP", "UpdateRaidInfo")
     local n = GetNumGroupMembers() or 0
     for i = 1, n do
         local name, rank, subgroup, level, class, classFileName, zone, online, isDead, groupRole, isML = GetRaidRosterInfo(i)
@@ -488,18 +555,52 @@ end
 frame:SetScript("OnUpdate", RecurringTicker)
 frame:Hide()
 
-function EPGP:StartRecurringEP(reason, amount, formulaIndexOrName, inputName)
+function EPGP:StartRecurringEP(reason, amount, periodMin, formulaIndexOrName, inputName, scheduleTime)
   -- TODO: Only guild officer can execute this func
   if type(reason) ~= "string" or type(amount) ~= "number" or #reason == 0 then
     return false
   end
-  if formula then
+  if formulaIndexOrName then
       local formulaFunc = RCCustomEP:GetEPFormulaFunc(formulaIndexOrName)
       if not formulaFunc then
-          print("Formula does not exist or has syntax error. Abort.")
+          print("Custom RecurringEP: Formula does not exist or has syntax error. Abort.")
+          RCEPGP:Debug("Custom RecurringEP: Formula does not exist or has syntax error. Abort.")
           return
       end
   end
+
+  if tonumber(periodMin) then
+
+      if scheduleTime then
+          local UTCEndTime = RCCustomEP:GetUTCEndTime(scheduleTime)
+          if not UTCEndTime then
+              RCEPGP:Print("Ilformed [ScheduleTime]. Must be one of number/HH:MM/HH:MM:SS")
+              return
+          end
+
+          -- TODO
+          RCEPGP:Debug("Schedule Custom RecurringEP", reason, amount, periodMin, formulaIndexOrName, inputName, scheduleTime)
+          local queue = RCCustomEP:GetMassEPQueue()
+          local entry = {
+              type = "recurep",
+              UTCEndTime = UTCEndTime,
+              reason = reason,
+              amount = amount,
+              periodMin = periodMin,
+              formulaIndexOrName = formulaIndexOrName,
+              inputName = inputName,
+          }
+          table.insert(queue, entry)
+          addon:SendMessage("RCCustomEPQueueAdded", entry)
+          RCCustomEP.tickFrame:Show()
+          return
+      else
+          RCEPGP:Debug("Custom RecurringEP", reason, amount, periodMin, formulaIndexOrName, inputName, scheduleTime)
+          vars.recurring_ep_period_mins = tonumber(periodMin)
+      end
+  end
+
+
   local vars = EPGP.db.profile
   if vars.next_award then
     return false -- TODO: Annouce this
@@ -532,16 +633,59 @@ end
 -------------------------------------------------------------------------------
 -- TODO: Finish this.
 local oldIncMassEPBy = EPGP.IncMassEPBy
-function EPGP:IncMassEPBy(reason, amount, formulaIndexOrName, inputName, debug)
+function EPGP:IncMassEPBy(reason, amount, formulaIndexOrName, inputName, scheduleTime)
+
+  amount = tonumber(amount)
+  if not amount then
+    RCEPGP:Print("[amount] must be a number") -- TODO locale
+    return
+  end
+
+  if scheduleTime then -- Schedule to run this later.
+      local UTCEndTime = RCCustomEP:GetUTCEndTime(scheduleTime)
+      if not UTCEndTime then
+          RCEPGP:Print("Ilformed [ScheduleTime]. Must be one of number/HH:MM/HH:MM:SS")
+          return
+      end
+
+        RCEPGP:Debug("Schedule Custom MassEP", reason, amount, formulaIndexOrName, inputName, scheduleTime)
+      -- TODO
+      local queue = RCCustomEP:GetMassEPQueue()
+      local entry = {
+          type = "massep",
+          UTCEndTime = UTCEndTime,
+          reason = reason,
+          amount = amount,
+          formulaIndexOrName = formulaIndexOrName,
+          inputName = inputName,
+      }
+      table.insert(queue, entry)
+      addon:SendMessage("RCCustomEPQueueAdded", entry)
+      RCCustomEP.tickFrame:Show()
+      return
+  end
+
   if not formulaIndexOrName then
+      RCEPGP:Debug("Origin MassEP", reason, amount)
       return oldIncMassEPBy(EPGP, reason, amount)
   end
 
-  local formulaFunc = RCCustomEP:GetEPFormulaFunc(formulaIndexOrName)
+  RCEPGP:Debug("Custom MassEP", reason, amount, formulaIndexOrName, inputName, scheduleTime)
+
+  if inputName == "%t" then
+      inputName = RCCustomEP:GetFullName("target")
+  elseif arg4 == "%p" then
+      inputName = RCCustomEP:GetFullName("player")
+  end
+
+  local formulaFunc, err, formulaStr = RCCustomEP:GetEPFormulaFunc(formulaIndexOrName)
   if not formulaFunc then
       print("Formula does not exist or has syntax error. Abort.")
+      RCEPGP:Debug("Formula does not exist or has syntax error. Abort.")
       return
   end
+  RCEPGP:Debug("Formula String:", tostring(formulaStr))
+
   RCCustomEP:UpdateRaidInfo()
   RCCustomEP.inputName = inputName
   RCCustomEP.inputEPAmount = amount
@@ -620,3 +764,32 @@ function EPGP:IncMassEPBy(reason, amount, formulaIndexOrName, inputName, debug)
   end]]--
 
 end
+
+--------------------------------------------------------------------------------
+RCCustomEP.tickFrame = CreateFrame("Frame", "RCCustomEP_tickFrame")
+RCCustomEP.tickFrame.lastUpdateTime = GetTime()
+
+RCCustomEP.tickFrame:SetScript("OnUpdate", function(self)
+    if GetTime() - self.lastUpdateTime < 1 then
+        return
+    end
+    self.lastUpdateTime = GetTime()
+    local queue = RCCustomEP:GetMassEPQueue()
+    for _, entry in ipairs(queue) do
+        if entry.UTCEndTime and entry.UTCEndTime < time(date("!*t")) then
+            if entry.type == "massep" then
+                EPGP:IncMassEPBy(entry.reason, entry.amount, entry.formulaIndexOrName, entry.inputName)
+            elseif entry.type == "recurep" then
+                EPGP:StartRecurringEP(entry.reason, entry.amount, entry.periodMin, entry.formulaIndexOrName, entry.inputName)
+            end
+        elseif not entry.UTCEndTime then
+            RCEPGP:DebugPrint("ERROR. No UTCEndTime in entry.")
+        end
+    end
+    RCCustomEP:RemoveExpiredEntryInQueue()
+
+    if not next(queue) then
+        self:Hide()
+    end
+end)
+RCCustomEP.tickFrame:Hide()
