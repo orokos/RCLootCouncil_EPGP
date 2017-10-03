@@ -67,7 +67,7 @@ function RCEPGP:OnInitialize()
     end
     self:GetEPGPdb().version = luaVersion
     if addon:VersionCompare(tocVersion, "2.0.0") then
-        self:ShowNeedRestartDialog()
+        self:ShowNeedRestartNotification()
     end
 
     self:EPGPDkpReloadedSettingToRC()
@@ -772,14 +772,15 @@ function RCEPGP:SendVersion(channel)
     RCEPGP:Debug("Sent version ", serializedMsg, channel)
 end
 
-function RCEPGP:ShowNeedRestartDialog()
+function RCEPGP:ShowNeedRestartNotification()
     StaticPopupDialogs["RCEPGP_NEED_RESTART"] = {
-        text = "RCLootCouncil-EPGP v%s update requires full restart of the client. Some features of the addon don't work until client restarts.",
-        button1 = "I'll restart the client.",
+        text = LEP["need_restart_notification"],
+        button1 = OKAY,
         whileDead = true,
         hideOnEscape = true,
     }
-    StaticPopup_Show ("RCEPGP_NEED_RESTART", self:GetEPGPdb().version)
+    StaticPopup_Show ("RCEPGP_NEED_RESTART", luaVersion)
+    self:Print(string.format(LEP["need_restart_notification"], luaVersion))
 end
 
 function RCEPGP:EPGPDkpReloadedSettingToRC()
