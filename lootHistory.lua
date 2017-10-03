@@ -14,8 +14,16 @@ local lootDB = addon:GetHistoryDB()
 function RCEPGPHistory:OnInitialize()
     local rightClickMenu =
     RCEPGP:AddRightClickMenu(_G["RCLootCouncil_LootHistory_RightclickMenu"], LootHistory.rightClickEntries, RCEPGPHistory.rightClickEntries)
-    LootHistory.frame = LootHistory:GetFrame()
-    self:SecureHook(LootHistory:GetFrame().st, "Refresh", function() RCEPGP:RefreshMenu(1) end)
+    self:RegisterMessage("RCHistory_NameEdit", "OnMessageReceived")
+    self:RegisterMessage("RCHistory_ResponseEdit", "OnMessageReceived")
+end
+
+function RCEPGPHistory:OnMessageReceived(msg, ...)
+    if msg == "RCHistory_NameEdit" then
+        RCEPGP:RefreshMenu(1)
+    elseif msg == "RCHistory_ResponseEdit" then
+        RCEPGP:RefreshMenu(1)
+    end
 end
 
 function RCEPGPHistory:GetLastGPAmount(name, item)
