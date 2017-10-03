@@ -15,7 +15,6 @@ RCEPGP.debug = DEBUG
 
 local ExtraUtilities = addon:GetModule("RCExtraUtilities", true) -- nil if ExtraUtilites not enabled.
 local RCVotingFrame = addon:GetModule("RCVotingFrame")
-local originalCols = {unpack(RCVotingFrame.scrollCols)}
 
 local newestVersionDetected = luaVersion
 local currentAwardingGPs = {}
