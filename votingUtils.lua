@@ -1,5 +1,7 @@
-local version = "2.0.0"
+local DEBUG = false
+local luaVersion = "2.0.0"
 local tocVersion = GetAddOnMetadata("RCLootCouncil_EPGP", "Version")
+
 local addon = LibStub("AceAddon-3.0"):GetAddon("RCLootCouncil")
 local RCEPGP = addon:NewModule("RCEPGP", "AceComm-3.0", "AceConsole-3.0", "AceHook-3.0", "AceEvent-3.0", "AceTimer-3.0", "AceSerializer-3.0")
 local EPGP = LibStub("AceAddon-3.0"):GetAddon("EPGP")
@@ -9,14 +11,13 @@ local LEP = LibStub("AceLocale-3.0"):GetLocale("RCEPGP")
 local GP = LibStub("LibGearPoints-1.2")
 local LibDialog = LibStub("LibDialog-1.0")
 local RCLootCouncilML = addon:GetModule("RCLootCouncilML")
-RCEPGP.version = version
-RCEPGP.debug = false
+RCEPGP.debug = DEBUG
 
 local ExtraUtilities = addon:GetModule("RCExtraUtilities", true) -- nil if ExtraUtilites not enabled.
 local RCVotingFrame = addon:GetModule("RCVotingFrame")
 local originalCols = {unpack(RCVotingFrame.scrollCols)}
 
-local newestVersionDetected = RCEPGP.version
+local newestVersionDetected = luaVersion
 local currentAwardingGPs = {}
 
 local session = 1
@@ -62,13 +63,13 @@ function RCEPGP:OnInitialize()
     if not lastVersion then lastVersion = "1.9.2" end
     self:SecureHook(RCLootCouncil, "UpdateDB", function() self:GetEPGPdb().version = version end)
 
-    if self:CompareVersion(lastVersion, "2.0.0") == -1 then
+    if addon:VersionCompare(lastVersion, "2.0.0") then
         self:UpdateAnnounceKeyword_v2_0_0()
     end
-    if self:CompareVersion(tocVersion, "2.0.0") == -1 then
-        self:ShowNeedRestartDialog(version)
+    self:GetEPGPdb().version = luaVersion
+    if addon:VersionCompare(tocVersion, "2.0.0") then
+        self:ShowNeedRestartDialog()
     end
-    self:GetEPGPdb().version = version
 
     self:EPGPDkpReloadedSettingToRC()
     self:RCToEPGPDkpReloadedSetting()
@@ -116,10 +117,10 @@ function RCEPGP:OnCommReceived(prefix, serializedMsg, distri, sender)
     elseif prefix == "RCLC_EPGP" then
         self:DebugPrint("RCEPGP_OnCommReceived_RCLC_EPGP", serializedMsg, distri, sender)
         if test then
-            if command == "version" then
+            if command == "versionBroadcast" then
                 local otherVersion = data
-                if self:CompareVersion(newestVersionDetected, otherVersion) == -1 then
-                    self:Print(string.format("New Version %s detected. Please update the addon.", otherVersion))
+                if addon:VersionCompare(newestVersionDetected, otherVersion) then
+                    self:Print(string.format(LEP["new_version_detected"], self:GetEPGPdb().version, otherVersion))
                     newestVersionDetected = otherVersion
                 end
                 self:DebugPrint("Other version received by comm: ", otherVersion)
@@ -139,20 +140,6 @@ end
 
 function RCEPGP.UpdateVotingFrame()
     RCVotingFrame:Update()
-end
-
-function RCEPGP:CompareVersion(v1, v2)
-    local a1, b1, c1 = strsplit(".", v1)
-    a1 = tonumber(a1 or 0); b1 = tonumber(b1 or 0); c1 = tonumber(c1 or 0)
-    local a2, b2, c2 = strsplit(".", v2)
-    a2 = tonumber(a2 or 0); b2 = tonumber(b2 or 0); c2 = tonumber(c2 or 0)
-    if a1 < a2 then return -1 end
-    if a1 > a2 then return 1 end
-    if b1 < b2 then return -1 end
-    if b1 > b2 then return 1 end
-    if c1 < c2 then return -1 end
-    if c1 > c2 then return 1 end
-    return 0
 end
 
 function RCEPGP:UpdateGPEditbox()
@@ -775,9 +762,12 @@ function RCEPGP:UpdateAnnounceKeyword_v2_0_0()
 end
 
 function RCEPGP:SendVersion(channel)
+    if not self.initialize then -- If not initialized, then retry after 1s.
+        return C_Timer.After(1, function() self:SendVersion(channel) end)
+    end
     if not IsInGuild() and channel == "GUILD" then return end
     if not IsInGroup() and (channel == "RAID" or channel == "PARTY") then return end
-    local serializedMsg = self:Serialize("version", RCEPGP.version)
+    local serializedMsg = self:Serialize("versionBroadcast", self:GetEPGPdb().version)
     local _, a, b = self:Deserialize(serializedMsg)
     self:SendCommMessage("RCLC_EPGP", serializedMsg, channel)
     RCEPGP:Debug("Sent version ", serializedMsg, channel)
@@ -790,7 +780,7 @@ function RCEPGP:ShowNeedRestartDialog()
         whileDead = true,
         hideOnEscape = true,
     }
-    StaticPopup_Show ("RCEPGP_NEED_RESTART", version)
+    StaticPopup_Show ("RCEPGP_NEED_RESTART", self:GetEPGPdb().version)
 end
 
 function RCEPGP:EPGPDkpReloadedSettingToRC()
@@ -849,5 +839,34 @@ function RCEPGP:DebugPrint(msg, ...)
 		else
 			print("|cffcb6700rcepgpdebug:|r "..tostring(msg).."|r")
 		end
+	end
+end
+
+-- Copy from AceConsole:Print. Just replaced "tostring(self)" to "RCLootCouncil - EPGP".
+local tmp={}
+local function Print(self,frame,...)
+	local n=0
+	if self ~= AceConsole then
+		n=n+1
+		tmp[n] = "|cff33ff99".."RCLootCouncil - EPGP".."|r:"
+	end
+	for i=1, select("#", ...) do
+		n=n+1
+		tmp[n] = tostring(select(i, ...))
+	end
+	frame:AddMessage(table.concat(tmp," ",1,n) )
+end
+
+-- Copy from AceConsole:Print
+--- Print to DEFAULT_CHAT_FRAME or given ChatFrame (anything with an .AddMessage function)
+-- @paramsig [chatframe ,] ...
+-- @param chatframe Custom ChatFrame to print to (or any frame with an .AddMessage function)
+-- @param ... List of any values to be printed
+function RCEPGP:Print(...)
+	local frame = ...
+	if type(frame) == "table" and frame.AddMessage then	-- Is first argument something with an .AddMessage member?
+		return Print(self, frame, select(2,...))
+	else
+		return Print(self, DEFAULT_CHAT_FRAME, ...)
 	end
 end

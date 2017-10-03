@@ -43,3 +43,4 @@ L["variable_isMythic_help"] = "整数. 1如果物品来自史诗难度,否则为
 L["variable_isWarforged_help"] = "整数. 1如果物品战火,否则为0."
 L["variable_isTitanforged_help"] = "整数. 1如果物品泰坦造物,否则为0."
 L["announce_awards_desc2"] = "\nRCLootCouncil-EPGP: #diffgp# 指代玩家从物品获取的GP量. #ep# 指代玩家的EP值. #gp# 指代玩家获取物品前的GP值. #pr# 指代玩家获取物品前的PR值. #newgp# 指代玩家获取物品后的GP值. #newpr# 指代玩家获取物品后的PR值."
+L["new_version_detected"] = "你的版本%s已过期. 检测到新版本%s. 你可以从Curse.com或者Twitch客户端更新此插件."
