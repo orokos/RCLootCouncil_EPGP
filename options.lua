@@ -310,7 +310,6 @@ function RCEPGP:OptionsTable()
                                 width = "full",
                                 get = Getter,
                                 set = function(info, value)
-                                    wipe(RCCustomGP.gpCache)
                                     if value == "" then
                                         value = tostring(defaults[info[#info]])
                                     end
@@ -324,6 +323,7 @@ function RCEPGP:OptionsTable()
                                         RCEPGP.epgpOptions.args.gpTab.args.customGP.args.errorDetailedMsg.name = ""
                                     end
                                     LibStub("AceConfigRegistry-3.0"):NotifyChange("RCLootCouncil");
+                                    self:SendMessage("RCCustomGPOptionChanged")
                                 end,
                                 disabled = CustomGPDisabled,
                             },
@@ -529,7 +529,7 @@ function RCEPGP:OptionsTable()
             width = "half",
             validate = ValidateStatWeights,
             get = Getter,
-            set = function(info, value) wipe(RCCustomGP.gpCache); Setter(info, value) end,
+            set = function(info, value) Setter(info, value); self:SendMessage("RCCustomGPOptionChanged") end,
             disabled = CustomGPDisabled,
         }
     end

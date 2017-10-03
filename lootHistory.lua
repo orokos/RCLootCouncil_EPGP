@@ -14,6 +14,8 @@ local lootDB = addon:GetHistoryDB()
 function RCEPGPHistory:OnInitialize()
     local rightClickMenu =
     RCEPGP:AddRightClickMenu(_G["RCLootCouncil_LootHistory_RightclickMenu"], LootHistory.rightClickEntries, RCEPGPHistory.rightClickEntries)
+    LootHistory.frame = LootHistory:GetFrame()
+    self:SecureHook(LootHistory:GetFrame().st, "Refresh", function() RCEPGP:RefreshMenu(1) end)
 end
 
 function RCEPGPHistory:GetLastGPAmount(name, item)
@@ -68,8 +70,7 @@ RCEPGPHistory.rightClickEntries = {
             pos = 1,
             notCheckable = true,
             notClickable = true,
-            dynamicText = function(menu)
-                local data = menu.datatable
+            text = function(name, data)
                 local name, class, item, responseGP, gp, lastgp = GetGPInfo(data)
                 local text = ""
                 local color = addon:GetClassColor(class)
@@ -81,7 +82,7 @@ RCEPGPHistory.rightClickEntries = {
         { -- Button 2: Undo button
             pos = 2,
             notCheckable = true,
-            func = function(data)
+            func = function(name, data)
                 local name, class, item, responseGP, gp, lastgp = GetGPInfo(data)
                 LibDialog:Spawn("RCEPGP_AWARD_GP", {
                     name = name,
@@ -90,21 +91,19 @@ RCEPGPHistory.rightClickEntries = {
                     item = item,
                 })
             end,
-            dynamicText = function(menu)
-                local data = menu.datatable
+            text = function(name, data)
                 local name, class, item, responseGP, gp, lastgp = GetGPInfo(data)
                 return string.format(LEP["Undo GP"].." (%s)", -lastgp)
             end,
-            dynamicDisabled = function(menu)
-                local data = menu.datatable
+            disabled = function(name, data)
                 local name, class, item, responseGP, gp, lastgp = GetGPInfo(data)
-                return not EPGP:CanIncGPBy(item, - lastgp)
+                return not EPGP:CanIncGPBy(item, -lastgp)
             end,
         },
         { -- Button 3: GP Button
             pos = 3,
             notCheckable = true,
-            func = function(data)
+            func = function(name, data)
                 local name, class, item, responseGP, gp, lastgp = GetGPInfo(data)
                 LibDialog:Spawn("RCEPGP_AWARD_GP", {
                     name = name,
@@ -113,8 +112,7 @@ RCEPGPHistory.rightClickEntries = {
                     item = item,
                 })
             end,
-            dynamicText = function(menu)
-                local data = menu.datatable
+            text = function(name, data)
                 local name, class, item, responseGP, gp, lastgp = GetGPInfo(data)
                 local text = string.format(LEP["Award GP (Default: %s)"], gp)
                 if string.match(responseGP, "^%d+%%") then
@@ -122,6 +120,10 @@ RCEPGPHistory.rightClickEntries = {
                 end
                 return text
             end,
+            disabled = function(name, data)
+                local name, class, item, responseGP, gp, lastgp = GetGPInfo(data)
+                return not EPGP:CanIncGPBy(item, 1) -- disable if have no officer note permission.
+            end
         },
         {-- Button 4 :Empty button
             pos = 4,

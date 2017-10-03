@@ -2,7 +2,7 @@
 -- http://code.google.com/p/epgp/wiki/GearPoints
 local addon = LibStub("AceAddon-3.0"):GetAddon("RCLootCouncil")
 local RCEPGP = addon:GetModule("RCEPGP")
-local RCCustomGP = RCEPGP:NewModule("RCCustomGP", "AceConsole-3.0")
+local RCCustomGP = RCEPGP:NewModule("RCCustomGP", "AceConsole-3.0", "AceEvent-3.0")
 local LEP = LibStub("AceLocale-3.0"):GetLocale("RCEPGP")
 
 local MAJOR_VERSION = "LibGearPoints-1.2"
@@ -20,6 +20,7 @@ local gpCache = {} -- Cache the GP of items for even better performance. The gpC
 
 RCCustomGP.itemInfoCache = itemInfoCache
 RCCustomGP.gpCache = gpCache
+
 
 
 RCCustomGP.GPVariables = {
@@ -52,6 +53,19 @@ RCCustomGP.allowedAPI = {
     "IsCurrentItem", "IsDressableItem", "IsEquippableItem", "IsEquippedItem", "IsEquippedItemType", "IsHarmfulItem", "IsHelpfulItem", "IsInventoryItemProfessionBag",
     "IsItemInRange", "IsUsableItem", "ItemHasRange",
 }
+
+function RCCustomGP:OnInitialize()
+    self.initialize = true
+    self:RegisterMessage("RCCustomGPOptionChanged", "OnMessageReceived")
+end
+
+function RCCustomGP:OnMessageReceived(msg)
+    if msg == "RCCustomGPOptionChanged" then
+    	RCEPGP:DebugPrint("Wipe GP cache due to custom GP rule changed.")
+        wipe(self.gpCache)
+        self:SendMessage("RCCustomGPRuleChanged")
+    end
+end
 --------------------Start of GP Calculation -------------------------------
 
 LibStub.minors[MAJOR_VERSION] = 10200
@@ -797,6 +811,7 @@ function lib:GetValue(item)
         return functionOldLibGearPoints["GetValue"](oldLib, item)
     end
     if not item then return end
+    if not RCCustomGP.initialize then return end
 
     local _, itemLink, rarity, level, _, itemClass, itemSubClass, _, equipLoc = GetItemInfo(item)
     if not itemLink then return end

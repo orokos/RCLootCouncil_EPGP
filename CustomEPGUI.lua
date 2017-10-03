@@ -10,7 +10,7 @@ function RCCustomEPGUI:OnInitialize()
     addon:CustomChatCmd(self, "ShowFrame","Show GUI", "epgui")
 
     --TODO delete next line
-    self:GetFrame():Show()
+    --self:GetFrame():Show()
     self:RegisterMessage("RCCustomEPQueueRemoved", "EPQueueChanged")
     self:RegisterMessage("RCCustomEPQueueAdded", "EPQueueChanged")
 end

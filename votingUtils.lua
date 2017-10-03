@@ -27,8 +27,6 @@ end
 
 local session = 1
 
-local PREFIX = "RCLC_EPGP"
-
 function RCEPGP:GetEPGPdb()
     if not addon:Getdb().epgp then
         addon:Getdb().epgp = {}
@@ -38,7 +36,18 @@ function RCEPGP:GetEPGPdb()
 end
 
 function RCEPGP:OnInitialize()
+    self:RegisterMessage("RCCustomGPRuleChanged", "OnMessageReceived")
+    self:RegisterComm("RCLootCouncil", "OnCommReceived")
+    self.initialize = true
     self:Enable()
+end
+
+function RCEPGP:OnMessageReceived(msg)
+    if msg == "RCCustomGPRuleChanged" then
+        RCEPGP:DebugPrint("Refresh menu due to GP rule changed.")
+        RCEPGP:UpdateGPEditbox()
+        RCEPGP:RefreshMenu(level)
+    end
 end
 
 function RCEPGP.UpdateVotingFrame()
@@ -94,7 +103,7 @@ function RCEPGP:OnEnable()
     self:RegisterEvent("PLAYER_LOGIN", function() C_Timer.After(5, function() self:SendVersion("GUILD") end) end)
     self:RegisterEvent("GROUP_JOINED", function() C_Timer.After(5, function() self:SendVersion("RAID") end) end)
 
-    self:RegisterComm(PREFIX)
+    self:RegisterComm("RCLC_EPGP")
 
     self:EPGPDkpReloadedSettingToRC()
     self:RCToEPGPDkpReloadedSetting()
@@ -108,7 +117,7 @@ function RCEPGP:UpdateGPEditbox()
         local t = lootTable[session]
         if t then
             local gp = GP:GetValue(t.link) or 0
-            RCVotingFrame.frame.editbox:SetNumber(gp)
+            RCVotingFrame.frame.gpEditbox:SetNumber(gp)
         end
     end
 end
@@ -418,7 +427,7 @@ function RCEPGP.AddGPEditBox()
 
 
     local editbox_name = "RCLootCouncil_GP_EditBox"
-    if not RCVotingFrame.frame.editbox then
+    if not RCVotingFrame.frame.gpEditbox then
         local editbox = _G.CreateFrame("EditBox", editbox_name, RCVotingFrame.frame.content, "AutoCompleteEditBoxTemplate")
         editbox:SetWidth(40)
         editbox:SetHeight(32)
@@ -459,7 +468,11 @@ function RCEPGP.AddGPEditBox()
         -- Auto release Focus after 3s editbox is not used
         local loseFocusTime = 3
         editbox:SetScript("OnEditFocusGained", function(self, userInput) self.lastUsedTime = GetTime() end)
-        editbox:SetScript("OnTextChanged", function(self, userInput) RCVotingFrame:Update(); self.lastUsedTime = GetTime() end)
+        editbox:SetScript("OnTextChanged", function(self, userInput)
+            RCVotingFrame:Update()
+            self.lastUsedTime = GetTime()
+            RCEPGP:RefreshMenu(1)
+         end)
         editbox:SetScript("OnUpdate", function(self, elapsed)
             if self.lastUsedTime and GetTime() - self.lastUsedTime > loseFocusTime then
                 self.lastUsedTime = nil
@@ -468,14 +481,16 @@ function RCEPGP.AddGPEditBox()
                 end
             end
         end)
+
+        -- Clear focus when rightclick menu opens.
         if not RCEPGP:IsHooked(_G["Lib_DropDownList1"], "OnShow") then
             RCEPGP:SecureHookScript(_G["Lib_DropDownList1"], "OnShow", function()
-                if RCVotingFrame.frame and RCVotingFrame.frame.editbox then
-                    RCVotingFrame.frame.editbox:ClearFocus()
+                if RCVotingFrame.frame and RCVotingFrame.frame.gpEditbox then
+                    RCVotingFrame.frame.gpEditbox:ClearFocus()
                 end
             end)
         end
-        RCVotingFrame.frame.editbox = editbox
+        RCVotingFrame.frame.gpEditbox = editbox
     end
 end
 
@@ -536,123 +551,26 @@ function RCEPGP:GetFinalGP(responseGP, itemGP)
     return gp
 end
 
--- Add button attributes "RCEPGP_dynamicText", "RCEPGP_dynamicDisabled", "RCEPGP_dynamicArg"
--- dynamicExist: [func] if return false, this button does not exist.
--- dynamicText: [func] Set the text of this button every frame to be the return value of the function
--- dynamicDisabled: [func] Disable or Enable the button every frame. Disable if returns true.
--- dynamicArg: The argument to the above function.
-local lastHookedLib_UIDropDownMenu_AddButton = nil
 function RCEPGP:AddRightClickMenu(menu, RCEntries, myEntries)
-
-    local rehookFrame = _G["RCEPGP_Rehook_AddButton"] or CreateFrame("FRAME", "RCEPGP_Rehook_AddButton")
-    -- Keep to rehook because other addon can modify Lib_UIDropDownMenu_AddButton
-    rehookFrame:SetScript("OnUpdate", function()
-        if lastHookedLib_UIDropDownMenu_AddButton ~= Lib_UIDropDownMenu_AddButton then
-            self:Unhook("Lib_UIDropDownMenu_AddButton")
-            self:SecureHook("Lib_UIDropDownMenu_AddButton", function(info, level)
-                if ( not level ) then
-                    level = 1;
-                end
-                local listFrame = _G["Lib_DropDownList"..level];
-                local listFrameName = listFrame:GetName();
-                local index = listFrame and (listFrame.numButtons) or 1;
-                local button = _G[listFrameName.."Button"..index]
-                if info.dynamicExist and (not info.dynamicExist()) then -- Remove button
-                    listFrame.numButtons = listFrame.numButtons - 1
-                    button.iconOnly = nil
-                    button.icon = nil
-                    button.iconInfo = nil;
-                    button.func = nil
-                    button.owner = nil
-                    button.hasOpacity = nil
-                    button.opacity = nil
-                    button.opacityFunc = nil
-                    button.cancelFunc = nil
-                    button.swatchFunc = nil
-                    button.keepShownOnClick = nil
-                    button.tooltipTitle = nil
-                    button.tooltipText = nil
-                    button.arg1 = nil
-                    button.arg2 = nil
-                    button.hasArrow = nil
-                    button.hasColorSwatch = nil
-                    button.notCheckable = nil
-                    button.menuList = nil
-                    button.tooltipWhileDisabled = nil
-                    button.tooltipOnButton = nil
-                    button.noClickSound = nil
-                    button.padding = nil
-                    button.dynamicText = nil
-                    button.dynamicDisabled = nil
-                    button.dynamicArg = nil
-                    button:SetText("")
-                elseif button then
-                    button.dynamicText = info.dynamicText
-                    button.dynamicDisabled = info.dynamicDisabled
-                    button.dynamicArg = info.dynamicArg
-                end
-            end)
-            lastHookedLib_UIDropDownMenu_AddButton = Lib_UIDropDownMenu_AddButton
-            RCEPGP:DebugPrint("Rehooked Lib_UIDropDownMenu_AddButton.")
-        end
-    end)
-
+    menu.RCEPGPMenu = true
     for level, entries in ipairs(myEntries) do
         table.sort(entries, function(i, j) return i.pos < j.pos end)
         for id=1, #entries do
             local entry = entries[id]
-            entry.dynamicArg = menu
             table.insert(RCEntries[level], entry.pos, entry)
         end
+    end
+end
 
-        local updateInterval = 0.5
-        local lastUpdateTime = nil
-        self:SecureHookScript(menu, "OnUpdate", function()
-            if lastUpdateTime and GetTime() - lastUpdateTime < updateInterval then return end
-            if Lib_UIDropDownMenu_GetCurrentDropDown() ~= menu then return end
-            if not Lib_DropDownList1:IsShown() then
-                lastUpdateTime = nil
-                return
-            end
-            lastUpdateTime = GetTime()
-
-            -- TODO modify next line.
-            Lib_UIDropDownMenu_Refresh(menu, nil, 1)
-            print("Refresh")
-
-            for level = 1, 4 do
-                local dynamicTextChanged = false
-                for i = 1, LIB_UIDROPDOWNMENU_MAXBUTTONS do
-                    local button = _G["Lib_DropDownList"..level.."Button"..i]
-                    if button then
-                        if button.dynamicText then
-                            local text = button.dynamicText(button.dynamicArg)
-                            local oldText = button:GetText()
-                            if text ~= oldText then
-                                dynamicTextChanged = true
-                            end
-                            if button.colorCode then
-                                button:SetText(button.colorCode..text.."|r")
-                            else
-                                button:SetText(text);
-                            end
-                        end
-                        if button.dynamicDisabled then
-                            local disabled = button.dynamicDisabled(button.dynamicArg)
-                            if disabled then
-                                button:Disable()
-                            else
-                                button:Enable()
-                            end
-                        end
-                    end
-                    if dynamicTextChanged then -- For performance reason
-                        menu.noResize = false
-                        Lib_UIDropDownMenu_Refresh(menu, nil, level)
-                    end
-                end
-            end
-        end)
+-- Refresh the current menu if it is a RCEPGP menu.
+function RCEPGP:RefreshMenu(level)
+    local menu = Lib_UIDropDownMenu_GetCurrentDropDown()
+    if not menu then return end
+    if not menu.RCEPGPMenu then return end
+    if not Lib_DropDownList1:IsShown() then return end
+    if menu.initialize then
+        Lib_DropDownList1.numButtons = 0
+        menu.initialize(menu, level, menu.menuList)
     end
 end
 
@@ -662,7 +580,7 @@ local function GetGPInfo(name)
     and name and lootTable[session].candidates[name] then
         local data = lootTable[session].candidates[name]
         local responseGP = RCEPGP:GetResponseGP(data.response, data.isTier, data.isRelic)
-        local editboxGP = RCVotingFrame.frame.editbox:GetNumber()
+        local editboxGP = RCVotingFrame.frame.gpEditbox:GetNumber()
         local gp = RCEPGP:GetFinalGP(responseGP, editboxGP)
         local item = lootTable[session].link
         local bid = RCEPGP:GetBid(name)
@@ -676,7 +594,7 @@ RCEPGP.rightClickEntries = {
     { -- Level 1
         { -- Button 1
             pos = 2,
-            dynamicExist = function() return RCEPGP:GetEPGPdb().biddingEnabled end,
+            hidden = function() return not RCEPGP:GetEPGPdb().biddingEnabled end,
             notCheckable = true,
             func = function(name)
                 local data, name, item, responseGP, gp, bid = GetGPInfo(name)
@@ -697,18 +615,14 @@ RCEPGP.rightClickEntries = {
 
                 LibDialog:Spawn("RCEPGP_CONFIRM_AWARD", dialogInput)
             end,
-            text = function()
-                print("refreshtext")
-                return "WTF"
-            end,
-            dynamicText = function(menu)
-                local data, name, item, responseGP, gp, bid = GetGPInfo(menu.name)
+            text = function(name)
+                local data, name, item, responseGP, gp, bid = GetGPInfo(name)
                 if not bid then bid = "?" end
                 return L["Award"].." ("..bid.." "..LEP["GP Bid"]..")"
             end,
-            dynamicDisabled = function(menu)
-                local data, name, item, responseGP, gp, bid = GetGPInfo(menu.name)
-                return not bid
+            disabled = function(name)
+                local data, name, item, responseGP, gp, bid = GetGPInfo(name)
+                return (not bid) or ((not EPGP:CanIncGPBy(item, bid)) and bid and (bid ~= 0))
             end,
         },
         { -- Button 2
@@ -733,20 +647,16 @@ RCEPGP.rightClickEntries = {
 
             LibDialog:Spawn("RCEPGP_CONFIRM_AWARD", dialogInput)
         end,
-        text = function()
-            print("refreshtext")
-            return "WTF"
-        end,
-        dynamicText = function(menu)
-            local data, name, item, responseGP, gp, bid = GetGPInfo(menu.name)
+        text = function(name)
+            local data, name, item, responseGP, gp, bid = GetGPInfo(name)
             local text = L["Award"].." ("..gp.." GP)"
             if string.match(responseGP, "^%d+%%") then
                 text = L["Award"].." ("..gp.." GP, "..responseGP..")"
             end
             return text
         end,
-        dynamicDisabled = function(menu)
-            local data, name, item, responseGP, gp, bid = GetGPInfo(menu.name)
+        disabled = function(name)
+            local data, name, item, responseGP, gp, bid = GetGPInfo(name)
             return (not EPGP:CanIncGPBy(item, gp)) and gp and (gp ~= 0)
         end,
         },
@@ -880,21 +790,34 @@ function RCEPGP:SendVersion(channel)
     if not IsInGroup() and (channel == "RAID" or channel == "PARTY") then return end
     local serializedMsg = self:Serialize("version", RCEPGP.version)
     local _, a, b = self:Deserialize(serializedMsg)
-    self:SendCommMessage(PREFIX, serializedMsg, channel)
+    self:SendCommMessage("RCLC_EPGP", serializedMsg, channel)
     RCEPGP:Debug("Sent version ", serializedMsg, channel)
 end
 
 local newestVersionDetected = RCEPGP.version
 function RCEPGP:OnCommReceived(prefix, serializedMsg, distri, sender)
     local test, command, data = self:Deserialize(serializedMsg)
-    if test then
-        if command == "version" then
-            local otherVersion = data
-            if self:CompareVersion(newestVersionDetected, otherVersion) == -1 then
-                self:Print(string.format("New Version %s detected. Please update the addon.", otherVersion))
-                newestVersionDetected = otherVersion
+    if prefix == "RCLootCouncil" then
+        -- data is always a table to be unpacked
+        local test, command, data = addon:Deserialize(serializedMsg)
+        if addon:HandleXRealmComms(RCVotingFrame, command, data, sender) then return end
+
+        if test then
+            if command == "change_response" then
+                self:DebugPrint("Refresh menu due to change response.")
+                self:RefreshMenu(1)
             end
-            RCEPGP:DebugPrint("Other version received by comm: ", otherVersion)
+        end
+    elseif prefix == "RCLC_EPGP" then
+        if test then
+            if command == "version" then
+                local otherVersion = data
+                if self:CompareVersion(newestVersionDetected, otherVersion) == -1 then
+                    self:Print(string.format("New Version %s detected. Please update the addon.", otherVersion))
+                    newestVersionDetected = otherVersion
+                end
+                RCEPGP:DebugPrint("Other version received by comm: ", otherVersion)
+            end
         end
     end
 end
