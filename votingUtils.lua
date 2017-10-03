@@ -32,9 +32,49 @@ end
 function RCEPGP:OnInitialize()
     self:RegisterMessage("RCCustomGPRuleChanged", "OnMessageReceived")
     self:RegisterMessage("RCMLAwardSuccess", "OnMessageReceived")
+    self:RegisterMessage("RCSessionChangedPre", "OnMessageReceived")
+
+    self:RegisterComm("RCLC_EPGP", "OnCommReceived")
     self:RegisterComm("RCLootCouncil", "OnCommReceived")
+
+    self:RegisterEvent("PLAYER_LOGIN", "OnEvent")
+    self:RegisterEvent("GROUP_JOINED", "OnEvent")
+
+    EPGP.RegisterCallback(self, "StandingsChanged", self.UpdateVotingFrame)
+
+    self:SecureHook(RCVotingFrame, "OnEnable", "AddGPEditBox")
+    self:AddRightClickMenu(_G["RCLootCouncil_VotingFrame_RightclickMenu"], RCVotingFrame.rightClickEntries, self.rightClickEntries)
+    if ExtraUtilities then
+        self:SecureHook(ExtraUtilities, "SetupColumns", function() self:SetupColumns() end)
+        self:SecureHook(ExtraUtilities, "UpdateColumn", function() self:SetupColumns() end)
+    end
+    self:DisableGPPopup()
+    self.EnableGPTooltip()
+    self.DisablezhCNProfanityFilter()
+    self:OptionsTable()
+    self:AddGPOptions()
+    self:AddChatCommand()
+    self:AddAnnouncement()
+    self:SetupColumns()
+
+    -- Added in v2.0
+    local lastVersion = self:GetEPGPdb().version
+    if not lastVersion then lastVersion = "1.9.2" end
+    self:SecureHook(RCLootCouncil, "UpdateDB", function() self:GetEPGPdb().version = version end)
+
+    if self:CompareVersion(lastVersion, "2.0.0") == -1 then
+        self:UpdateAnnounceKeyword_v2_0_0()
+    end
+    if self:CompareVersion(tocVersion, "2.0.0") == -1 then
+        self:ShowNeedRestartDialog(version)
+    end
+    self:GetEPGPdb().version = version
+
+    self:EPGPDkpReloadedSettingToRC()
+    self:RCToEPGPDkpReloadedSetting()
+    self:Add0GPSuffixToRCAwardButtons()
+
     self.initialize = true
-    self:Enable()
 end
 
 function RCEPGP:OnMessageReceived(msg, ...)
@@ -53,6 +93,10 @@ function RCEPGP:OnMessageReceived(msg, ...)
                 RCEPGP:Debug("Awarded GP: ", winner, item, gp)
             end
         end
+    elseif msg == "RCSessionChangedPre" then
+        local s = unpack({...})
+        session = s
+        self:UpdateGPEditbox()
     end
 end
 
@@ -70,6 +114,7 @@ function RCEPGP:OnCommReceived(prefix, serializedMsg, distri, sender)
             end
         end
     elseif prefix == "RCLC_EPGP" then
+        self:DebugPrint("RCEPGP_OnCommReceived_RCLC_EPGP", serializedMsg, distri, sender)
         if test then
             if command == "version" then
                 local otherVersion = data
@@ -80,6 +125,15 @@ function RCEPGP:OnCommReceived(prefix, serializedMsg, distri, sender)
                 RCEPGP:DebugPrint("Other version received by comm: ", otherVersion)
             end
         end
+    end
+end
+
+function RCEPGP:OnEvent(event, ...)
+    self:DebugPrint("RCEPGP_OnEvent", event, ...)
+    if event == "PLAYER_LOGIN" then
+        C_Timer.After(5, function() self:SendVersion("GUILD") end)
+    elseif event == "GROUP_JOINED" then
+        C_Timer.After(5, function() self:SendVersion("RAID") end)
     end
 end
 
@@ -101,49 +155,6 @@ function RCEPGP:CompareVersion(v1, v2)
     return 0
 end
 
-function RCEPGP:OnEnable()
-    EPGP.RegisterCallback(self, "StandingsChanged", RCEPGP.UpdateVotingFrame)
-
-    addon:SecureHook(RCVotingFrame, "OnEnable", self.AddGPEditBox)
-    -- v1.9 change: Prehook instead of posthook to fix wrong bid display
-    self:Hook(RCVotingFrame, "SwitchSession", function(self, s) session = s; RCEPGP:UpdateGPEditbox(); end)
-    self:AddRightClickMenu(_G["RCLootCouncil_VotingFrame_RightclickMenu"], RCVotingFrame.rightClickEntries, self.rightClickEntries)
-    if ExtraUtilities then
-        addon:SecureHook(ExtraUtilities, "SetupColumns", function() self:SetupColumns() end)
-        addon:SecureHook(ExtraUtilities, "UpdateColumn", function() self:SetupColumns() end)
-    end
-    self:DisableGPPopup()
-    self.EnableGPTooltip()
-    self.DisablezhCNProfanityFilter()
-    self:OptionsTable()
-    self:AddGPOptions()
-    self:AddChatCommand()
-    self:AddAnnouncement()
-    self:SetupColumns()
-
-    local lastVersion = RCEPGP:GetEPGPdb().version
-    if not lastVersion then lastVersion = "1.9.2" end
-    self:SecureHook(RCLootCouncil, "UpdateDB", function() RCEPGP:GetEPGPdb().version = version end)
-
-    if self:CompareVersion(lastVersion, "2.0.0") == -1 then
-        self:UpdateAnnounceKeyword_v2_0_0()
-    end
-    if self:CompareVersion(tocVersion, "2.0.0") == -1 then
-        self:ShowNeedRestartDialog(version)
-    end
-    RCEPGP:GetEPGPdb().version = version
-
-    self:RegisterEvent("PLAYER_LOGIN", function() C_Timer.After(5, function() self:SendVersion("GUILD") end) end)
-    self:RegisterEvent("GROUP_JOINED", function() C_Timer.After(5, function() self:SendVersion("RAID") end) end)
-
-    self:RegisterComm("RCLC_EPGP")
-
-    self:EPGPDkpReloadedSettingToRC()
-    self:RCToEPGPDkpReloadedSetting()
-
-    self:Add0GPSuffixToRCAwardButtons()
-end
-
 function RCEPGP:UpdateGPEditbox()
     local lootTable = RCVotingFrame:GetLootTable()
     if lootTable then
@@ -153,11 +164,6 @@ function RCEPGP:UpdateGPEditbox()
             RCVotingFrame.frame.gpEditbox:SetNumber(gp)
         end
     end
-end
-
-function RCEPGP:OnDisable()
-    -- Reset cols
-    RCVotingFrame.scrollCols = originalCols
 end
 
 function RCEPGP.DisablezhCNProfanityFilter()
@@ -447,7 +453,7 @@ function RCEPGP.PRSort(table, rowa, rowb, sortbycol)
 end
 
 ----------------------------------------------------------------
-function RCEPGP.AddGPEditBox()
+function RCEPGP:AddGPEditBox()
     if not RCVotingFrame.frame.gpString then
         local gpstr = RCVotingFrame.frame.content:CreateFontString(nil, "OVERLAY", "GameFontNormal")
         gpstr:SetPoint("CENTER", RCVotingFrame.frame.content, "TOPLEFT", 300, - 60)
@@ -515,8 +521,8 @@ function RCEPGP.AddGPEditBox()
         end)
 
         -- Clear focus when rightclick menu opens.
-        if not RCEPGP:IsHooked(_G["Lib_DropDownList1"], "OnShow") then
-            RCEPGP:SecureHookScript(_G["Lib_DropDownList1"], "OnShow", function()
+        if not self:IsHooked(_G["Lib_DropDownList1"], "OnShow") then
+            self:SecureHookScript(_G["Lib_DropDownList1"], "OnShow", function()
                 if RCVotingFrame.frame and RCVotingFrame.frame.gpEditbox then
                     RCVotingFrame.frame.gpEditbox:ClearFocus()
                 end
@@ -696,7 +702,7 @@ LibDialog:Register("RCEPGP_CONFIRM_AWARD", {
         { text = L["Yes"],
             on_click = function(self, data)
                 currentAwardingGPs[data.session] = data and data.gp or 0
-                RCLootCouncilML.AwardPopupOnClickYes(self, data)
+                RCLootCouncilML.AwardPopupOnClickYes(self, data) -- GP Award is handled in RCEPGP:OnMessageReceived()
                 currentAwardingGPs[data.session] = 0
             end,
         },
