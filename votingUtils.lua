@@ -49,8 +49,8 @@ function RCEPGP:OnInitialize()
         self:SecureHook(ExtraUtilities, "UpdateColumn", function() self:SetupColumns() end)
     end
     self:DisableGPPopup()
-    self.EnableGPTooltip()
-    self.DisablezhCNProfanityFilter()
+    self:EnableGPTooltip()
+    self:DisablezhCNProfanityFilter()
     self:OptionsTable()
     self:AddGPOptions()
     self:AddChatCommand()
@@ -78,19 +78,19 @@ function RCEPGP:OnInitialize()
 end
 
 function RCEPGP:OnMessageReceived(msg, ...)
-    RCEPGP:DebugPrint("RCEPGP_OnMessageReceived", msg)
+    self:DebugPrint("RCEPGP_OnMessageReceived", msg)
     if msg == "RCCustomGPRuleChanged" then
-        RCEPGP:DebugPrint("Refresh menu due to GP rule changed.")
-        RCEPGP:UpdateGPEditbox()
-        RCEPGP:RefreshMenu(level)
+        self:DebugPrint("Refresh menu due to GP rule changed.")
+        self:UpdateGPEditbox()
+        self:RefreshMenu(level)
     elseif msg == "RCMLAwardSuccess" then
         local session, winner, status = unpack({...})
         if winner then
-            local gp = RCEPGP:GetCurrentAwardingGP(session)
+            local gp = self:GetCurrentAwardingGP(session)
             local item = RCVotingFrame:GetLootTable() and RCVotingFrame:GetLootTable()[session] and RCVotingFrame:GetLootTable()[session].link
             if item and gp and gp ~= 0 then
                 EPGP:IncGPBy(winner, item, gp)
-                RCEPGP:Debug("Awarded GP: ", winner, item, gp)
+                self:Debug("Awarded GP: ", winner, item, gp)
             end
         end
     elseif msg == "RCSessionChangedPre" then
@@ -122,7 +122,7 @@ function RCEPGP:OnCommReceived(prefix, serializedMsg, distri, sender)
                     self:Print(string.format("New Version %s detected. Please update the addon.", otherVersion))
                     newestVersionDetected = otherVersion
                 end
-                RCEPGP:DebugPrint("Other version received by comm: ", otherVersion)
+                self:DebugPrint("Other version received by comm: ", otherVersion)
             end
         end
     end
@@ -166,11 +166,11 @@ function RCEPGP:UpdateGPEditbox()
     end
 end
 
-function RCEPGP.DisablezhCNProfanityFilter()
+function RCEPGP:DisablezhCNProfanityFilter()
     if GetLocale() == "zhCN" then
         SetCVar("profanityFilter", "0")
     end
-    RCEPGP:DebugPrint("Diable profanity filter of zhCN client.")
+    self:DebugPrint("Diable profanity filter of zhCN client.")
 end
 
 -- We only want to disable GP popup of EPGP(dkp reloaded) when RCLootCouncil Voting Frame is opening.
@@ -189,7 +189,7 @@ function RCEPGP:DisableGPPopup()
                 loot.db.profile.enabled = false
                 loot:Disable()
                 isDisablingEPGPPopup = true
-                RCEPGP:DebugPrint("GP Popup of EPGP(dkp reloaded) disabled")
+                self:DebugPrint("GP Popup of EPGP(dkp reloaded) disabled")
             end)
 
             self:SecureHook(RCVotingFrame, "Hide", function()
@@ -198,10 +198,10 @@ function RCEPGP:DisableGPPopup()
                     loot.db.profile.enabled = isEPGPPopupEnabled
                     if isEPGPPopupEnabled then
                         loot:Enable()
-                        RCEPGP:DebugPrint("GP Popup of EPGP(dkp reloaded) enabled")
+                        self:DebugPrint("GP Popup of EPGP(dkp reloaded) enabled")
                     else
                         loot:Disable()
-                        RCEPGP:DebugPrint("GP Popup of EPGP(dkp reloaded) disabled")
+                        self:DebugPrint("GP Popup of EPGP(dkp reloaded) disabled")
                     end
                     isDisablingEPGPPopup = false
                 end)
@@ -210,7 +210,7 @@ function RCEPGP:DisableGPPopup()
     end
 end
 
-function RCEPGP.EnableGPTooltip()
+function RCEPGP:EnableGPTooltip()
     if EPGP and EPGP.GetModule then
         local gptooltip = EPGP:GetModule("gptooltip")
         if gptooltip and gptooltip.db then
@@ -256,7 +256,7 @@ function RCEPGP:SetupColumns()
         RemoveColumn(RCVotingFrame.scrollCols, bid)
     end
 
-    RCEPGP:ResponseSortPRNext()
+    self:ResponseSortPRNext()
 
     if RCVotingFrame.frame then
         RCVotingFrame.frame.UpdateSt()
@@ -570,7 +570,7 @@ function RCEPGP:GetResponseGP(response, isTier, isRelic)
             end
         end
     end
-    RCEPGP:DebugPrint("GetResponseGP returns ", responseGP, "arguments: ", response, isTier, isRelic)
+    self:DebugPrint("GetResponseGP returns ", responseGP, "arguments: ", response, isTier, isRelic)
     return responseGP
 end
 
@@ -818,8 +818,8 @@ function RCEPGP:RCToEPGPDkpReloadedSetting()
             end
         end
     end
-    RCEPGP:EPGPDkpReloadedSettingToRC()
-    RCEPGP:Debug("Restore EPGP(dkp reloaded) settings from RCLootCouncil Saved Variables.")
+    self:EPGPDkpReloadedSettingToRC()
+    self:Debug("Restore EPGP(dkp reloaded) settings from RCLootCouncil Saved Variables.")
 end
 
 function RCEPGP:Add0GPSuffixToRCAwardButtons()
@@ -831,7 +831,7 @@ function RCEPGP:Add0GPSuffixToRCAwardButtons()
             entry.text = L["Award for ..."].." (0 GP)"
         end
     end
-    RCEPGP:DebugPrint("Added 0GP suffix to RC Award Buttons.")
+    self:DebugPrint("Added 0GP suffix to RC Award Buttons.")
 end
 
 -- debug print and log
