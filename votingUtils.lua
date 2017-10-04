@@ -1,8 +1,8 @@
 local DEBUG = false
-local luaVersion = "2.0.0"
+local version = "2.0.0" -- Version of the addon
 local lastVersionNeedingRestart = "2.0.0"
 local minRCVersion = "2.6.0"
-local tocVersion = GetAddOnMetadata("RCLootCouncil_EPGP", "Version")
+local tocVersion = GetAddOnMetadata("RCLootCouncil_EPGP", "Version") -- Version of the addon in TOC. should be the same as "version" if the user did a full client restart
 
 local addon = LibStub("AceAddon-3.0"):GetAddon("RCLootCouncil")
 local RCEPGP = addon:NewModule("RCEPGP", "AceComm-3.0", "AceConsole-3.0", "AceHook-3.0", "AceEvent-3.0", "AceTimer-3.0", "AceSerializer-3.0")
@@ -13,13 +13,15 @@ local LEP = LibStub("AceLocale-3.0"):GetLocale("RCEPGP")
 local GP = LibStub("LibGearPoints-1.2")
 local LibDialog = LibStub("LibDialog-1.0")
 local RCLootCouncilML = addon:GetModule("RCLootCouncilML")
-RCEPGP.luaVersion = luaVersion
+
+RCEPGP.version = version
+RCEPGP.tocVersion = tocVersion
 RCEPGP.debug = DEBUG
 
 local ExtraUtilities = addon:GetModule("RCExtraUtilities", true) -- nil if ExtraUtilites not enabled.
 local RCVotingFrame = addon:GetModule("RCVotingFrame")
 
-local newestVersionDetected = luaVersion
+local newestVersionDetected = version
 local currentAwardingGP = 0
 
 local session = 1
@@ -63,13 +65,18 @@ function RCEPGP:OnInitialize()
     -- Added in v2.0
     local lastVersion = self:GetEPGPdb().version
     if not lastVersion then lastVersion = "1.9.2" end
-    self:SecureHook(RCLootCouncil, "UpdateDB", function() self:GetEPGPdb().version = luaVersion; self:RCToEPGPDkpReloadedSetting(); end)
+    self:SecureHook(RCLootCouncil, "UpdateDB", function()
+        self:GetEPGPdb().version = version
+        self:GetEPGPdb().tocVersion = tocVersion
+        self:RCToEPGPDkpReloadedSetting()
+    end)
 
     if addon:VersionCompare(lastVersion, "2.0.0") then
         self:UpdateAnnounceKeyword_v2_0_0()
     end
 
-    self:GetEPGPdb().version = luaVersion
+    self:GetEPGPdb().version = version
+    self:GetEPGPdb().tocVersion = tocVersion
     if addon:VersionCompare(tocVersion, lastVersionNeedingRestart) then
         self:ShowNeedRestartNotification()
     end
@@ -126,7 +133,7 @@ function RCEPGP:OnCommReceived(prefix, serializedMsg, distri, sender)
             if command == "versionBroadcast" then
                 local otherVersion = data
                 if addon:VersionCompare(newestVersionDetected, otherVersion) then
-                    self:Print(string.format(LEP["new_version_detected"], luaVersion, otherVersion))
+                    self:Print(string.format(LEP["new_version_detected"], version, otherVersion))
                     newestVersionDetected = otherVersion
                 end
                 self:DebugPrint("Other version received by comm: ", otherVersion)
@@ -773,7 +780,7 @@ function RCEPGP:SendVersion(channel)
     end
     if not IsInGuild() and channel == "GUILD" then return end
     if not IsInGroup() and (channel == "RAID" or channel == "PARTY") then return end
-    local serializedMsg = self:Serialize("versionBroadcast", luaVersion)
+    local serializedMsg = self:Serialize("versionBroadcast", version)
     local _, a, b = self:Deserialize(serializedMsg)
     self:SendCommMessage("RCLC_EPGP", serializedMsg, channel)
     RCEPGP:Debug("Sent version ", serializedMsg, channel)
@@ -786,8 +793,8 @@ function RCEPGP:ShowNeedRestartNotification()
         whileDead = true,
         hideOnEscape = true,
     }
-    StaticPopup_Show ("RCEPGP_NEED_RESTART", luaVersion)
-    self:Print(string.format(LEP["need_restart_notification"], luaVersion))
+    StaticPopup_Show ("RCEPGP_NEED_RESTART", version)
+    self:Print(string.format(LEP["need_restart_notification"], version))
 end
 
 function RCEPGP:ShowRCVersionBelowMinNotification()
@@ -802,6 +809,7 @@ function RCEPGP:ShowRCVersionBelowMinNotification()
 end
 
 -- Link table in RCEPGP's saved variable with EPGP's saved variable together.
+-- Used to send EPGP(dkp reloaded) settings with RC sync
 function RCEPGP:EPGPDkpReloadedSettingToRC()
     self:GetEPGPdb().EPGPDkpReloadedDB = {}
     self:GetEPGPdb().EPGPDkpReloadedDB.children = {}
@@ -817,18 +825,37 @@ function RCEPGP:EPGPDkpReloadedSettingToRC()
     RCEPGP:Debug("Save EPGP(dkp reloaded) settings to RCLootCouncil Saved Variables.")
 end
 
+-- Restore settings stored in RC to EPGP(dkp reloaded)
 function RCEPGP:RCToEPGPDkpReloadedSetting()
+    if not self:GetEPGPdb().sendEPGPSettings then return end
+
     if self:GetEPGPdb().EPGPDkpReloadedDB and self:GetEPGPdb().EPGPDkpReloadedDB.children then
         for module, entry in pairs(self:GetEPGPdb().EPGPDkpReloadedDB.children) do
-            if self:GetEPGPdb().EPGPDkpReloadedDB.children[module].profile then
-                for key, value in pairs(self:GetEPGPdb().EPGPDkpReloadedDB.children[module].profile) do
-                    EPGP.db.children[module].profile[key] = value
+            if module ~= "log" then -- Not gonna sync "log" module because it is too big. Probably will sync it with RCHistory Later.
+                local mod = EPGP:GetModule(module)
+                if mod and mod.dbDefaults then -- Reset to default first
+                    EPGP.db.children[module]:RegisterDefaults(mod.dbDefaults)
+                end
+
+                if self:GetEPGPdb().EPGPDkpReloadedDB.children[module].profile then -- Copy settings
+                    for key, value in pairs(self:GetEPGPdb().EPGPDkpReloadedDB.children[module].profile) do
+                        EPGP.db.children[module].profile[key] = value
+                    end
+                end
+
+                if mod then -- Enable module if needed
+                    if self:GetEPGPdb().EPGPDkpReloadedDB.children[module].profile.enabled then
+                        mod:Enable()
+                    else
+                        mod:Disable()
+                    end
                 end
             end
         end
     end
-    self:EPGPDkpReloadedSettingToRC()
+
     self:Debug("Restore EPGP(dkp reloaded) settings from RCLootCouncil Saved Variables.")
+    self:EPGPDkpReloadedSettingToRC() -- Link table in RCEPGP's saved variable with EPGP's saved variable together.
 end
 
 function RCEPGP:Add0GPSuffixToRCAwardButtons()
