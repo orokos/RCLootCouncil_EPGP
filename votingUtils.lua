@@ -21,7 +21,7 @@ RCEPGP.debug = DEBUG
 local ExtraUtilities = addon:GetModule("RCExtraUtilities", true) -- nil if ExtraUtilites not enabled.
 local RCVotingFrame = addon:GetModule("RCVotingFrame")
 
-local newestVersionDetected = version
+local newestVersionDetected = RCEPGP.version
 local currentAwardingGP = 0
 
 local session = 1
@@ -62,15 +62,15 @@ function RCEPGP:OnInitialize()
     self:AddAnnouncement()
     self:SetupColumns()
 
-    -- Added in v2.0
-    local lastVersion = self:GetEPGPdb().version
-    if not lastVersion then lastVersion = "1.9.2" end
     self:SecureHook(RCLootCouncil, "UpdateDB", function()
         self:GetEPGPdb().version = version
         self:GetEPGPdb().tocVersion = tocVersion
         self:RCToEPGPDkpReloadedSetting()
     end)
 
+    -- Added in v2.0
+    local lastVersion = self:GetEPGPdb().version
+    if not lastVersion then lastVersion = "1.9.2" end
     if addon:VersionCompare(lastVersion, "2.0.0") then
         self:UpdateAnnounceKeyword_v2_0_0()
     end
@@ -780,7 +780,7 @@ function RCEPGP:SendVersion(channel)
     end
     if not IsInGuild() and channel == "GUILD" then return end
     if not IsInGroup() and (channel == "RAID" or channel == "PARTY") then return end
-    local serializedMsg = self:Serialize("versionBroadcast", version)
+    local serializedMsg = self:Serialize("versionBroadcast", self.version)
     local _, a, b = self:Deserialize(serializedMsg)
     self:SendCommMessage("RCLC_EPGP", serializedMsg, channel)
     RCEPGP:Debug("Sent version ", serializedMsg, channel)
@@ -793,8 +793,8 @@ function RCEPGP:ShowNeedRestartNotification()
         whileDead = true,
         hideOnEscape = true,
     }
-    StaticPopup_Show ("RCEPGP_NEED_RESTART", version)
-    self:Print(string.format(LEP["need_restart_notification"], version))
+    StaticPopup_Show ("RCEPGP_NEED_RESTART", self.version)
+    self:Print(string.format(LEP["need_restart_notification"], self.version))
 end
 
 function RCEPGP:ShowRCVersionBelowMinNotification()
