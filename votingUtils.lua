@@ -1,8 +1,4 @@
 local DEBUG = false
-local version = "2.0.0" -- Version of the addon
-local lastVersionNeedingRestart = "2.0.0"
-local minRCVersion = "2.6.0"
-local tocVersion = GetAddOnMetadata("RCLootCouncil_EPGP", "Version") -- Version of the addon in TOC. should be the same as "version" if the user did a full client restart
 
 local addon = LibStub("AceAddon-3.0"):GetAddon("RCLootCouncil")
 local RCEPGP = addon:NewModule("RCEPGP", "AceComm-3.0", "AceConsole-3.0", "AceHook-3.0", "AceEvent-3.0", "AceTimer-3.0", "AceSerializer-3.0")
@@ -14,8 +10,11 @@ local GP = LibStub("LibGearPoints-1.2")
 local LibDialog = LibStub("LibDialog-1.0")
 local RCLootCouncilML = addon:GetModule("RCLootCouncilML")
 
-RCEPGP.version = version
-RCEPGP.tocVersion = tocVersion
+RCEPGP.version = "2.0.0"
+RCEPGP.tocVersion = GetAddOnMetadata("RCLootCouncil_EPGP", "Version")
+RCEPGP.lastVersionNeedingRestart = "2.0.0"
+RCEPGP.minRCVersion = "2.6.0"
+
 RCEPGP.debug = DEBUG
 
 local ExtraUtilities = addon:GetModule("RCExtraUtilities", true) -- nil if ExtraUtilites not enabled.
@@ -63,8 +62,8 @@ function RCEPGP:OnInitialize()
     self:SetupColumns()
 
     self:SecureHook(RCLootCouncil, "UpdateDB", function()
-        self:GetEPGPdb().version = version
-        self:GetEPGPdb().tocVersion = tocVersion
+        self:GetEPGPdb().version = self.version
+        self:GetEPGPdb().tocVersion = self.tocVersion
         self:RCToEPGPDkpReloadedSetting()
     end)
 
@@ -75,13 +74,13 @@ function RCEPGP:OnInitialize()
         self:UpdateAnnounceKeyword_v2_0_0()
     end
 
-    self:GetEPGPdb().version = version
-    self:GetEPGPdb().tocVersion = tocVersion
-    if addon:VersionCompare(tocVersion, lastVersionNeedingRestart) then
+    self:GetEPGPdb().version = self.version
+    self:GetEPGPdb().tocVersion = self.tocVersion
+    if addon:VersionCompare(self.tocVersion, self.lastVersionNeedingRestart) then
         self:ShowNeedRestartNotification()
     end
 
-    if addon:VersionCompare(addon.version, minRCVersion) then
+    if addon:VersionCompare(addon.version, self.minRCVersion) then
         self:ShowRCVersionBelowMinNotification()
     end
 
@@ -804,8 +803,8 @@ function RCEPGP:ShowRCVersionBelowMinNotification()
         whileDead = true,
         hideOnEscape = true,
     }
-    StaticPopup_Show ("RCEPGP_RC_VERSION_BELOW_MIN", minRCVersion, addon.version)
-    self:Print(string.format(LEP["rc_version_below_min_notification"], minRCVersion, addon.version))
+    StaticPopup_Show ("RCEPGP_RC_VERSION_BELOW_MIN", self.minRCVersion, addon.version)
+    self:Print(string.format(LEP["rc_version_below_min_notification"], self.minRCVersion, addon.version))
 end
 
 -- Link table in RCEPGP's saved variable with EPGP's saved variable together.
