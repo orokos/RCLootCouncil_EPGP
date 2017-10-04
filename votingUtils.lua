@@ -824,6 +824,18 @@ function RCEPGP:EPGPDkpReloadedSettingToRC()
     RCEPGP:Debug("Save EPGP(dkp reloaded) settings to RCLootCouncil Saved Variables.")
 end
 
+local function deepcopy(dest, src)
+    if type(src) ~= "table" then return end
+    if type(dest) ~= "table" then return end
+    for key, value in pairs(src) do
+        if type(value) == "table" and type(dest[key]) == "table" then
+            deepcopy(dest[key], src[key])
+        else
+            dest[key] = value
+        end
+    end
+end
+
 -- Restore settings stored in RC to EPGP(dkp reloaded)
 function RCEPGP:RCToEPGPDkpReloadedSetting()
     if not self:GetEPGPdb().sendEPGPSettings then return end
@@ -832,15 +844,8 @@ function RCEPGP:RCToEPGPDkpReloadedSetting()
         for module, entry in pairs(self:GetEPGPdb().EPGPDkpReloadedDB.children) do
             if module ~= "log" then -- Not gonna sync "log" module because it is too big. Probably will sync it with RCHistory Later.
                 local mod = EPGP:GetModule(module)
-                if mod and mod.dbDefaults then -- Reset to default first
-                    EPGP.db.children[module]:RegisterDefaults(mod.dbDefaults)
-                end
-
-                if self:GetEPGPdb().EPGPDkpReloadedDB.children[module].profile then -- Copy settings
-                    for key, value in pairs(self:GetEPGPdb().EPGPDkpReloadedDB.children[module].profile) do
-                        EPGP.db.children[module].profile[key] = value
-                    end
-                end
+                -- Copy settings
+                deepcopy(EPGP.db.children[module].profile, self:GetEPGPdb().EPGPDkpReloadedDB.children[module].profile)
 
                 if mod then -- Enable module if needed
                     if self:GetEPGPdb().EPGPDkpReloadedDB.children[module].profile.enabled then
@@ -855,6 +860,7 @@ function RCEPGP:RCToEPGPDkpReloadedSetting()
 
     self:Debug("Restore EPGP(dkp reloaded) settings from RCLootCouncil Saved Variables.")
     self:EPGPDkpReloadedSettingToRC() -- Link table in RCEPGP's saved variable with EPGP's saved variable together.
+    self:Print(LEP["EPGP_DKP_Reloaded_settings_received"])
 end
 
 function RCEPGP:Add0GPSuffixToRCAwardButtons()

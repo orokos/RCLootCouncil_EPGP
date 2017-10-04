@@ -46,3 +46,4 @@ L["announce_awards_desc2"] = "\nRCLootCouncil-EPGP: #diffgp# - 玩家從物品�
 L["new_version_detected"] = "你的版本%s已過期. 檢測到新版本%s. 你可以從Curse.com或者Twitch客戶端更新此插件."
 L["need_restart_notification"] = "RCLootCouncil-EPGP v%s更新需要重啟游戲客戶端. 插件的某些功能無法正常使用直到游戲客戶端重啟."
 L["rc_version_below_min_notification"] = "此版本的RCLootCouncil-EPGP要求RCLootCouncil v%s+. 你的RCLootCouncil的版本為v%s. 請更新RCLootCouncil."
+L["EPGP_DKP_Reloaded_settings_received"] = "通過'/rc sync'收到了EPGP(dkp reloaded)的設置."
