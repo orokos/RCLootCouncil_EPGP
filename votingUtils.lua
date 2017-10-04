@@ -61,7 +61,7 @@ function RCEPGP:OnInitialize()
     -- Added in v2.0
     local lastVersion = self:GetEPGPdb().version
     if not lastVersion then lastVersion = "1.9.2" end
-    self:SecureHook(RCLootCouncil, "UpdateDB", function() self:GetEPGPdb().version = version end)
+    self:SecureHook(RCLootCouncil, "UpdateDB", function() self:GetEPGPdb().version = luaVersion; self:RCToEPGPDkpReloadedSetting(); end)
 
     if addon:VersionCompare(lastVersion, "2.0.0") then
         self:UpdateAnnounceKeyword_v2_0_0()
@@ -72,9 +72,8 @@ function RCEPGP:OnInitialize()
     end
 
     self:EPGPDkpReloadedSettingToRC()
-    self:RCToEPGPDkpReloadedSetting()
-    self:Add0GPSuffixToRCAwardButtons()
 
+    self:Add0GPSuffixToRCAwardButtons()
     self.initialize = true
 end
 
