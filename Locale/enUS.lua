@@ -79,3 +79,4 @@ L["customEPVariable_desc"] = "These variables are used for custom EP. Check the 
 L["variable_calendarSignedUp_help"] = "Function whose argument is no argument or a string. Returns 1 if the character signups up in one of today's calendar event (whose title contains the argument, if argument exists). Return 0 otherwise. For example, 'calendarSignedUp()' returns 1 if the character has signed up in one of today's calendar event."
 L["new_version_detected"] = "Your version %s is outdated. Newer Version %s detected. You can update the addon from Curse.com or Twitch App."
 L["need_restart_notification"] = "RCLootCouncil-EPGP v%s update requires full restart of the client. Some features of the addon don't work until client restarts."
+L["rc_version_below_min_notification"] = "This version of RCLootCouncil-EPGP requires RCLootCouncil v%s+. Your RCLootCouncil is v%s. Please update your RCLootCouncil."

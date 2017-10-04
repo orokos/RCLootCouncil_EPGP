@@ -1,5 +1,7 @@
 local DEBUG = false
 local luaVersion = "2.0.0"
+local lastVersionNeedingRestart = "2.0.0"
+local minRCVersion = "2.6.0"
 local tocVersion = GetAddOnMetadata("RCLootCouncil_EPGP", "Version")
 
 local addon = LibStub("AceAddon-3.0"):GetAddon("RCLootCouncil")
@@ -66,9 +68,14 @@ function RCEPGP:OnInitialize()
     if addon:VersionCompare(lastVersion, "2.0.0") then
         self:UpdateAnnounceKeyword_v2_0_0()
     end
+
     self:GetEPGPdb().version = luaVersion
-    if addon:VersionCompare(tocVersion, "2.0.0") then
+    if addon:VersionCompare(tocVersion, lastVersionNeedingRestart) then
         self:ShowNeedRestartNotification()
+    end
+
+    if addon:VersionCompare(addon.version, minRCVersion) then
+        self:ShowRCVersionBelowMinNotification()
     end
 
     self:EPGPDkpReloadedSettingToRC()
@@ -783,6 +790,18 @@ function RCEPGP:ShowNeedRestartNotification()
     self:Print(string.format(LEP["need_restart_notification"], luaVersion))
 end
 
+function RCEPGP:ShowRCVersionBelowMinNotification()
+    StaticPopupDialogs["RCEPGP_RC_VERSION_BELOW_MIN"] = {
+        text = LEP["rc_version_below_min_notification"],
+        button1 = OKAY,
+        whileDead = true,
+        hideOnEscape = true,
+    }
+    StaticPopup_Show ("RCEPGP_RC_VERSION_BELOW_MIN", minRCVersion, addon.version)
+    self:Print(string.format(LEP["rc_version_below_min_notification"], minRCVersion, addon.version))
+end
+
+-- Link table in RCEPGP's saved variable with EPGP's saved variable together.
 function RCEPGP:EPGPDkpReloadedSettingToRC()
     self:GetEPGPdb().EPGPDkpReloadedDB = {}
     self:GetEPGPdb().EPGPDkpReloadedDB.children = {}
