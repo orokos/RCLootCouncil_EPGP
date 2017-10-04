@@ -195,7 +195,7 @@ function RCEPGP:OptionsTable()
     end
 
     local options = {
-        name = function() return "RCLootCouncil - EPGP v"..tostring(self:GetEPGPdb().version) end,
+        name = "RCLootCouncil - EPGP v"..RCEPGP.luaVersion,
         order = 1,
         type = "group",
         childGroups = "tab",

@@ -11,13 +11,14 @@ local LEP = LibStub("AceLocale-3.0"):GetLocale("RCEPGP")
 local GP = LibStub("LibGearPoints-1.2")
 local LibDialog = LibStub("LibDialog-1.0")
 local RCLootCouncilML = addon:GetModule("RCLootCouncilML")
+RCEPGP.luaVersion = luaVersion
 RCEPGP.debug = DEBUG
 
 local ExtraUtilities = addon:GetModule("RCExtraUtilities", true) -- nil if ExtraUtilites not enabled.
 local RCVotingFrame = addon:GetModule("RCVotingFrame")
 
 local newestVersionDetected = luaVersion
-local currentAwardingGPs = {}
+local currentAwardingGP = 0
 
 local session = 1
 
@@ -86,7 +87,7 @@ function RCEPGP:OnMessageReceived(msg, ...)
     elseif msg == "RCMLAwardSuccess" then
         local session, winner, status = unpack({...})
         if winner then
-            local gp = self:GetCurrentAwardingGP(session)
+            local gp = self:GetCurrentAwardingGP()
             local item = RCVotingFrame:GetLootTable() and RCVotingFrame:GetLootTable()[session] and RCVotingFrame:GetLootTable()[session].link
             if item and gp and gp ~= 0 then
                 EPGP:IncGPBy(winner, item, gp)
@@ -119,7 +120,7 @@ function RCEPGP:OnCommReceived(prefix, serializedMsg, distri, sender)
             if command == "versionBroadcast" then
                 local otherVersion = data
                 if addon:VersionCompare(newestVersionDetected, otherVersion) then
-                    self:Print(string.format(LEP["new_version_detected"], self:GetEPGPdb().version, otherVersion))
+                    self:Print(string.format(LEP["new_version_detected"], luaVersion, otherVersion))
                     newestVersionDetected = otherVersion
                 end
                 self:DebugPrint("Other version received by comm: ", otherVersion)
@@ -669,8 +670,8 @@ RCEPGP.rightClickEntries = {
     },
 }
 
-function RCEPGP:GetCurrentAwardingGP(session)
-    return currentAwardingGPs[session] or 0
+function RCEPGP:GetCurrentAwardingGP()
+    return currentAwardingGP
 end
 
 -- Dialog input is the same as RCLOOTCOUNCIL_CONFIRM_AWARD, plus "gp" and "resonseGP".
@@ -687,9 +688,9 @@ LibDialog:Register("RCEPGP_CONFIRM_AWARD", {
     buttons = {
         { text = L["Yes"],
             on_click = function(self, data)
-                currentAwardingGPs[data.session] = data and data.gp or 0
+                currentAwardingGP = data and data.gp or 0
                 RCLootCouncilML.AwardPopupOnClickYes(self, data) -- GP Award is handled in RCEPGP:OnMessageReceived()
-                currentAwardingGPs[data.session] = 0
+                currentAwardingGP = 0
             end,
         },
         { text = L["No"],
@@ -708,7 +709,7 @@ end
 
 function RCEPGP:AddAnnouncement()
     if RCLootCouncilML.awardStrings then -- Requires RCLootCouncil v2.5
-        local function GetEPGPInfo(name, session)
+        local function GetEPGPInfo(name)
             name = self:GetEPGPName(name)
             local ep = "?"
             local gp = "?"
@@ -721,7 +722,7 @@ function RCEPGP:AddAnnouncement()
             end
 
             if ep and gp then
-                newgp = math.floor(gp + self:GetCurrentAwardingGP(session) + 0.5)
+                newgp = math.floor(gp + self:GetCurrentAwardingGP() + 0.5)
                 newpr = string.format("%.4g", ep / newgp)
             end
 
@@ -731,12 +732,12 @@ function RCEPGP:AddAnnouncement()
             return ep, gp, pr, newgp, newpr
         end
 
-        RCLootCouncilML.awardStrings['#diffgp#'] = function(name, _, _, _, session) return self:GetCurrentAwardingGP(session) end
-        RCLootCouncilML.awardStrings['#ep#'] = function(name, _, _, _, session) return select(1, GetEPGPInfo(name, session)) end
-        RCLootCouncilML.awardStrings['#gp#'] = function(name, _, _, _, session) return select(2, GetEPGPInfo(name, session)) end
-        RCLootCouncilML.awardStrings['#pr#'] = function(name, _, _, _, session) return select(3, GetEPGPInfo(name, session)) end
-        RCLootCouncilML.awardStrings['#newgp#'] = function(name, _, _, _, session) return select(4, GetEPGPInfo(name, session)) end
-        RCLootCouncilML.awardStrings['#newpr#'] = function(name, _, _, _, session) return select(5, GetEPGPInfo(name, session)) end
+        RCLootCouncilML.awardStrings['#diffgp#'] = function(name) return self:GetCurrentAwardingGP() end
+        RCLootCouncilML.awardStrings['#ep#'] = function(name) return select(1, GetEPGPInfo(name)) end
+        RCLootCouncilML.awardStrings['#gp#'] = function(name) return select(2, GetEPGPInfo(name)) end
+        RCLootCouncilML.awardStrings['#pr#'] = function(name) return select(3, GetEPGPInfo(name)) end
+        RCLootCouncilML.awardStrings['#newgp#'] = function(name) return select(4, GetEPGPInfo(name)) end
+        RCLootCouncilML.awardStrings['#newpr#'] = function(name) return select(5, GetEPGPInfo(name)) end
 
         L["announce_awards_desc2"] = L["announce_awards_desc2"].." "..LEP["announce_awards_desc2"]
         addon.options.args.mlSettings.args.announcementsTab.args.awardAnnouncement.args.outputDesc.name = L["announce_awards_desc2"]
@@ -766,7 +767,7 @@ function RCEPGP:SendVersion(channel)
     end
     if not IsInGuild() and channel == "GUILD" then return end
     if not IsInGroup() and (channel == "RAID" or channel == "PARTY") then return end
-    local serializedMsg = self:Serialize("versionBroadcast", self:GetEPGPdb().version)
+    local serializedMsg = self:Serialize("versionBroadcast", luaVersion)
     local _, a, b = self:Deserialize(serializedMsg)
     self:SendCommMessage("RCLC_EPGP", serializedMsg, channel)
     RCEPGP:Debug("Sent version ", serializedMsg, channel)
