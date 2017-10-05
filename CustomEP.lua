@@ -139,31 +139,31 @@ function RCCustomEP:OnInitialize()
     LibSpec:Rescan()
 end
 
+-- /rc massep  reason amount [formulaIndexOrName] [inputName] [ScheduleTime AfterSecond/HH:MM:SS/HH:MM, realm time, 24hour format]
+function RCCustomEP:Massep(reason, amount, formulaIndexOrName, inputName, scheduleTime)
+    EPGP:IncMassEPBy(reason, tonumber(amount), formulaIndexOrName, inputName, scheduleTime)
+end
+
+-- /rc recurep  intervalMin reason amount [formulaIndexOrName] [inputName] [ScheduleTime AfterSecond/HH:MM:SS/HH:MM, realm time, 24hour format]
+function RCCustomEP:Recurep(intervalMin, reason, amount, formulaIndexOrName, inputName, scheduleTime)
+    if tonumber(intervalMin) then
+        EPGP:StartRecurringEP(reason, tonumber(amount), tonumber(intervalMin), formulaIndexOrName, inputName, scheduleTime)
+    else
+        RCEPGP:Print("[intervalMin] must be a number") -- TODO: locale
+    end
+end
+
+-- /rc stoprecur
+function RCCustomEP:Stoprecur()
+    EPGP:StopRecurringEP()
+end
+
+-- TODO: /rc ep
+-- TODO: /rc gp
 function RCCustomEP:AddChatCommand()
-    local oldChatCommand = RCLootCouncil.ChatCommand
-
-    -- TODO: helper text
-    self:RawHook(addon, "ChatCommand", function(self, msg)
-        local command, arg1, arg2, arg3, arg4, arg5, arg6 = self:GetArgs(msg, 7)
-
-        if command == "massep" then
-            -- /rc massep  [reason] [amount] [formulaIndexOrName] [inputName] [ScheduleTime AfterSecond/HH:MM:SS/HH:MM, realm time, 24hour format]
-
-            EPGP:IncMassEPBy(arg1, tonumber(arg2), arg3, arg4, arg5)
-        elseif command == "recurep" then
-            -- /rc massep [intervalMin] [reason] [amount] [formulaIndexOrName] [inputName] [ScheduleTime AfterSecond/HH:MM:SS/HH:MM, realm time, 24hour format]
-            if tonumber(arg1) then
-                EPGP:StartRecurringEP(arg2, tonumber(arg3), tonumber(arg1), arg4, arg5, arg6)
-            else
-                EPGP:Print("[intervalMin] must be a number.")
-                return
-            end
-        elseif command == "stoprecur" then
-            EPGP:StopRecurringEP()
-        else
-            oldChatCommand(self, msg)
-        end
-    end)
+    addon:CustomChatCmd(self, "Massep", "MassEP", "massep") -- TODO: description
+    addon:CustomChatCmd(self, "Recurep", "Recurep", "recurep")
+    addon:CustomChatCmd(self, "Stoprecur", "Stoprecur", "stoprecur")
 end
 
 local timeLastCalendarUpdate = GetTime()
@@ -437,6 +437,7 @@ function RCCustomEP:UpdateRaidInfo()
     deleteInvalidInfos()
 end
 
+-- TODO: calendar date when it crossed midnight
 function RCCustomEP:GetPlayerFullName()
     local name, realm = UnitFullName("player")
     return name.."-"..realm
