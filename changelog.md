@@ -1,3 +1,30 @@
+### v2.0.0
+---
+- **Require RCLootCouncil v2.6.0+**. No longer work for v2.5.x due to RCLootCouncil API changes.
+- Support to set up the GP value for relic responses, which is a new feature in RCLootCouncil v2.6.0
+- You will be notified to update RCLootCouncil-EPGP when a new version is detected.
+- The settings of EPGP(dkp reloaded) can now be sent to other people through '/rc sync'.
+  - You can turn off this in the RCLootCouncil-EPGP settings, which can be opened by '/rc epgp'
+  - This is enabled by default.
+- **Custom EP** (new feature in Beta)
+  - This is a new feature that allows you to customize how to mass award EP to people, not restricting to if they are in the raid group.
+  - For example, you can choose to only mass award EP to guild members online or with a given guild rank.
+  - To do this, you first need to construct a formula which describe how much EP you are going to award to every guild members or raid members.
+    - To create a formula, go to ep tab in RCLootCouncil-EPGP settings.
+    - For example, formula "1000*isOnline" intends to award 1000EP to all guild or raid members online, 0EP(no EP award) to members offline.
+  - The MassEP award can be done immediately or to be scheduled at a later time by the following chat commands.
+  - To do the actual award, use the following commands:
+    - '/rc massep reason amount formulaIndexOrName InputName scheduleTime': Do a mass EP award. Use '/rc help' ot see usage.
+    - '/rc recurep intervalMin reason amount formulaIndexOrName InputName scheduleTime': Start a recurring EP Award. Use '/rc help' to see usage.
+    - '/rc epgui': Open a GUI which works the same as the above commands.
+  - Not going to write too much in a changelog. Read the ep tab in RCLootCouncil-EPGP options, RCLootCouncil-EPGP curse website or README file for more information.
+- The keyword of award text is changed from '#xxxx' to '#xxxx#'.
+  - For example, '#diffgp' is changed to '#diffgp#'
+  - You shouldn't need to change the award text manually. The addon updates the text automatically.
+- Thanks to the RCLootCouncil API changes, the performance is improved.
+
+
+
 ### v1.9.2
 ---
 ###### Bugfixes
