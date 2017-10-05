@@ -21,11 +21,9 @@ local gpCache = {} -- Cache the GP of items for even better performance. The gpC
 RCCustomGP.itemInfoCache = itemInfoCache
 RCCustomGP.gpCache = gpCache
 
-
 -- To be set in OnInitialize
 RCCustomGP.GPVariables = {}
 RCCustomGP.slots = {}
-RCCustomGP.allowedAPI = {}
 
 function RCCustomGP:OnInitialize()
     self.GPVariables = {
@@ -48,14 +46,6 @@ function RCCustomGP:OnInitialize()
     }
     self.slots = {"INVTYPE_HEAD", "INVTYPE_NECK", "INVTYPE_SHOULDER", "INVTYPE_CLOAK", "INVTYPE_NECK", "INVTYPE_CHEST", "INVTYPE_NECK", "INVTYPE_WRIST",
     "INVTYPE_HAND", "INVTYPE_WAIST", "INVTYPE_LEGS", "INVTYPE_FEET", "INVTYPE_FINGER", "INVTYPE_TRINKET", "INVTYPE_RELIC", }
-    self.allowedAPI = {
-        "print", "strsplit", "strmatch",
-        "GetInventoryItemEquippedUnusable", "GetItemCooldown", "GetItemCount", "GetItemFamily", "GetItemGem", "GetItemIcon", "GetItemInfo",
-        "GetItemQualityColor", "GetItemSpecInfo", "GetItemSpell", "GetItemStatDelta", "GetItemStats", "GetItemUniqueness", "GetItemUpgradeEffect",
-        "GetLootRollItemInfo", "GetLootRollItemLink", "GetMacroItem", "GetNumItemUpgradeEffects", "GetNumLootItems", "IsBattlePayItem", "IsConsumableItem",
-        "IsCurrentItem", "IsDressableItem", "IsEquippableItem", "IsEquippedItem", "IsEquippedItemType", "IsHarmfulItem", "IsHelpfulItem", "IsInventoryItemProfessionBag",
-        "IsItemInRange", "IsUsableItem", "ItemHasRange",
-    }
 
     self:RegisterMessage("RCCustomGPOptionChanged", "OnMessageReceived")
     self.initialize = true
@@ -832,29 +822,28 @@ function lib:GetValue(item)
 
     local fenv
 
+    local itemData = {}
+
     if itemInfoCache[itemLink] then
-        fenv = itemInfoCache[itemLink]
+        itemData = itemInfoCache[itemLink]
         for _, entry in ipairs(RCCustomGP.GPVariables) do
             if entry.unCached then
                 local variableName = entry.name
                 local variableValue = entry.value(itemLink)
-                fenv[variableName] = variableValue
+                itemData[variableName] = variableValue
             end
         end
     else
-        fenv = {}
         for _, entry in ipairs(RCCustomGP.GPVariables) do
             local variableName = entry.name
             local variableValue = entry.value(itemLink)
-            fenv[variableName] = variableValue
+            itemData[variableName] = variableValue
             RCEPGP:DebugPrint("CustomGPVariable", variableName, variableValue)
         end
-        itemInfoCache[itemLink] = fenv
-        for _, funcName in ipairs(RCCustomGP.allowedAPI) do
-            fenv[funcName] = _G[funcName]
-        end
+        itemInfoCache[itemLink] = itemData
     end
 
+    local fenv = RCEPGP:GetFuncEnv(itemData)
     formula = setfenv(formula, fenv)
 
     local status, value = pcall(formula)

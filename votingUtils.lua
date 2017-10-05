@@ -926,3 +926,63 @@ function RCEPGP:Print(...)
 		return Print(self, DEFAULT_CHAT_FRAME, ...)
 	end
 end
+
+
+-- Custom function environment to be used in Custom GP and custom EP.
+-- Some code is copy and paste from WeakAuras 2
+local function forbidden()
+  RCEPGP:Print("|cffffff00A A forbidden function is used in a formula, but has been blocked from doing so. Please check if your formulas contain any malicious code!|r")
+end
+
+local blockedFunctions = {
+  -- Lua functions that may allow breaking out of the environment
+  getfenv = true,
+  setfenv = true,
+  loadstring = true,
+  pcall = true,
+  -- blocked WoW API
+  SendMail = true,
+  SetTradeMoney = true,
+  AddTradeMoney = true,
+  PickupTradeMoney = true,
+  PickupPlayerMoney = true,
+  TradeFrame = true,
+  MailFrame = true,
+  EnumerateFrames = true,
+  RunScript = true,
+  AcceptTrade = true,
+  SetSendMailMoney = true,
+  EditMacro = true,
+  SlashCmdList = true,
+  DevTools_DumpCommand = true,
+  hash_SlashCmdList = true,
+  CreateMacro = true,
+  SetBindingMacro = true,
+  GuildDisband = true,
+  GuildUninvite = true,
+  ForceQuit = true,
+}
+
+function RCEPGP:GetFuncEnv(overrides)
+    local env_getglobal
+    local exec_env = setmetatable({}, { __index =
+      function(t, k)
+        if k == "_G" then
+          return t
+        elseif k == "getglobal" then
+          return env_getglobal
+        elseif blockedFunctions[k] then
+          return forbidden
+        elseif overrides[k] then
+          return overrides[k]
+        else
+          return _G[k]
+        end
+      end
+    })
+
+    function env_getglobal(k)
+      return exec_env[k]
+    end
+    return exec_env
+end
