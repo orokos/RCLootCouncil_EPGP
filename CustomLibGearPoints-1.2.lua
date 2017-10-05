@@ -22,41 +22,43 @@ RCCustomGP.itemInfoCache = itemInfoCache
 RCCustomGP.gpCache = gpCache
 
 
-
-RCCustomGP.GPVariables = {
-    { name = "ilvl", help = LEP["variable_ilvl_help"], value = function(itemLink) return select(2, RCCustomGP.GetRarityIlvlEquipLoc(itemLink)) or 0 end, },
-    { unCached = true, name = "slotWeights", help = LEP["variable_slotWeights_help"], value = function(itemLink) return RCCustomGP.GetSlotWeights(itemLink) or 0 end, },
-    { name = "isToken", help = LEP["variable_isToken_help"], value = function(itemLink) return RCCustomGP.IsItemToken(itemLink) and 1 or 0 end, },
-    { name = "hasAvoid", help = LEP["variable_hasAvoid_help"], value = function(itemLink) return RCCustomGP.GetBonusInfo(itemLink).hasAvoid and 1 or 0 end, },
-    { name = "hasLeech", help = LEP["variable_hasLeech_help"], value = function(itemLink) return RCCustomGP.GetBonusInfo(itemLink).hasLeech and 1 or 0 end, },
-    { name = "hasSpeed", help = LEP["variable_hasSpeed_help"], value = function(itemLink) return RCCustomGP.GetBonusInfo(itemLink).hasSpeed and 1 or 0 end, },
-    { name = "hasIndes", help = LEP["variable_hasIndes_help"], value = function(itemLink) return RCCustomGP.GetBonusInfo(itemLink).hasIndes and 1 or 0 end, },
-    { name = "numSocket", help = LEP["variable_numSocket_help"], value = function(itemLink) return RCCustomGP.GetBonusInfo(itemLink).numSocket or 0 end, },
-    { name = "rarity", help = LEP["variable_rarity_help"], value = function(itemLink) return select(1, RCCustomGP.GetRarityIlvlEquipLoc(itemLink)) or 0 end, },
-    { name = "itemID", help = LEP["variable_itemID_help"], value = function(itemLink) return RCCustomGP.GetItemID(itemLink) or 0 end, },
-    { name = "isNormal", help = LEP["variable_isNormal_help"], value = function(itemLink) return RCCustomGP.IsItemNormalDifficulty(itemLink) and 1 or 0 end, },
-    { name = "isHeroic", help = LEP["variable_isHeroic_help"], value = function(itemLink) return RCCustomGP.IsItemHeroicDifficulty(itemLink) and 1 or 0 end, },
-    { name = "isMythic", help = LEP["variable_isMythic_help"], value = function(itemLink) return RCCustomGP.IsItemMythicDifficulty(itemLink) and 1 or 0 end, },
-    { name = "isWarforged", help = LEP["variable_isWarforged_help"], value = function(itemLink) return RCCustomGP.IsItemWarforged(itemLink) and 1 or 0 end, },
-    { name = "isTitanforged", help = LEP["variable_isTitanforged_help"], value = function(itemLink) return RCCustomGP.IsItemTitanforged(itemLink) and 1 or 0 end, },
-    { name = "link", help = LEP["variable_link_help"], value = function(itemLink) return itemLink or 0 end, },
-}
-
-RCCustomGP.slots = {"INVTYPE_HEAD", "INVTYPE_NECK", "INVTYPE_SHOULDER", "INVTYPE_CLOAK", "INVTYPE_NECK", "INVTYPE_CHEST", "INVTYPE_NECK", "INVTYPE_WRIST",
-"INVTYPE_HAND", "INVTYPE_WAIST", "INVTYPE_LEGS", "INVTYPE_FEET", "INVTYPE_FINGER", "INVTYPE_TRINKET", "INVTYPE_RELIC", }
-
-RCCustomGP.allowedAPI = {
-    "print", "strsplit", "strmatch",
-    "GetInventoryItemEquippedUnusable", "GetItemCooldown", "GetItemCount", "GetItemFamily", "GetItemGem", "GetItemIcon", "GetItemInfo",
-    "GetItemQualityColor", "GetItemSpecInfo", "GetItemSpell", "GetItemStatDelta", "GetItemStats", "GetItemUniqueness", "GetItemUpgradeEffect",
-    "GetLootRollItemInfo", "GetLootRollItemLink", "GetMacroItem", "GetNumItemUpgradeEffects", "GetNumLootItems", "IsBattlePayItem", "IsConsumableItem",
-    "IsCurrentItem", "IsDressableItem", "IsEquippableItem", "IsEquippedItem", "IsEquippedItemType", "IsHarmfulItem", "IsHelpfulItem", "IsInventoryItemProfessionBag",
-    "IsItemInRange", "IsUsableItem", "ItemHasRange",
-}
+-- To be set in OnInitialize
+RCCustomGP.GPVariables = {}
+RCCustomGP.slots = {}
+RCCustomGP.allowedAPI = {}
 
 function RCCustomGP:OnInitialize()
-    self.initialize = true
+    self.GPVariables = {
+        { name = "ilvl", help = LEP["variable_ilvl_help"], value = function(itemLink) return select(2, RCCustomGP.GetRarityIlvlEquipLoc(itemLink)) or 0 end, },
+        { unCached = true, name = "slotWeights", help = LEP["variable_slotWeights_help"], value = function(itemLink) return RCCustomGP.GetSlotWeights(itemLink) or 0 end, },
+        { name = "isToken", help = LEP["variable_isToken_help"], value = function(itemLink) return RCCustomGP.IsItemToken(itemLink) and 1 or 0 end, },
+        { name = "hasAvoid", help = LEP["variable_hasAvoid_help"], value = function(itemLink) return RCCustomGP.GetBonusInfo(itemLink).hasAvoid and 1 or 0 end, },
+        { name = "hasLeech", help = LEP["variable_hasLeech_help"], value = function(itemLink) return RCCustomGP.GetBonusInfo(itemLink).hasLeech and 1 or 0 end, },
+        { name = "hasSpeed", help = LEP["variable_hasSpeed_help"], value = function(itemLink) return RCCustomGP.GetBonusInfo(itemLink).hasSpeed and 1 or 0 end, },
+        { name = "hasIndes", help = LEP["variable_hasIndes_help"], value = function(itemLink) return RCCustomGP.GetBonusInfo(itemLink).hasIndes and 1 or 0 end, },
+        { name = "numSocket", help = LEP["variable_numSocket_help"], value = function(itemLink) return RCCustomGP.GetBonusInfo(itemLink).numSocket or 0 end, },
+        { name = "rarity", help = LEP["variable_rarity_help"], value = function(itemLink) return select(1, RCCustomGP.GetRarityIlvlEquipLoc(itemLink)) or 0 end, },
+        { name = "itemID", help = LEP["variable_itemID_help"], value = function(itemLink) return RCCustomGP.GetItemID(itemLink) or 0 end, },
+        { name = "isNormal", help = LEP["variable_isNormal_help"], value = function(itemLink) return RCCustomGP.IsItemNormalDifficulty(itemLink) and 1 or 0 end, },
+        { name = "isHeroic", help = LEP["variable_isHeroic_help"], value = function(itemLink) return RCCustomGP.IsItemHeroicDifficulty(itemLink) and 1 or 0 end, },
+        { name = "isMythic", help = LEP["variable_isMythic_help"], value = function(itemLink) return RCCustomGP.IsItemMythicDifficulty(itemLink) and 1 or 0 end, },
+        { name = "isWarforged", help = LEP["variable_isWarforged_help"], value = function(itemLink) return RCCustomGP.IsItemWarforged(itemLink) and 1 or 0 end, },
+        { name = "isTitanforged", help = LEP["variable_isTitanforged_help"], value = function(itemLink) return RCCustomGP.IsItemTitanforged(itemLink) and 1 or 0 end, },
+        { name = "link", help = LEP["variable_link_help"], value = function(itemLink) return itemLink or 0 end, },
+    }
+    self.slots = {"INVTYPE_HEAD", "INVTYPE_NECK", "INVTYPE_SHOULDER", "INVTYPE_CLOAK", "INVTYPE_NECK", "INVTYPE_CHEST", "INVTYPE_NECK", "INVTYPE_WRIST",
+    "INVTYPE_HAND", "INVTYPE_WAIST", "INVTYPE_LEGS", "INVTYPE_FEET", "INVTYPE_FINGER", "INVTYPE_TRINKET", "INVTYPE_RELIC", }
+    self.allowedAPI = {
+        "print", "strsplit", "strmatch",
+        "GetInventoryItemEquippedUnusable", "GetItemCooldown", "GetItemCount", "GetItemFamily", "GetItemGem", "GetItemIcon", "GetItemInfo",
+        "GetItemQualityColor", "GetItemSpecInfo", "GetItemSpell", "GetItemStatDelta", "GetItemStats", "GetItemUniqueness", "GetItemUpgradeEffect",
+        "GetLootRollItemInfo", "GetLootRollItemLink", "GetMacroItem", "GetNumItemUpgradeEffects", "GetNumLootItems", "IsBattlePayItem", "IsConsumableItem",
+        "IsCurrentItem", "IsDressableItem", "IsEquippableItem", "IsEquippedItem", "IsEquippedItemType", "IsHarmfulItem", "IsHelpfulItem", "IsInventoryItemProfessionBag",
+        "IsItemInRange", "IsUsableItem", "ItemHasRange",
+    }
+
     self:RegisterMessage("RCCustomGPOptionChanged", "OnMessageReceived")
+    self.initialize = true
 end
 
 function RCCustomGP:OnMessageReceived(msg)

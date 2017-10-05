@@ -183,6 +183,11 @@ function RCEPGP:AddGPOptions()
 end
 
 function RCEPGP:RefreshOptionsTable()
+    if not RCCustomGP.initialize then
+        C_Timer.After(1, function() self:RefreshOptionsTable() end)
+        return
+    end
+
     local function EPFormulaGetUnrepeatedName(name)
         local function isRepeated(name)
             for _, entry in pairs(RCEPGP:GetEPGPdb().EPFormulas) do
