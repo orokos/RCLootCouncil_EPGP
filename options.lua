@@ -8,8 +8,16 @@ local RCCustomEP = RCEPGP:GetModule("RCCustomEP", true)
 local L = LibStub("AceLocale-3.0"):GetLocale("RCLootCouncil")
 local LEP = LibStub("AceLocale-3.0"):GetLocale("RCEPGP")
 
-local options = {}
+local options =
+{
+    name = "RCLootCouncil - EPGP v"..RCEPGP.version,
+    order = 1,
+    type = "group",
+    childGroups = "tab",
+    inline = false,
+}
 RCEPGP.epgpOptions = options
+
 
 ------ Options ------
 local defaults = {

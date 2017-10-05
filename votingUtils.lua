@@ -57,8 +57,9 @@ function RCEPGP:OnInitialize()
     self:DisablezhCNProfanityFilter()
 
     self:SetDefaults()
-    self:RefreshOptionsTable()
+
     self:AddOptions()
+    self:RefreshOptionsTable()
 
     self:AddGPOptions()
     self:AddChatCommand()
