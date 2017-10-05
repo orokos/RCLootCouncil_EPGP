@@ -1,5 +1,5 @@
 local DEBUG = false
-
+-- TODO: testVersion
 local addon = LibStub("AceAddon-3.0"):GetAddon("RCLootCouncil")
 local RCEPGP = addon:NewModule("RCEPGP", "AceComm-3.0", "AceConsole-3.0", "AceHook-3.0", "AceEvent-3.0", "AceTimer-3.0", "AceSerializer-3.0")
 local EPGP = LibStub("AceAddon-3.0"):GetAddon("EPGP")
@@ -55,7 +55,11 @@ function RCEPGP:OnInitialize()
     self:DisableGPPopup()
     self:EnableGPTooltip()
     self:DisablezhCNProfanityFilter()
-    self:OptionsTable()
+
+    self:SetDefaults()
+    self:RefreshOptionsTable(self.epgpOptions)
+    self:AddOptions(self.epgpOptions)
+
     self:AddGPOptions()
     self:AddChatCommand()
     self:AddAnnouncement()

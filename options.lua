@@ -8,6 +8,9 @@ local RCCustomEP = RCEPGP:GetModule("RCCustomEP", true)
 local L = LibStub("AceLocale-3.0"):GetLocale("RCLootCouncil")
 local LEP = LibStub("AceLocale-3.0"):GetLocale("RCEPGP")
 
+local options = {}
+RCEPGP.options = options
+
 ------ Options ------
 local defaults = {
     customGPEnabled = false,
@@ -171,9 +174,7 @@ function RCEPGP:AddGPOptions()
     addon:ConfigTableChanged("tierButtons");
 end
 
-function RCEPGP:OptionsTable()
-    self:SetDefaults()
-
+function RCEPGP:RefreshOptionsTable(options)
     local function EPFormulaGetUnrepeatedName(name)
         local function isRepeated(name)
             for _, entry in pairs(RCEPGP:GetEPGPdb().EPFormulas) do
@@ -194,13 +195,12 @@ function RCEPGP:OptionsTable()
         end
     end
 
-    local options = {
-        name = "RCLootCouncil - EPGP v"..RCEPGP.version,
-        order = 1,
-        type = "group",
-        childGroups = "tab",
-        inline = false,
-        args = {
+    options.name = "RCLootCouncil - EPGP v"..RCEPGP.version,
+    options.order = 1,
+    options.type = "group",
+    options.childGroups = "tab",
+    options.inline = false,
+    options.args = {
             gpTab = {
                 name = "GP",
                 order = 1,
@@ -575,8 +575,10 @@ function RCEPGP:OptionsTable()
             }
         end
     end
+    return options
+end
 
-    self.epgpOptions = options
+function RCEPGP:AddOptions(options)
     LibStub("AceConfigRegistry-3.0"):RegisterOptionsTable("RCLootCouncil - EPGP", self.epgpOptions)
     self.optionsFrame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions("RCLootCouncil - EPGP", "EPGP", "RCLootCouncil")
     LibStub("AceConfigRegistry-3.0"):NotifyChange("RCLootCouncil - EPGP")
