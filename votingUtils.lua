@@ -57,8 +57,8 @@ function RCEPGP:OnInitialize()
     self:DisablezhCNProfanityFilter()
 
     self:SetDefaults()
-    self:RefreshOptionsTable(self.epgpOptions)
-    self:AddOptions(self.epgpOptions)
+    self:RefreshOptionsTable()
+    self:AddOptions()
 
     self:AddGPOptions()
     self:AddChatCommand()
