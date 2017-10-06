@@ -964,7 +964,7 @@ local blockedFunctions = {
   CreateFrame = true, CreateFont = true,
   SetScreenResolution = true, SetCurrentGraphicsSetting = true, RestartGx = true,
   UIParent = true, WorldFrame = true,
-  C_LFGList = true, 
+  C_LFGList = true, StaticPopupDialogs = true, StaticPopup_Show = true, SendChatMessage = true, SendAddonMessage = true, 
 }
 
 -- Get a function environment
