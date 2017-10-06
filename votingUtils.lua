@@ -360,6 +360,9 @@ function RCEPGP:GetEPGPName(inputName)
         end
     else -- Name not found in raid, fix capitialiation and space in realm name manually.
         local shortName, realmName = strsplit("-", inputName)
+        if not realmName then
+            realmName = ourRealmName
+        end
         local shortName = UpperFirstLowerRest(shortName)
         realmName = realmName:gsub(" ", "") -- Eliminate space in the name
         return shortName.."-"..realmName

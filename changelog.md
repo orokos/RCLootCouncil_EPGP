@@ -6,6 +6,10 @@
 - The settings of EPGP(dkp reloaded) can now be sent to other people through '/rc sync'.
   - You can turn off this in the RCLootCouncil-EPGP settings, which can be opened by '/rc epgp'
   - This is enabled by default.
+- Add "Change Name To..." button in the rightclick menu of RCLootCouncil LootHistory Frame.
+  - You can enter the name you want in the following dialog.
+  - If you don't want to enter the name manually, target that character then click the button. His name is filled in automatically.
+  - This allows you to change who gets the item, even if the name list in the rightclick menu is super long.
 - **Custom EP** (new feature in Beta)
   - This is a new feature that allows you to customize how to mass award EP to people, not restricting to if they are in the raid group.
   - For example, you can choose to only mass award EP to guild members online or with a given guild rank.

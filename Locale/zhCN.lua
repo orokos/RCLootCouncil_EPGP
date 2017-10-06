@@ -47,3 +47,5 @@ L["new_version_detected"] = "你的版本%s已过期. 检测到新版本%s. 你�
 L["need_restart_notification"] = "RCLootCouncil-EPGP v%s更新需要重启游戏客户端. 插件的某些功能无法正常使用直到游戏客户端重启."
 L["rc_version_below_min_notification"] = "此版本的RCLootCouncil-EPGP要求RCLootCouncil v%s+. 你的RCLootCouncil的版本为v%s. 请更新RCLootCouncil."
 L["EPGP_DKP_Reloaded_settings_received"] = "通过'/rc sync'收到了EPGP(dkp reloaded)的设置."
+L["Change name to %s"] = "将获得者改为%s"
+L["Change Name To..."] = "名字修改为..."
