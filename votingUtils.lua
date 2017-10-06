@@ -759,7 +759,7 @@ function RCEPGP:AddAnnouncement()
         L["announce_awards_desc2"] = L["announce_awards_desc2"].." "..LEP["announce_awards_desc2"]
         addon.options.args.mlSettings.args.announcementsTab.args.awardAnnouncement.args.outputDesc.name = L["announce_awards_desc2"]
     end
-    RCEPGP:Debug("Added EPGP award text keyword.")
+    self:Debug("Added EPGP award text keyword.")
 end
 
 function RCEPGP:UpdateAnnounceKeyword_v2_0_0()
@@ -775,7 +775,7 @@ function RCEPGP:UpdateAnnounceKeyword_v2_0_0()
             addon:Getdb().awardText[i].text = text
         end
     end
-    RCEPGP:Debug("Updated award text keyword to v2.0.0.")
+    self:Debug("Updated award text keyword to v2.0.0.")
 end
 
 function RCEPGP:SendVersion(channel)
@@ -787,7 +787,7 @@ function RCEPGP:SendVersion(channel)
     local serializedMsg = self:Serialize("versionBroadcast", self.version)
     local _, a, b = self:Deserialize(serializedMsg)
     self:SendCommMessage("RCLC_EPGP", serializedMsg, channel)
-    RCEPGP:Debug("Sent version ", serializedMsg, channel)
+    self:Debug("Sent version ", serializedMsg, channel)
 end
 
 function RCEPGP:ShowNeedRestartNotification()
@@ -826,7 +826,7 @@ function RCEPGP:EPGPDkpReloadedSettingToRC()
             end
         end
     end
-    RCEPGP:Debug("Save EPGP(dkp reloaded) settings to RCLootCouncil Saved Variables.")
+    self:Debug("Save EPGP(dkp reloaded) settings to RCLootCouncil Saved Variables.")
 end
 
 local function deepcopy(dest, src)
@@ -882,14 +882,14 @@ end
 
 -- debug print and log
 function RCEPGP:Debug(msg, ...)
-    if RCEPGP.debug then
-        RCEPGP:DebugPrint(msg, ...)
+    if self.debug then
+        self:DebugPrint(msg, ...)
     end
     addon:DebugLog("EPGP: ", msg, ...)
 end
 
 function RCEPGP:DebugPrint(msg, ...)
-	if RCEPGP.debug then
+	if self.debug then
 		if select("#", ...) > 0 then
 			print("|cffcb6700rcepgpdebug:|r "..tostring(msg).."|cffff6767", ...)
 		else
