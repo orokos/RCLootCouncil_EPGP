@@ -3,10 +3,13 @@
 ## Notes: An UNOFFICIAL RCLootCouncil module to add full EPGP support to it
 ## Title: RCLootCouncil - EPGP
 ## Version: 2.0.0
+## X-TestVersion: Release
 ## Dependencies: RCLootCouncil
 ## Dependencies: EPGP
 ## OptionalDeps: RCLootCouncil_ExtraUtilities
 ## OptionalDeps: RCLootCouncil_GroupGear
+## X-Website: https://mods.curse.com/addons/wow/269161-rclootcouncil-epgp
+## X-Github: https://github.com/SafeteeWoW/RCLootCouncil_EPGP
 
 Libs\LibGroupInSpecT-1.1\LibGroupInSpecT-1.1.lua
 

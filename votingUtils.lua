@@ -1,5 +1,5 @@
 local DEBUG = false
--- TODO: testVersion
+
 local addon = LibStub("AceAddon-3.0"):GetAddon("RCLootCouncil")
 local RCEPGP = addon:NewModule("RCEPGP", "AceComm-3.0", "AceConsole-3.0", "AceHook-3.0", "AceEvent-3.0", "AceTimer-3.0", "AceSerializer-3.0")
 local EPGP = LibStub("AceAddon-3.0"):GetAddon("EPGP")
@@ -10,8 +10,12 @@ local GP = LibStub("LibGearPoints-1.2")
 local LibDialog = LibStub("LibDialog-1.0")
 local RCLootCouncilML = addon:GetModule("RCLootCouncilML")
 
+-- Edit the following versions every update, and should also update the version in TOC file.
 RCEPGP.version = "2.0.0"
+RCEPGP.testVersion = "Release"
 RCEPGP.tocVersion = GetAddOnMetadata("RCLootCouncil_EPGP", "Version")
+RCEPGP.testTocVersion = GetAddOnMetadata("RCLootCouncil_EPGP", "X-TestVersion")
+
 RCEPGP.lastVersionNeedingRestart = "2.0.0"
 RCEPGP.minRCVersion = "2.6.0"
 
@@ -21,6 +25,8 @@ local ExtraUtilities = addon:GetModule("RCExtraUtilities", true) -- nil if Extra
 local RCVotingFrame = addon:GetModule("RCVotingFrame")
 
 local newestVersionDetected = RCEPGP.version
+local newestTestVersionDetected = RCEPGP.testVersion
+
 local currentAwardingGP = 0
 
 local session = 1
@@ -69,6 +75,8 @@ function RCEPGP:OnInitialize()
     self:SecureHook(RCLootCouncil, "UpdateDB", function()
         self:GetEPGPdb().version = self.version
         self:GetEPGPdb().tocVersion = self.tocVersion
+        self:GetEPGPdb().testVersion = self.testVersion
+        self:GetEPGPdb().testTocVersion = self.testTocVersion
         self:RCToEPGPDkpReloadedSetting()
     end)
 
@@ -81,6 +89,8 @@ function RCEPGP:OnInitialize()
 
     self:GetEPGPdb().version = self.version
     self:GetEPGPdb().tocVersion = self.tocVersion
+    self:GetEPGPdb().testVersion = self.testVersion
+    self:GetEPGPdb().testTocVersion = self.testTocVersion
     if addon:VersionCompare(self.tocVersion, self.lastVersionNeedingRestart) then
         self:ShowNeedRestartNotification()
     end
@@ -135,12 +145,20 @@ function RCEPGP:OnCommReceived(prefix, serializedMsg, distri, sender)
         self:DebugPrint("RCEPGP_OnCommReceived_RCLC_EPGP", serializedMsg, distri, sender)
         if test then
             if command == "versionBroadcast" then
-                local otherVersion = data
-                if addon:VersionCompare(newestVersionDetected, otherVersion) then
-                    self:Print(string.format(LEP["new_version_detected"], version, otherVersion))
-                    newestVersionDetected = otherVersion
+                local otherVersion, otherTestVersion = unpack(data)
+
+                -- Only report test version updates if a test version is installed.
+                if self:IsTestVersion(self.testVersion) or (not self:IsTestVersion(otherTestVersion)) then
+                    if addon:VersionCompare(newestVersionDetected, otherVersion) then
+                        self:Print(string.format(LEP["new_version_detected"], self.version.."-"..self.testVersion, otherVersion.."-"..otherTestVersion))
+                        newestVersionDetected = otherVersion
+                        newestTestVersionDetected = otherTestVersion
+                    elseif newestVersionDetected == otherVersion and self:TestVersionCompare(newestTestVersionDetected, otherTestVersion) then
+                        self:Print(string.format(LEP["new_version_detected"], self.version.."-"..self.testVersion, otherVersion.."-"..otherTestVersion))
+                        newestTestVersionDetected = otherTestVersion
+                    end
                 end
-                self:DebugPrint("Other version received by comm: ", otherVersion)
+                self:DebugPrint("Other version received by comm: ", otherVersion.."-"..otherTestVersion)
             end
         end
     end
@@ -153,6 +171,24 @@ function RCEPGP:OnEvent(event, ...)
     elseif event == "GROUP_JOINED" then
         C_Timer.After(5, function() self:SendVersion("RAID") end)
     end
+end
+
+-- Return true if test version 1 is older than test version 2
+-- testVersion looks like: Beta.1, and we only compare the number after the dot.
+function RCEPGP:TestVersionCompare(v1, v2)
+    if v1:find("Release") then
+        return false
+    end
+    if v2:find("Release") then
+        return true
+    end
+    local testName1, testVer1 = strsplit(".", v1)
+    local testName2, testVer2 = strsplit(".", v2)
+    return tonumber(v1) < tonumber(v2)
+end
+
+function RCEPGP:IsTestVersion(v)
+    return v and (v:find("Alpha") or v:find("Beta"))
 end
 
 function RCEPGP.UpdateVotingFrame()
@@ -784,8 +820,7 @@ function RCEPGP:SendVersion(channel)
     end
     if not IsInGuild() and channel == "GUILD" then return end
     if not IsInGroup() and (channel == "RAID" or channel == "PARTY") then return end
-    local serializedMsg = self:Serialize("versionBroadcast", self.version)
-    local _, a, b = self:Deserialize(serializedMsg)
+    local serializedMsg = self:Serialize("versionBroadcast", {self.version, self.testVersion})
     self:SendCommMessage("RCLC_EPGP", serializedMsg, channel)
     self:Debug("Sent version ", serializedMsg, channel)
 end
