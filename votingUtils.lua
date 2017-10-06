@@ -958,13 +958,14 @@ local blockedFunctions = {
   PickupInventoryItem = true, PickupItem = true, PickupMacro = true, PickupMerchantItem = true, PickupPetAction = true, PickupPlayerMoney = true,
   PickupSpell = true, PickupStablePet = true, PickupTradeMoney = true, SaveEquipmentSet = true, WithdrawGuildBankMoney = true,
   DepositGuildBankMoney = true, AddOrRemoveFriend = true, AddIgnore = true, PlaceAuctionBid = true, CancelAuction = true, StartAuction = true,
-  CancelSell = true, Reload = true, DisableAddOn = true, DisableAllAddOns = true, EnableAddOn = true, EnableAllAddOns = true,
+  CancelSell = true, ReloadUI = true, DisableAddOn = true, DisableAllAddOns = true, EnableAddOn = true, EnableAllAddOns = true,
   BNRemoveFriend = true, BNInviteFriend = true, BNAcceptFriendInvite = true, BNReportPlayer = true, BNReportFriendInvite = true,
   SetCVar = true, SetCVarBitfield = true,
   CreateFrame = true, CreateFont = true,
   SetScreenResolution = true, SetCurrentGraphicsSetting = true, RestartGx = true,
   UIParent = true, WorldFrame = true,
-  C_LFGList = true, StaticPopupDialogs = true, StaticPopup_Show = true, SendChatMessage = true, SendAddonMessage = true, 
+  C_LFGList = true, StaticPopupDialogs = true, StaticPopup_Show = true, SendChatMessage = true, SendAddonMessage = true,
+  SetUIVisibility = true,
 }
 
 -- Get a function environment
