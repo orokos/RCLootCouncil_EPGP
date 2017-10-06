@@ -936,33 +936,39 @@ end
 
 local blockedFunctions = {
   -- Lua functions that may allow breaking out of the environment
-  getfenv = true,
-  setfenv = true,
-  loadstring = true,
-  pcall = true,
+  getfenv = true, setfenv = true, loadstring = true, pcall = true,
   -- blocked WoW API
-  SendMail = true,
-  SetTradeMoney = true,
-  AddTradeMoney = true,
-  PickupTradeMoney = true,
-  PickupPlayerMoney = true,
-  TradeFrame = true,
-  MailFrame = true,
-  EnumerateFrames = true,
-  RunScript = true,
-  AcceptTrade = true,
-  SetSendMailMoney = true,
-  EditMacro = true,
-  SlashCmdList = true,
-  DevTools_DumpCommand = true,
-  hash_SlashCmdList = true,
-  CreateMacro = true,
-  SetBindingMacro = true,
-  GuildDisband = true,
-  GuildUninvite = true,
-  ForceQuit = true,
+  SendMail = true, SetTradeMoney = true, AddTradeMoney = true, PickupTradeMoney = true, PickupPlayerMoney = true, TradeFrame = true,
+  MailFrame = true, EnumerateFrames = true, RunScript = true, AcceptTrade = true, SetSendMailMoney = true, EditMacro = true,
+  SlashCmdList = true, DevTools_DumpCommand = true, hash_SlashCmdList = true, CreateMacro = true, SetBindingMacro = true,
+  GuildDisband = true, GuildUninvite = true, ForceQuit = true, SetGuildBankTabItemWithdraw = true, SetGuildBankWithdrawGoldLimit = true,
+  SetGuildMemberRank = true, SetGuildInfoText = true, SetLookingForGuildComment = true, SetLookingForGuildSettings = true,
+  GuildRosterSetOfficerNote = true, GuildRosterSetPublicNote = true, GuildSetLeader = true, GuildSetMOTD = true, GuildLeave = true,
+  GuildControlAddRank = true, GuildControlDelRank = true, GuildControlSaveRank = true, GuildControlSetRank = true,
+  GuildControlSetRankFlag = true, GuildControlShiftRankDown = true, GuildControlShiftRankUp = true, GuildDemote = true, GuildPromote = true,
+  CalendarContextEventRemove = true, CalendarContextEventSignUp = true, CalendarEventRemoveInvite = true, CalendarEventSetAutoApprove = true,
+  CalendarEventSetLocked = true, CalendarEventSetDate = true, CalendarEventSetTime = true, CalendarEventSetTitle = true,
+  CalendarNewEvent = true, CalendarNewGuildAnnouncement = true, CalendarNewGuildEvent = true, CalendarRemoveEvent = true,
+  DeleteCursorItem = true, DeleteMacro = true, DeleteInboxItem = true, UninviteUnit = true,
+  SetLootMethod = true, SetLootSpecialization = true, DemoteAssistant = true, SetEveryoneIsAssistant = true,
+  PromoteToLeader = true, PromoteToAssistant = true, LeaveParty = true, InviteUnit = true,
+  PickupAction = true, PickupPetAction = true, PlaceAction = true, PickupCompanion = true, PickupBagFromSlot = true,
+  PickupContainerItem = true, PutItemInBackpack = true, PutItemInBag = true, SplitContainerItem = true, SplitGuildBankItem = true,
+  SocketContainerItem = true, SocketInventoryItem = true, AcceptSockets = true, PickupGuildBankItem = true, PickupGuildBankMoney = true,
+  PickupInventoryItem = true, PickupItem = true, PickupMacro = true, PickupMerchantItem = true, PickupPetAction = true, PickupPlayerMoney = true,
+  PickupSpell = true, PickupStablePet = true, PickupTradeMoney = true, SaveEquipmentSet = true, WithdrawGuildBankMoney = true,
+  DepositGuildBankMoney = true, AddOrRemoveFriend = true, AddIgnore = true, PlaceAuctionBid = true, CancelAuction = true, StartAuction = true,
+  CancelSell = true, Reload = true, DisableAddOn = true, DisableAllAddOns = true, EnableAddOn = true, EnableAllAddOns = true,
+  BNRemoveFriend = true, BNInviteFriend = true, BNAcceptFriendInvite = true, BNReportPlayer = true, BNReportFriendInvite = true,
+  SetCVar = true, SetCVarBitfield = true,
+  CreateFrame = true, CreateFont = true,
+  SetScreenResolution = true, SetCurrentGraphicsSetting = true, RestartGx = true,
+  UIParent = true, WorldFrame = true,
+  C_LFGList = true, 
 }
 
+-- Get a function environment
+-- 'overrides' contains the data you want to insert into the environment
 function RCEPGP:GetFuncEnv(overrides)
     local env_getglobal
     local exec_env = setmetatable({}, { __index =
