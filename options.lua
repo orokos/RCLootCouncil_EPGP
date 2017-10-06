@@ -190,7 +190,7 @@ function RCEPGP:RefreshOptionsTable()
 
     local function EPFormulaGetUnrepeatedName(name)
         local function isRepeated(name)
-            for _, entry in pairs(RCEPGP:GetEPGPdb().EPFormulas) do
+            for _, entry in pairs(self:GetEPGPdb().EPFormulas) do
                 if entry.name == name then
                     return true
                 end
@@ -210,7 +210,7 @@ function RCEPGP:RefreshOptionsTable()
 
     local options = self.epgpOptions
 
-    options.name = "RCLootCouncil - EPGP v"..RCEPGP.version
+    options.name = "RCLootCouncil - EPGP v"..self.version
     options.order = 1
     options.type = "group"
     options.childGroups = "tab"
@@ -270,7 +270,7 @@ function RCEPGP:RefreshOptionsTable()
                                 type = "toggle",
                                 width = "full",
                                 get = function() return self:GetEPGPdb().biddingEnabled end,
-                                set = function(info, value) self:GetEPGPdb().biddingEnabled = value; RCEPGP:SetupColumns() end,
+                                set = function(info, value) self:GetEPGPdb().biddingEnabled = value; self:SetupColumns() end,
                             },
                         },
                     },
@@ -294,7 +294,7 @@ function RCEPGP:RefreshOptionsTable()
                                 name = LEP["restore_default"],
                                 order = 2,
                                 type = "execute",
-                                func = function() RCEPGP:SetDefaults(true) end,
+                                func = function() self:SetDefaults(true) end,
                             },
                             slotWeights = {
                                 name = LEP["slot_weights"],
@@ -331,11 +331,11 @@ function RCEPGP:RefreshOptionsTable()
                                     self:GetEPGPdb()[info[#info]] = value
                                     local func, err = RCCustomGP:GetFormulaFunc()
                                     if not func then
-                                        RCEPGP.epgpOptions.args.gpTab.args.customGP.args.errorMsg.name = LEP["formula_syntax_error"]
-                                        RCEPGP.epgpOptions.args.gpTab.args.customGP.args.errorDetailedMsg.name = err
+                                        self.epgpOptions.args.gpTab.args.customGP.args.errorMsg.name = LEP["formula_syntax_error"]
+                                        self.epgpOptions.args.gpTab.args.customGP.args.errorDetailedMsg.name = err
                                     else
-                                        RCEPGP.epgpOptions.args.gpTab.args.customGP.args.errorMsg.name = ""
-                                        RCEPGP.epgpOptions.args.gpTab.args.customGP.args.errorDetailedMsg.name = ""
+                                        self.epgpOptions.args.gpTab.args.customGP.args.errorMsg.name = ""
+                                        self.epgpOptions.args.gpTab.args.customGP.args.errorDetailedMsg.name = ""
                                     end
                                     LibStub("AceConfigRegistry-3.0"):NotifyChange("RCLootCouncil");
                                     self:SendMessage("RCCustomGPOptionChanged")
@@ -373,8 +373,8 @@ function RCEPGP:RefreshOptionsTable()
                             order = 2,
                             name = "Add Formula",
                             type = "execute",
-                            disabled = function() return #RCEPGP:GetEPGPdb().EPFormulas >= RCCustomEP.MaxFormulas end,
-                            func = function() table.insert(RCEPGP:GetEPGPdb().EPFormulas, {
+                            disabled = function() return #self:GetEPGPdb().EPFormulas >= RCCustomEP.MaxFormulas end,
+                            func = function() table.insert(self:GetEPGPdb().EPFormulas, {
                                     name = EPFormulaGetUnrepeatedName("New"),
                                     desc = "",
                                     formula = "0",
@@ -398,19 +398,19 @@ function RCEPGP:RefreshOptionsTable()
         }
 
     local function EPFormulaGetter(index, category)
-        if (not RCEPGP:GetEPGPdb().EPFormulas) or (not RCEPGP:GetEPGPdb().EPFormulas[index]) then
+        if (not self:GetEPGPdb().EPFormulas) or (not self:GetEPGPdb().EPFormulas[index]) then
             return ""
         end
-        return RCEPGP:GetEPGPdb().EPFormulas[index][category]
+        return self:GetEPGPdb().EPFormulas[index][category]
     end
     local function EPFormulaSetter(index, category, value)
-        if (not RCEPGP:GetEPGPdb().EPFormulas) then
-            RCEPGP:GetEPGPdb().EPFormulas = {}
+        if (not self:GetEPGPdb().EPFormulas) then
+            self:GetEPGPdb().EPFormulas = {}
         end
-        if (not RCEPGP:GetEPGPdb().EPFormulas[index]) then
-            RCEPGP:GetEPGPdb().EPFormulas[index] = {}
+        if (not self:GetEPGPdb().EPFormulas[index]) then
+            self:GetEPGPdb().EPFormulas[index] = {}
         end
-        RCEPGP:GetEPGPdb().EPFormulas[index][category] = value
+        self:GetEPGPdb().EPFormulas[index][category] = value
     end
 
     -- Add EP Formulas
@@ -422,7 +422,7 @@ function RCEPGP:RefreshOptionsTable()
             name = function() return i..". "..EPFormulaGetter(i, "name") end,
             type = "group",
             order = 100+i,
-            hidden = function() return i > #RCEPGP:GetEPGPdb().EPFormulas;  end,
+            hidden = function() return i > #self:GetEPGPdb().EPFormulas;  end,
             args = {
                 up = {
                     name = "Move up",
@@ -430,10 +430,10 @@ function RCEPGP:RefreshOptionsTable()
                     order = 1,
                     func = function()
                         if i ~= 1 then
-                            local entry1 = RCEPGP:GetEPGPdb().EPFormulas[i-1]
-                            local entry2 = RCEPGP:GetEPGPdb().EPFormulas[i]
-                            RCEPGP:GetEPGPdb().EPFormulas[i-1] = entry2
-                            RCEPGP:GetEPGPdb().EPFormulas[i] = entry1
+                            local entry1 = self:GetEPGPdb().EPFormulas[i-1]
+                            local entry2 = self:GetEPGPdb().EPFormulas[i]
+                            self:GetEPGPdb().EPFormulas[i-1] = entry2
+                            self:GetEPGPdb().EPFormulas[i] = entry1
                             LibStub("AceConfigDialog-3.0"):SelectGroup("RCLootCouncil - EPGP", "epTab", "EPFormula"..(i-1))
                         end
                     end,
@@ -449,11 +449,11 @@ function RCEPGP:RefreshOptionsTable()
                     type = "execute",
                     order = 3,
                     func = function()
-                        if i ~= #RCEPGP:GetEPGPdb().EPFormulas then
-                            local entry1 = RCEPGP:GetEPGPdb().EPFormulas[i+1]
-                            local entry2 = RCEPGP:GetEPGPdb().EPFormulas[i]
-                            RCEPGP:GetEPGPdb().EPFormulas[i+1] = entry2
-                            RCEPGP:GetEPGPdb().EPFormulas[i] = entry1
+                        if i ~= #self:GetEPGPdb().EPFormulas then
+                            local entry1 = self:GetEPGPdb().EPFormulas[i+1]
+                            local entry2 = self:GetEPGPdb().EPFormulas[i]
+                            self:GetEPGPdb().EPFormulas[i+1] = entry2
+                            self:GetEPGPdb().EPFormulas[i] = entry1
                             LibStub("AceConfigDialog-3.0"):SelectGroup("RCLootCouncil - EPGP", "epTab", "EPFormula"..(i+1))
                         end
                     end,
@@ -469,7 +469,7 @@ function RCEPGP:RefreshOptionsTable()
                     type = "execute",
                     order = 5,
                     confirm = function() return "Do you confirm to delete formula No."..i.." "..EPFormulaGetter(i, "name").."?" end,
-                    func = function() table.remove(RCEPGP:GetEPGPdb().EPFormulas, i) end,
+                    func = function() table.remove(self:GetEPGPdb().EPFormulas, i) end,
                 },
                 space3 = {
                     name = "  ",
@@ -508,11 +508,11 @@ function RCEPGP:RefreshOptionsTable()
                         EPFormulaSetter(i, "formula", value)
                         local func, err = RCCustomEP:GetEPFormulaFunc(i)
                         if not func then
-                            RCEPGP.epgpOptions.args.epTab.args["EPFormula"..i].args.errorMsg.name = LEP["formula_syntax_error"]
-                            RCEPGP.epgpOptions.args.epTab.args["EPFormula"..i].args.errorDetailedMsg.name = err
+                            self.epgpOptions.args.epTab.args["EPFormula"..i].args.errorMsg.name = LEP["formula_syntax_error"]
+                            self.epgpOptions.args.epTab.args["EPFormula"..i].args.errorDetailedMsg.name = err
                         else
-                            RCEPGP.epgpOptions.args.epTab.args["EPFormula"..i].args.errorMsg.name = ""
-                            RCEPGP.epgpOptions.args.epTab.args["EPFormula"..i].args.errorDetailedMsg.name = ""
+                            self.epgpOptions.args.epTab.args["EPFormula"..i].args.errorMsg.name = ""
+                            self.epgpOptions.args.epTab.args["EPFormula"..i].args.errorDetailedMsg.name = ""
                         end
                     end,
                     order = 10,
@@ -600,6 +600,6 @@ function RCEPGP:AddOptions()
 end
 
 function RCEPGP:OpenOptions()
-    InterfaceOptionsFrame_OpenToCategory(RCEPGP.optionsFrame)
-    InterfaceOptionsFrame_OpenToCategory(RCEPGP.optionsFrame)
+    InterfaceOptionsFrame_OpenToCategory(self.optionsFrame)
+    InterfaceOptionsFrame_OpenToCategory(self.optionsFrame)
 end
