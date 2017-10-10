@@ -1,15 +1,13 @@
 ### v2.0.0
 ---
+- **All Settings of RCLootCouncil-EPGP are reseted.**
+  - Please reconfig the settings, especially if you are using custom GP of this addon.
 - **Require RCLootCouncil v2.6.0+**. No longer work for v2.5.x due to RCLootCouncil API changes.
 - Support to set up the GP value for relic responses, which is a new feature in RCLootCouncil v2.6.0
 - You will be notified to update RCLootCouncil-EPGP when a new version is detected.
 - The settings of EPGP(dkp reloaded) can now be sent to other people through '/rc sync'.
   - You can turn off this in the RCLootCouncil-EPGP settings, which can be opened by '/rc epgp'
   - This is enabled by default.
-- Add "Change Name To..." button in the rightclick menu of RCLootCouncil LootHistory Frame.
-  - You can enter the name you want in the following dialog.
-  - If you don't want to enter the name manually, target that character then click the button. His name is filled in automatically.
-  - This allows you to change who gets the item, even if the name list in the rightclick menu is super long.
 - **Custom EP** (new feature in Beta)
   - This is a new feature that allows you to customize how to mass award EP to people, not restricting to if they are in the raid group.
   - For example, you can choose to only mass award EP to guild members online or with a given guild rank.
@@ -26,8 +24,9 @@
   - For example, '#diffgp' is changed to '#diffgp#'
   - You shouldn't need to change the award text manually. The addon updates the text automatically.
 - Thanks to the RCLootCouncil API changes, the performance is improved.
-
-
+- Localization now uses the Curse automatic pacakaging system.
+  - Update to the localization will be applied to the new downloads of the addon without the need to upload a version.
+  - Go to https://wow.curseforge.com/projects/rclootcouncil-epgp/localization to help translate this addon.
 
 ### v1.9.2
 ---

@@ -1,93 +1,102 @@
 local addon = LibStub("AceAddon-3.0"):GetAddon("RCLootCouncil")
 local RCEPGP = addon:GetModule("RCEPGP")
-local RCCustomEP = RCEPGP:NewModule("RCCustomEP", "AceConsole-3.0", "AceEvent-3.0", "AceHook-3.0")
+local RCCustomEP = RCEPGP:NewModule("RCCustomEP", "AceConsole-3.0", "AceEvent-3.0", "AceHook-3.0", "AceComm-3.0")
 local LEP = LibStub("AceLocale-3.0"):GetLocale("RCEPGP")
 local EPGP = LibStub("AceAddon-3.0"):GetAddon("EPGP")
 local LibSpec = LibStub("LibGroupInSpecT-1.1")
 
 
 local hasPlayerLogin = false
-RCCustomEP.realmTimeDiff = 0 -- Time difference between realm time and UTC in sec
-
 local isInGuild = {}
-local allInfos = {} -- not including calendar infos.
-local calendarInfos = {}
+local allInfos = {} -- The information of all raid and guild members, not including calendar infos.
+local calendarInfos = {} -- The information of the calendar event today.
 
+RCCustomEP.initialize = false -- if the module has been initialized
+RCCustomEP.realmTimeDiff = 0  -- Time difference between realm time and UTC in sec
+RCCustomEP.targetName = ""    -- 'target Name variable'
+RCCustomEP.inputEPAmount = 0  -- inputEPAmount variable
+RCCustomEP.MaxFormulas = 100  -- The max amount of formulas we are storing.
+RCCustomEP.EPVariables = {}
 
-RCCustomEP.inputName = ""
-RCCustomEP.inputEPAmount = 0
+function RCCustomEP:GetEPVariables()
 
-RCCustomEP.MaxFormulas = 100
+    -- name: The name of the variable
+    -- help: The description of the variable shown in the option.
+    -- value: a function with -- TODO
+    -- display_name: If specified, the option table show this as the name instead. Mutliple variables with the same display name are only shown once.
 
-RCCustomEP.EPVariables = {
-    {name = "isOnline", help = LEP["variable_isOnline_help"], value = function(name) return RCCustomEP:GetUnitInfo(name, "online") and 1 or 0 end, },
-    {name = "guildName", help = LEP["variable_guildName_help"], value = function(name) return RCCustomEP:GetUnitInfo(name, "guildName") or "UNKNOWN" end, },
-    {name = "zone", help = LEP["variable_zone_help"], value = function(name) return RCCustomEP:GetUnitInfo(name, "zone") or "UNKNOWN" end, },
-    {name = "zoneId", help = LEP["variable_zoneId_help"], value = function(name) return RCCustomEP:GetMapIDByName(RCCustomEP:GetUnitInfo(name, "zone") or "UNKNOWN") end, },
-    {name = "isInRaid", help = LEP["variable_isInRaid_help"], value = function(name) return (name and UnitInRaid(Ambiguate(name, "short"))) and 1 or 0 end, },
-    {name = "isStandby", help = LEP["variable_isStandby_help"], value = function(name) return (name and EPGP:IsMemberInExtrasList(name)) and 1 or 0 end, },
-    {name = "isMain", help = LEP["variable_isMain_help"], value = function(name) return RCCustomEP.IsMain(name) and 1 or 0 end, },
-    {name = "isMaxLevel", help = LEP["variable_isMaxLevel_help"], value = function(name) return RCCustomEP:GetUnitInfo(name, "level") == GetMaxPlayerLevel() and 1 or 0 end, },
-    {name = "rank", help = LEP["variable_rank_help"], value = function(name) return RCCustomEP:GetUnitInfo(name, "guildRankIndex") or 10 end, },
-    {name = "isTank", help = LEP["variable_isTank_help"], value = function(name) return RCCustomEP:GetUnitInfo(name, "role") == "TANK" and 1 or 0 end},
-    {name = "isHealer", help = LEP["variable_isHealer_help"], value = function(name) return RCCustomEP:GetUnitInfo(name, "role") == "HEALER" and 1 or 0 end},
-    {name = "isDPS", help = LEP["variable_isDPS_help"], value = function(name) return RCCustomEP:GetUnitInfo(name, "role") == "DAMAGER" and 1 or 0 end},
-    {name = "isMeleeDPS", help = LEP["variable_isMeleeDPS_help"], value = function(name) return RCCustomEP:GetSpecRole(name) == "melee" and 1 or 0 end},
-    {name = "isRangedDPS", help = LEP["variable_isRangedDPS_help"], value = function(name) return RCCustomEP:GetSpecRole(name) == "ranged" and 1 or 0 end},
-    {name = "level", help = LEP["variable_level_help"], value = function(name) return RCCustomEP:GetUnitInfo(name, "level") or 1 end,},
-    {name = "class", help = LEP["variable_class_help"], value = function(name) return RCCustomEP:GetUnitInfo(name, "class") or "UNKNOWN" end,},
-    {name = "ep", help = LEP["variable_ep_help"], value = function(name) return select(1, EPGP:GetEPGP(name)) or 0 end, },
-    {name = "gp", help = LEP["variable_gp_help"], value = function(name) return select(2, EPGP:GetEPGP(name)) or 0 end, },
-    {name = "pr", help = LEP["variable_pr_help"], value = function(name) local ep, gp = EPGP:GetEPGP(name); if ep and gp then return ep/gp else return 0 end end, },
-    {name = "isInputName", help = LEP["variable_isInputName_help"], value = function(name) return (name and name == RCCustomEP.inputName) and 1 or 0 end, },
-    {name = "isNormalRaid", help = "", value = function(name) local diff = GetRaidDifficultyID(); return diff == 1 or diff == 3 or diff == 4 or diff == 14 end},
-    {name = "isHeroicRaid", help = "", value = function(name) local diff = GetRaidDifficultyID(); return diff == 2 or diff == 5 or diff == 6 or diff == 15 end},
-    {name = "isMythicRaid", help = "", value = function(name) local diff = GetRaidDifficultyID(); return diff == 16 or diff == 23 end},
-}
+    local EPVariables = {
+        {name = "name", help = LEP["ep_variable_name_help"], value = function(name) return name or "UNKNOWN" end, },
+        {name = "isOnline", help = LEP["ep_variable_isOnline_help"], value = function(name) return self:GetUnitInfo(name, "online") and 1 or 0 end, },
+        {name = "guildName", help = LEP["ep_variable_guildName_help"], value = function(name) return self:GetUnitInfo(name, "guildName") or "UNKNOWN" end, },
+        {name = "zone", help = LEP["ep_variable_zone_help"], value = function(name) return self:GetUnitInfo(name, "zone") or "UNKNOWN" end, },
+        {name = "zoneId", help = LEP["ep_variable_zoneId_help"], value = function(name) return self:GetMapIDByName(self:GetUnitInfo(name, "zone") or "UNKNOWN") end, },
+        {name = "isInRaid", help = LEP["ep_variable_isInRaid_help"], value = function(name) return (name and UnitInRaid(Ambiguate(name, "short"))) and 1 or 0 end, },
+        {name = "isStandby", help = LEP["ep_variable_isStandby_help"], value = function(name) return (name and EPGP:IsMemberInExtrasList(name)) and 1 or 0 end, },
+        {name = "isMain", help = LEP["ep_variable_isMain_help"], value = function(name) return self:IsMain(name) and 1 or 0 end, },
+        {name = "isMaxLevel", help = LEP["ep_variable_isMaxLevel_help"], value = function(name) return self:GetUnitInfo(name, "level") == GetMaxPlayerLevel() and 1 or 0 end, },
+        {name = "rank", help = LEP["ep_variable_rank_help"], value = function(name) return self:GetUnitInfo(name, "guildRankIndex") or 10 end, },
+        {name = "isTank", help = LEP["ep_variable_isTank_help"], value = function(name) return self:GetUnitInfo(name, "role") == "TANK" and 1 or 0 end},
+        {name = "isHealer", help = LEP["ep_variable_isHealer_help"], value = function(name) return self:GetUnitInfo(name, "role") == "HEALER" and 1 or 0 end},
+        {name = "isDPS", help = LEP["ep_variable_isDPS_help"], value = function(name) return self:GetUnitInfo(name, "role") == "DAMAGER" and 1 or 0 end},
+        {name = "isMeleeDPS", help = LEP["ep_variable_isMeleeDPS_help"], value = function(name) return self:GetSpecRole(name) == "melee" and 1 or 0 end},
+        {name = "isRangedDPS", help = LEP["ep_variable_isRangedDPS_help"], value = function(name) return self:GetSpecRole(name) == "ranged" and 1 or 0 end},
+        {name = "level", help = LEP["ep_variable_level_help"], value = function(name) return self:GetUnitInfo(name, "level") or 1 end,},
+        {name = "class", help = LEP["ep_variable_class_help"], value = function(name) return self:GetUnitInfo(name, "class") or "UNKNOWN" end,},
+        {name = "ep", help = LEP["ep_variable_ep_help"], value = function(name) return select(1, EPGP:GetEPGP(name)) or 0 end, },
+        {name = "gp", help = LEP["ep_variable_gp_help"], value = function(name) return select(2, EPGP:GetEPGP(name)) or 0 end, },
+        {name = "pr", help = LEP["ep_variable_pr_help"], value = function(name) local ep, gp = EPGP:GetEPGP(name); if ep and gp then return ep/gp else return 0 end end, },
+        {name = "targetName", help = LEP["ep_variable_targetName_help"], value = function(name) return name == self.targetName end, },
+        {name = "isTargetName", help = LEP["ep_variable_isTargetName_help"], value = function(name) return (name and name == self.targetName) and 1 or 0 end, },
+        {name = "isNormalRaid", help = LEP["ep_variable_isNormalRaid_help"], value = function(name) local diff = GetRaidDifficultyID(); return diff == 1 or diff == 3 or diff == 4 or diff == 14 end},
+        {name = "isHeroicRaid", help = LEP["ep_variable_isHeroicRaid_help"], value = function(name) local diff = GetRaidDifficultyID(); return diff == 2 or diff == 5 or diff == 6 or diff == 15 end},
+        {name = "isMythicRaid", help = LEP["ep_variable_isMythicRaid_help"], value = function(name) local diff = GetRaidDifficultyID(); return diff == 16 or diff == 23 end},
+    }
 
--- isRank0, ..., isRank9
-for i=0,9 do
-    table.insert(RCCustomEP.EPVariables, {name = "isRank"..i, display_name = "isRank0, isRank1,..., isRank9", help = LEP["variable_isRankX_help"], value = function(name) return RCCustomEP:GetUnitInfo(name, "guildRankIndex") == i and 1 or 0 end, })
-end
-
--- mainXXX variables
-for i, entry in ipairs(RCCustomEP.EPVariables) do
-    if (not entry.name:find("main")) then
-        table.insert(RCCustomEP.EPVariables, {name = "main"..entry.name, display_name = "main", help = LEP["variable_main_prefix_help"], value = function(name) local _, _, main = EPGP:GetEPGP(name); main = main or name; return entry.value(main) end, })
+    -- isRank0, ..., isRank9
+    for i=0,9 do
+        table.insert(EPVariables, {name = "isRank"..i, display_name = "isRank0, isRank1,..., isRank9", help = LEP["ep_variable_isRankX_help"], value = function(name) return self:GetUnitInfo(name, "guildRankIndex") == i and 1 or 0 end, })
     end
-end
 
--- sameXXX variables
-for i, entry in ipairs(RCCustomEP.EPVariables) do
-    if (not entry.name:find("same")) then
-        table.insert(RCCustomEP.EPVariables, {name = "same"..entry.name, display_name = "same", help = LEP["variable_same_prefix_help"], value = function(name) return entry.value(RCCustomEP:GetPlayerFullName()) == entry.value(main) and 1 or 0 end, })
+    -- mainXXX variables
+    for i, entry in ipairs(EPVariables) do
+        if (not entry.name:find("main")) then
+            table.insert(EPVariables, {name = "main"..entry.name, display_name = "main...", help = LEP["ep_variable_main_prefix_help"], value = function(name) local _, _, main = EPGP:GetEPGP(name); main = main or name; return entry.value(main) end, })
+        end
     end
-end
 
-for i, entry in ipairs(RCCustomEP.EPVariables) do
-    if (not entry.name:find("inputname")) then
-        table.insert(RCCustomEP.EPVariables, {name = "inputname"..entry.name, display_name = "inputname", help = LEP["variable_inputname_prefix_help"], value = function() if not RCCustomEP.inputName then return 0 end; return entry.value(RCCustomEP.inputName) end, })
+    -- sameXXX variables
+    for i, entry in ipairs(EPVariables) do
+        if (not entry.name:find("same")) then
+            table.insert(EPVariables, {name = "same"..entry.name, display_name = "same...", help = LEP["ep_variable_same_prefix_help"], value = function(name) return entry.value(self:GetPlayerFullName()) == entry.value(main) and 1 or 0 end, })
+        end
     end
+
+    for i, entry in ipairs(EPVariables) do
+        if (not entry.name:find("targetname")) then
+            table.insert(EPVariables, {name = "targetname"..entry.name, display_name = "targetname...", help = LEP["ep_variable_targetname_prefix_help"], value = function() if not self.targetName then return 0 end; return entry.value(self.targetName) end, })
+        end
+    end
+
+    table.insert(EPVariables, {name = "minep", help = LEP["ep_variable_minep_help"], value = function() return EPGP.db.profile.min_ep end, })
+    table.insert(EPVariables, {name = "decay", help = LEP["ep_variable_decay_help"], value = function() return EPGP.db.profile.decay_p end, }) -- Integer
+    table.insert(EPVariables, {name = "baseGP", help = LEP["ep_variable_baseGP_help"], value = function() return EPGP.db.profile.base_gp end, })
+    table.insert(EPVariables, {name = "inputEPAmount", help = LEP["ep_variable_inputEPAmount_help"], value = function() return self.inputEPAmount end, })
+
+    -- Special count function
+
+    -- TODO: fix function format of count
+    table.insert(EPVariables, {name = "count", needTwoPasses = true, help = LEP["ep_variable_count_help"], value = function(name, fenv, isFirstPass) return function(formulaStr) return self.CountFunction(name, fenv, formulaStr, isFirstPass) end end, })
+
+    -- TODO: special sum function
+    -- CalendarCheckFunction
+    table.insert(EPVariables, {name = "calendarSignedUp", help = LEP["ep_variable_calendarSignedUp_help"], value = function(name, fenv) return function(titleKeyword) return self.CalendarSignedUpFunction(name, fenv, titleKeyword) end end, })
+
+    return EPVariables
 end
-
-table.insert(RCCustomEP.EPVariables, {name = "minep", help = LEP["variable_minep_help"], value = function() return EPGP.db.profile.min_ep end, })
-table.insert(RCCustomEP.EPVariables, {name = "decay", help = LEP["variable_decay_help"], value = function() return EPGP.db.profile.decay_p end, }) -- Integer
-table.insert(RCCustomEP.EPVariables, {name = "baseGP", help = LEP["variable_baseGP_help"], value = function() return EPGP.db.profile.base_gp end, })
-table.insert(RCCustomEP.EPVariables, {name = "inputEPAmount", help = LEP["variable_inputEPAmount_help"], value = function() return RCCustomEP.inputEPAmount end, })
-
--- Special count function
-table.insert(RCCustomEP.EPVariables, {name = "count", help = LEP["variable_count_help"], value = function(name, fenv) return function(formulaStr) return RCCustomEP.CountFunction(name, fenv, formulaStr) end end, })
-
--- CalendarCheckFunction
-table.insert(RCCustomEP.EPVariables, {name = "calendarSignedUp", help = LEP["variable_calendarSignedUp_help"], value = function(name, fenv) return function(titleKeyword) return RCCustomEP.CalendarSignedUpFunction(name, fenv, titleKeyword) end end, })
-
-
-RCCustomEP.allowedAPI = {
-    "print", "strsplit", "strmatch", "math"
-}
 
 function RCCustomEP:GetMassEPQueue()
-    local db = RCEPGP:GetEPGPdb()
+    local db = self:GetCustomEPdb()
     if not db.massEPQueue then
         db.massEPQueue = {}
     end
@@ -96,14 +105,14 @@ end
 
 function RCCustomEP:GetEPFormulaFunc(indexOrName)
     local formulaStr
-    if RCEPGP:GetEPGPdb().EPFormulas[indexOrName] then
-        formulaStr = RCEPGP:GetEPGPdb().EPFormulas[indexOrName].formula
-    elseif tonumber(indexOrName) and RCEPGP:GetEPGPdb().EPFormulas[tonumber(indexOrName)] then
-        formulaStr = RCEPGP:GetEPGPdb().EPFormulas[tonumber(indexOrName)].formula
+    if self:GetCustomEPdb().EPFormulas[indexOrName] then
+        formulaStr = self:GetCustomEPdb().EPFormulas[indexOrName].formula
+    elseif tonumber(indexOrName) and self:GetCustomEPdb().EPFormulas[tonumber(indexOrName)] then
+        formulaStr = self:GetCustomEPdb().EPFormulas[tonumber(indexOrName)].formula
     end
     if not formulaStr then return nil end
 
-    for i, entry in ipairs(RCEPGP:GetEPGPdb().EPFormulas) do
+    for i, entry in ipairs(self:GetCustomEPdb().EPFormulas) do
         if entry.name == indexOrName then
             formulaStr = entry.formula
         end
@@ -128,42 +137,71 @@ function RCCustomEP:GetFullName(name)
 end
 
 function RCCustomEP:OnInitialize()
-    RCCustomEP:AddChatCommand()
+    self.defaults = {
+        EPFormulas = {
+            {name = "test", desc = "WTF", formula = "123", },
+        },
+    }
+    self:AddChatCommand()
     self:RegisterEvent("GUILD_ROSTER_UPDATE")
     self:RegisterEvent("CALENDAR_UPDATE_EVENT_LIST", "UPDATE_CALENDAR")
     self:RegisterEvent("CALENDAR_OPEN_EVENT", "OPEN_CALENDAR")
     self:RegisterEvent("CALENDAR_UPDATE_INVITE_LIST", "UPDATE_CALENDAR")
     self:RegisterEvent("PLAYER_LOGIN")
     GuildRoster()
-    C_Timer.After(10, function() RCCustomEP:UPDATE_CALENDAR() end)
+    C_Timer.After(10, function() self:UPDATE_CALENDAR() end)
     LibSpec:Rescan()
+    self.EPVariables = self:GetEPVariables()
+    RCEPGP:SetdbDefaults(self:GetCustomEPdb(), self.defaults, false)
+    self:SendMessage("RCCustomEPRuleChanged")
+    self.initialize = true
+
+    self:SecureHook(RCLootCouncil, "UpdateDB", function()
+        wipe(self:GetCustomEPdb().massEPQueue)
+        self:SendMessage("RCCustomEPQueueRemoved")
+    end)
+
 end
 
--- /rc massep  reason amount [formulaIndexOrName] [inputName] [ScheduleTime AfterSecond/HH:MM:SS/HH:MM, realm time, 24hour format]
-function RCCustomEP:Massep(reason, amount, formulaIndexOrName, inputName, scheduleTime)
-    EPGP:IncMassEPBy(reason, tonumber(amount), formulaIndexOrName, inputName, scheduleTime)
+-- /rc massep  reason amount [formulaIndexOrName] [targetName] [ScheduleTime AfterSecond/HH:MM:SS/HH:MM, realm time, 24hour format]
+function RCCustomEP:Massep(reason, amount, formulaIndexOrName, targetName, scheduleTime)
+    self:IncMassEPBy(reason, tonumber(amount), formulaIndexOrName, targetName, scheduleTime)
 end
 
--- /rc recurep  intervalMin reason amount [formulaIndexOrName] [inputName] [ScheduleTime AfterSecond/HH:MM:SS/HH:MM, realm time, 24hour format]
-function RCCustomEP:Recurep(intervalMin, reason, amount, formulaIndexOrName, inputName, scheduleTime)
-    if tonumber(intervalMin) then
-        EPGP:StartRecurringEP(reason, tonumber(amount), tonumber(intervalMin), formulaIndexOrName, inputName, scheduleTime)
+-- /rc recurep periodMin reason amount [formulaIndexOrName] [targetName] [ScheduleTime AfterSecond/HH:MM:SS/HH:MM, realm time, 24hour format]
+function RCCustomEP:Recurep(periodin, reason, amount, formulaIndexOrName, targetName, scheduleTime)
+    if tonumber(periodMin) and tonumber(periodMin) > 0 then
+        self:StartRecurringEP(reason, tonumber(amount), tonumber(periodMin), formulaIndexOrName, targetName, scheduleTime)
     else
-        RCEPGP:Print("[intervalMin] must be a number") -- TODO: locale
+        RCEPGP:Print(LEP["peroid_not_positive_error"])
     end
 end
-
+-- TODO formulaIndex is 0
 -- /rc stoprecur
+-- TODO: schedule stoprecur
 function RCCustomEP:Stoprecur()
     EPGP:StopRecurringEP()
 end
 
+function RCCustomEP:HelpMassep()
+    RCEPGP:Print(LEP["slash_rc_massep_help_detailed"])
+end
+
+function RCCustomEP:HelpRecurep()
+    RCEPGP:Print(LEP["slash_rc_recurep_help_detailed"])
+end
+
 -- TODO: /rc ep
 -- TODO: /rc gp
+-- TODO: /rc cancelallscheduledep
+-- TODO: dialog of if continue the scheduled ep award after a reload.
 function RCCustomEP:AddChatCommand()
-    addon:CustomChatCmd(self, "Massep", "MassEP", "massep") -- TODO: description
-    addon:CustomChatCmd(self, "Recurep", "Recurep", "recurep")
-    addon:CustomChatCmd(self, "Stoprecur", "Stoprecur", "stoprecur")
+    --addon:CustomChatCmd(self, "ep", LEP[""])
+    addon:CustomChatCmd(self, "Massep", LEP["slash_rc_massep_help"], "massep")
+    addon:CustomChatCmd(self, "Recurep", LEP["slash_rc_recurep_help"], "recurep")
+    addon:CustomChatCmd(self, "Stoprecur", LEP["slash_rc_stoprecur_help"], "stoprecur")
+    addon:CustomChatCmd(self, "HelpMassep", LEP["slash_rc_helpmassep_help"], "helpmassep")
+    addon:CustomChatCmd(self, "HelpRecurep", LEP["slash_rc_helprecurep_help"], "helprecurep")
 end
 
 local timeLastCalendarUpdate = GetTime()
@@ -171,13 +209,13 @@ local indexLastCalendarUpdate = 1
 function RCCustomEP:UPDATE_CALENDAR(nextIndex)
     if not nextIndex or type(nextIndex) ~= 'number' then nextIndex = 1 end
     if GetTime() - timeLastCalendarUpdate < 10 and nextIndex <= indexLastCalendarUpdate then
-        C_Timer.After(10-GetTime()+timeLastCalendarUpdate+1, function() RCCustomEP:UPDATE_CALENDAR(nextIndex) end)
+        C_Timer.After(10-GetTime()+timeLastCalendarUpdate+1, function() self:UPDATE_CALENDAR(nextIndex) end)
         return
     end
     timeLastCalendarUpdate = GetTime()
     indexLastCalendarUpdate = nextIndex
     if _G.CalendarFrame and (not self:IsHooked(_G.CalendarFrame, "OnHide")) then
-        self:SecureHookScript(_G.CalendarFrame, "OnHide", function() RCCustomEP:UPDATE_CALENDAR(1) end)
+        self:SecureHookScript(_G.CalendarFrame, "OnHide", function() self:UPDATE_CALENDAR(1) end)
     end
     if _G.CalendarFrame and _G.CalendarFrame:IsShown() then
         return -- Don't update when Blizzard calendar is shown
@@ -232,14 +270,24 @@ function RCCustomEP:GetUTCEndTime(realmTime) -- "realmTime" is a string which is
                                     -- return a number representing the UTC end time (either now+time if "realmTime" is number or the time string )
     local now = time(date("!*t")) -- current UTC time
     local isUTCdst = date("!*t").isdst
-    if tonumber(realmTime) then -- realmTime is a number, representing a time diff.
+    if tonumber(realmTime) and tonumber(realmTime) >= 0 then -- realmTime is a number, representing a time diff.
         return now + tonumber(realmTime)
     elseif type(realmTime)=='string' then
+
+        if string.match(realmTime, "([^(0-9|:)]+)") then -- invalid time.
+            return
+        end
+
         local weekday, month, day, year = CalendarGetDate()
-        local hour, min = string.match(time, "(%d+):(%d+)")
-        local _, _, sec = string.match(time, "(%d+):(%d+):(%d+)")
+        local hour, _ = string.match(realmTime, "(%d+)")
+        local _, min = string.match(realmTime, "(%d+):(%d+)")
+        local _, _, sec = string.match(realmTime, "(%d+):(%d+):(%d+)")
+
+        if not min then min = 0 end
         if not sec then sec = 0 end
-        if hour and min and sec then
+        hour, min, sec = tonumber(hour), tonumber(min), tonumber(sec)
+        --print(sec)
+        if hour and min and sec and (hour >= 0 and hour < 24 and min >= 0 and min < 60 and sec >=0 and sec < 60) then
             hour, min, sec = tonumber(hour), tonumber(min), tonumber(sec)
             local endTime = time({ hour=hour, min=min, sec=sec, day=day, month=month, year=year, isdst=isUTCdst })
             endTime = endTime - RCCustomEP.realmTimeDiff
@@ -253,14 +301,14 @@ end
 
 function RCCustomEP:PLAYER_LOGIN()
     hasPlayerLogin = true
-    RCCustomEP.realmTimeDiff = RCCustomEP:GetRealmTimeDiff()
+    self.realmTimeDiff = self:GetRealmTimeDiff()
     RCEPGP:DebugPrint("PLAYER_LOGIN")
-    RCEPGP:DebugPrint("RealmTimeDiff ", RCCustomEP.realmTimeDiff)
-    RCCustomEP:RemoveExpiredEntryInQueue()
+    RCEPGP:DebugPrint("RealmTimeDiff ", self.realmTimeDiff)
+    self:RemoveExpiredEntryInQueue()
 end
 
 function RCCustomEP:RemoveExpiredEntryInQueue()
-    local queue = RCCustomEP:GetMassEPQueue()
+    local queue = self:GetMassEPQueue()
     local deletedOneEntry
     repeat
         deletedOneEntry = false
@@ -309,7 +357,7 @@ function RCCustomEP:OPEN_CALENDAR()
         for i = 1, CalendarEventGetNumInvites() do
             local name, level, className, classFileName, inviteStatus, modStatus, inviteIsMine, inviteType = CalendarEventGetInvite(i)
             if name then
-                name = RCCustomEP:GetFullName(name)
+                name = self:GetFullName(name)
                 existMembers[name] = true
                 local info
                 if not calendarInfos[title].signupList[name] then
@@ -336,7 +384,7 @@ function RCCustomEP:OPEN_CALENDAR()
         end
 
         local monthOffset, day, index = CalendarGetEventIndex()
-        C_Timer.After(2, function() RCCustomEP:UPDATE_CALENDAR(index+1) end) -- process the next event
+        C_Timer.After(2, function() self:UPDATE_CALENDAR(index+1) end) -- process the next event
     end
 end
 
@@ -411,7 +459,7 @@ function RCCustomEP:UpdateRaidInfo()
     for i = 1, n do
         local name, rank, subgroup, level, class, classFileName, zone, online, isDead, groupRole, isML = GetRaidRosterInfo(i)
         if name then
-            local fullName = RCCustomEP:GetFullName(name)
+            local fullName = self:GetFullName(name)
             local guildName, guildRankName, guildRankIndex = GetGuildInfo("raid"..i)
             if not allInfos[fullName] then
                 allInfos[fullName] = {}
@@ -437,7 +485,7 @@ function RCCustomEP:UpdateRaidInfo()
     deleteInvalidInfos()
 end
 
--- TODO: calendar date when it crossed midnight
+-- TODO: calendar date when it crosses midnight
 function RCCustomEP:GetPlayerFullName()
     local name, realm = UnitFullName("player")
     return name.."-"..realm
@@ -475,7 +523,7 @@ function RCCustomEP.CountFunction(name, fenv, formulaStr)
         countFuncCount[formulaStr].list = {}
     end
 
-    if RCCustomEP.counting then
+    if self.counting then
         if not countFuncCount[formulaStr].list[name] then
             local f = loadstring(formulaStr) or loadstring("return "..formulaStr)
             f = setfenv(f, fenv)
@@ -512,11 +560,11 @@ end
 
 -- tank, melee, ranged, healer
 function RCCustomEP:GetSpecRole(fullName)
-    local guid = RCCustomEP:GetUnitInfo(fullName, "guid")
+    local guid = self:GetUnitInfo(fullName, "guid")
     return guid and LibSpec:GetCachedInfo(guid) and LibSpec:GetCachedInfo(guid).spec_role_detailed
 end
 
-function RCCustomEP.IsMain(fullName)
+function RCCustomEP:IsMain(fullName)
     local ep, gp, main = EPGP:GetEPGP(fullName)
     return (not main) or (main == fullName)
 end
@@ -527,42 +575,47 @@ local GS = LibStub("LibGuildStorage-1.2")
 local Debug = LibStub("LibDebug-1.0")
 local DLG = LibStub("LibDialog-1.0")
 
-local callbacks = EPGP.callbacks
+RCCustomEP.recurTickFrame = CreateFrame("Frame", "RCCustomEP_Recur_Tick_Frame")
+RCCustomEP.recurTickFrame.timeout = 0
 
-local frame = _G["EPGP_RecurringAwardFrame"]
-local timeout = 0
-local function RecurringTicker(self, elapsed)
-  -- EPGP's db is available after GUILD_ROSTER_UPDATE. So we have a
-  -- guard.
+RCCustomEP.recurTickFrame:SetScript("OnUpdate", function(self, elapsed)
+  if _G["EPGP_RecurringAwardFrame"]:IsShown() then
+      return
+  end
+
   if not EPGP.db then return end
 
   local vars = EPGP.db.profile
+  if not vars.next_award then return end
+
   local now = GetTime()
   if now > vars.next_award and GS:IsCurrentState() then
-    EPGP:IncMassEPBy(vars.next_award_reason, vars.next_award_amount,
-                     vars.next_formula, vars.next_input_name)
+    RCCustomEP:IncMassEPBy(vars.next_award_reason, vars.next_award_amount,
+                     vars.next_formula, vars.next_target_name)
     vars.next_award =
       vars.next_award + vars.recurring_ep_period_mins * 60
   end
-  timeout = timeout + elapsed
-  if timeout > 0.5 then
-    callbacks:Fire("RecurringAwardUpdate",
+  self.timeout = self.timeout + elapsed
+  if self.timeout > 0.5 then
+    EPGP.callbacks:Fire("RecurringAwardUpdate",
                    vars.next_award_reason,
                    vars.next_award_amount,
                    vars.next_award - now)
-    timeout = 0
+    self.timeout = 0
   end
-end
-frame:SetScript("OnUpdate", RecurringTicker)
-frame:Hide()
+end)
+RCCustomEP.recurTickFrame:Show() -- TODO: Only show this frame when needed.
 
-function EPGP:StartRecurringEP(reason, amount, periodMin, formulaIndexOrName, inputName, scheduleTime)
+-- TODO: clear queue when DB update.
+
+
+function RCCustomEP:StartRecurringEP(reason, amount, periodMin, formulaIndexOrName, targetName, scheduleTime)
   -- TODO: Only guild officer can execute this func
   if type(reason) ~= "string" or type(amount) ~= "number" or #reason == 0 then
     return false
   end
   if formulaIndexOrName then
-      local formulaFunc = RCCustomEP:GetEPFormulaFunc(formulaIndexOrName)
+      local formulaFunc = self:GetEPFormulaFunc(formulaIndexOrName)
       if not formulaFunc then
           print("Custom RecurringEP: Formula does not exist or has syntax error. Abort.")
           RCEPGP:Debug("Custom RecurringEP: Formula does not exist or has syntax error. Abort.")
@@ -570,18 +623,19 @@ function EPGP:StartRecurringEP(reason, amount, periodMin, formulaIndexOrName, in
       end
   end
 
+  local vars = EPGP.db.profile
   if tonumber(periodMin) then
 
-      if scheduleTime then
-          local UTCEndTime = RCCustomEP:GetUTCEndTime(scheduleTime)
+     if scheduleTime and scheduleTime ~= 0 and scheduleTime ~= "" and scheduleTime ~= "0" then -- Schedule to run this later.
+          local UTCEndTime = self:GetUTCEndTime(scheduleTime)
           if not UTCEndTime then
               RCEPGP:Print("Ilformed [ScheduleTime]. Must be one of number/HH:MM/HH:MM:SS")
               return
           end
 
           -- TODO
-          RCEPGP:Debug("Schedule Custom RecurringEP", reason, amount, periodMin, formulaIndexOrName, inputName, scheduleTime)
-          local queue = RCCustomEP:GetMassEPQueue()
+          RCEPGP:Debug("Schedule Custom RecurringEP", reason, amount, periodMin, formulaIndexOrName, targetName, scheduleTime)
+          local queue = self:GetMassEPQueue()
           local entry = {
               type = "recurep",
               UTCEndTime = UTCEndTime,
@@ -589,20 +643,18 @@ function EPGP:StartRecurringEP(reason, amount, periodMin, formulaIndexOrName, in
               amount = amount,
               periodMin = periodMin,
               formulaIndexOrName = formulaIndexOrName,
-              inputName = inputName,
+              targetName = targetName,
           }
           table.insert(queue, entry)
           addon:SendMessage("RCCustomEPQueueAdded", entry)
-          RCCustomEP.tickFrame:Show()
+          self.scheduleTickFrame:Show()
           return
       else
-          RCEPGP:Debug("Custom RecurringEP", reason, amount, periodMin, formulaIndexOrName, inputName, scheduleTime)
+          RCEPGP:Debug("Custom RecurringEP", reason, amount, periodMin, formulaIndexOrName, targetName, scheduleTime)
           vars.recurring_ep_period_mins = tonumber(periodMin)
       end
   end
 
-
-  local vars = EPGP.db.profile
   if vars.next_award then
     return false -- TODO: Annouce this
   end
@@ -611,30 +663,19 @@ function EPGP:StartRecurringEP(reason, amount, periodMin, formulaIndexOrName, in
   vars.next_award_amount = amount
   vars.next_award = GetTime() + vars.recurring_ep_period_mins * 60
   vars.next_formula = formulaIndexOrName
-  vars.next_input_name = inputName
-  frame:Show()
+  vars.next_target_name = targetName
 
-  callbacks:Fire("StartRecurringAward",
+  EPGP.callbacks:Fire("StartRecurringAward",
                  vars.next_award_reason,
                  vars.next_award_amount,
                  vars.recurring_ep_period_mins)
   return true
 end
 
-function EPGP:CancelRecurringEP()
-  DLG:Dismiss("EPGP_RECURRING_RESUME")
-  local vars = EPGP.db.profile
-  vars.next_award_reason = nil
-  vars.next_award_amount = nil
-  vars.next_award = nil
-  vars.next_formula = nil
-  vars.next_input_name = nil
-  frame:Hide()
-end
+
 -------------------------------------------------------------------------------
 -- TODO: Finish this.
-local oldIncMassEPBy = EPGP.IncMassEPBy
-function EPGP:IncMassEPBy(reason, amount, formulaIndexOrName, inputName, scheduleTime)
+function RCCustomEP:IncMassEPBy(reason, amount, formulaIndexOrName, targetName, scheduleTime)
 
   amount = tonumber(amount)
   if not amount then
@@ -642,44 +683,50 @@ function EPGP:IncMassEPBy(reason, amount, formulaIndexOrName, inputName, schedul
     return
   end
 
-  if scheduleTime then -- Schedule to run this later.
-      local UTCEndTime = RCCustomEP:GetUTCEndTime(scheduleTime)
+  if scheduleTime and scheduleTime ~= 0 and scheduleTime ~= "" and scheduleTime ~= "0" then -- Schedule to run this later.
+      local UTCEndTime = self:GetUTCEndTime(scheduleTime)
       if not UTCEndTime then
           RCEPGP:Print("Ilformed [ScheduleTime]. Must be one of number/HH:MM/HH:MM:SS")
           return
       end
 
-        RCEPGP:Debug("Schedule Custom MassEP", reason, amount, formulaIndexOrName, inputName, scheduleTime)
+        RCEPGP:Debug("Schedule Custom MassEP", reason, amount, formulaIndexOrName, targetName, scheduleTime)
       -- TODO
-      local queue = RCCustomEP:GetMassEPQueue()
+      local queue = self:GetMassEPQueue()
       local entry = {
           type = "massep",
           UTCEndTime = UTCEndTime,
           reason = reason,
           amount = amount,
           formulaIndexOrName = formulaIndexOrName,
-          inputName = inputName,
+          targetName = targetName,
       }
       table.insert(queue, entry)
       addon:SendMessage("RCCustomEPQueueAdded", entry)
-      RCCustomEP.tickFrame:Show()
+      self.scheduleTickFrame:Show()
       return
   end
 
   if not formulaIndexOrName then
       RCEPGP:Debug("Origin MassEP", reason, amount)
-      return oldIncMassEPBy(EPGP, reason, amount)
+      return EPGP:IncMassEPBy(reason, amount)
   end
 
-  RCEPGP:Debug("Custom MassEP", reason, amount, formulaIndexOrName, inputName, scheduleTime)
+  if not self.initialize then return end
 
-  if inputName == "%t" then
-      inputName = RCCustomEP:GetFullName("target")
+  RCEPGP:Debug("Custom MassEP", reason, amount, formulaIndexOrName, targetName, scheduleTime)
+
+  if targetName == "%t" then
+      if not UnitExists("%t") then
+          self:Print(LEP["error_no_target"])
+      else
+          targetName = self:GetFullName("target")
+      end
   elseif arg4 == "%p" then
-      inputName = RCCustomEP:GetFullName("player")
+      targetName = self:GetFullName("player")
   end
 
-  local formulaFunc, err, formulaStr = RCCustomEP:GetEPFormulaFunc(formulaIndexOrName)
+  local formulaFunc, err, formulaStr = self:GetEPFormulaFunc(formulaIndexOrName)
   if not formulaFunc then
       print("Formula does not exist or has syntax error. Abort.")
       RCEPGP:Debug("Formula does not exist or has syntax error. Abort.")
@@ -687,20 +734,20 @@ function EPGP:IncMassEPBy(reason, amount, formulaIndexOrName, inputName, schedul
   end
   RCEPGP:Debug("Formula String:", tostring(formulaStr))
 
-  RCCustomEP:UpdateRaidInfo()
-  RCCustomEP.inputName = inputName
-  RCCustomEP.inputEPAmount = amount
+  self:UpdateRaidInfo()
+  self.targetName = targetName
+  self.inputEPAmount = amount
   local fenv = {}
-  for _, funcName in ipairs(RCCustomEP.allowedAPI) do
+  for _, funcName in ipairs(self.allowedAPI) do
       fenv[funcName] = _G[funcName]
   end
   local awarded_mains = {}
   local awarded_list = {}
 
   countFuncCount = {} -- reset variable for special count func
-  RCCustomEP.counting = true -- for count func
+  self.counting = true -- for count func
   for name, _ in pairs(allInfos) do -- Execute formula extra time for the special "count" variable
-      for _, entry in ipairs(RCCustomEP.EPVariables) do
+      for _, entry in ipairs(self.EPVariables) do
           local variableName = entry.name
           local variableValue = entry.value(name, fenv)
           fenv[variableName] = variableValue
@@ -713,12 +760,12 @@ function EPGP:IncMassEPBy(reason, amount, formulaIndexOrName, inputName, schedul
       end
   end
 
-  RCCustomEP.counting = false
+  self.counting = false
   for name, _ in pairs(allInfos) do
       local ep, _, main = EPGP:GetEPGP(name)
       main = main or name
       if ep and (not awarded_mains[main]) then
-          for _, entry in ipairs(RCCustomEP.EPVariables) do
+          for _, entry in ipairs(self.EPVariables) do
               local variableName = entry.name
               local variableValue = entry.value(name, fenv)
               fenv[variableName] = variableValue
@@ -750,6 +797,7 @@ function EPGP:IncMassEPBy(reason, amount, formulaIndexOrName, inputName, schedul
   end
   table.sort(sorted_list, function(a, b) return a.ep < b.ep end)
 
+  -- TODO
   for _, entry in ipairs(sorted_list) do
       local linePrint = entry.ep.." "
       for _, name in ipairs(entry.list) do
@@ -767,21 +815,25 @@ function EPGP:IncMassEPBy(reason, amount, formulaIndexOrName, inputName, schedul
 end
 
 --------------------------------------------------------------------------------
-RCCustomEP.tickFrame = CreateFrame("Frame", "RCCustomEP_tickFrame")
-RCCustomEP.tickFrame.lastUpdateTime = GetTime()
+RCCustomEP.scheduleTickFrame = CreateFrame("Frame", "RCCustomEP_Schedule_Tick_Frame")
+RCCustomEP.scheduleTickFrame.timeout = 0
 
-RCCustomEP.tickFrame:SetScript("OnUpdate", function(self)
-    if GetTime() - self.lastUpdateTime < 1 then
+RCCustomEP.scheduleTickFrame:SetScript("OnUpdate", function(self, elapsed)
+    if not RCCustomEP.initialize then return end
+
+    self.timeout = self.timeout + elapsed
+    if self.timeout < 1 then
         return
     end
+    self.timeout = 0
     self.lastUpdateTime = GetTime()
     local queue = RCCustomEP:GetMassEPQueue()
     for _, entry in ipairs(queue) do
         if entry.UTCEndTime and entry.UTCEndTime < time(date("!*t")) then
             if entry.type == "massep" then
-                EPGP:IncMassEPBy(entry.reason, entry.amount, entry.formulaIndexOrName, entry.inputName)
+                self:IncMassEPBy(entry.reason, entry.amount, entry.formulaIndexOrName, entry.targetName)
             elseif entry.type == "recurep" then
-                EPGP:StartRecurringEP(entry.reason, entry.amount, entry.periodMin, entry.formulaIndexOrName, entry.inputName)
+                self:StartRecurringEP(entry.reason, entry.amount, entry.periodMin, entry.formulaIndexOrName, entry.targetName)
             end
         elseif not entry.UTCEndTime then
             RCEPGP:DebugPrint("ERROR. No UTCEndTime in entry.")
@@ -793,4 +845,56 @@ RCCustomEP.tickFrame:SetScript("OnUpdate", function(self)
         self:Hide()
     end
 end)
-RCCustomEP.tickFrame:Hide()
+RCCustomEP.scheduleTickFrame:Hide()
+
+------------------------------------------------------------------------------------------------
+function RCCustomEP:GetCustomEPdb()
+    if not RCEPGP:GetEPGPdb().customEP then
+        RCEPGP:GetEPGPdb().customEP = {}
+    end
+    return RCEPGP:GetEPGPdb().customEP
+end
+
+function RCCustomEP:RestoreToDefault()
+    RCEPGP:SetdbDefaults(self:GetCustomEPdb(), self.defaults, true)
+    self:SendMessage("RCCustomEPRuleChanged")
+end
+
+function RCCustomEP.EPFormulaGetter(index, category)
+    if (not RCCustomEP:GetCustomEPdb().EPFormulas) or (not RCCustomEP:GetCustomEPdb().EPFormulas[index]) then
+        return ""
+    end
+    return RCCustomEP:GetCustomEPdb().EPFormulas[index][category]
+end
+
+function RCCustomEP.EPFormulaSetter(index, category, value)
+    if (not RCCustomEP:GetCustomEPdb().EPFormulas[index]) then
+        RCCustomEP:GetCustomEPdb().EPFormulas[index] = {}
+    end
+    if category == "name" then
+        RCCustomEP:GetCustomEPdb().EPFormulas[index][category] = RCCustomEP:EPFormulaGetUnrepeatedName(value, index)
+    else
+        RCCustomEP:GetCustomEPdb().EPFormulas[index][category] = value
+    end
+end
+
+function RCCustomEP:EPFormulaGetUnrepeatedName(name, index)
+    name = string.gsub(name, " ", "_") -- We don't allow space in the name, so replace it by "_"
+    local function isRepeated(name)
+        for i, entry in pairs(self:GetCustomEPdb().EPFormulas) do
+            if entry.name == name and i ~= index then
+                return true
+            end
+        end
+        return false
+    end
+    if not isRepeated(name) then
+        return name
+    else
+        local i = 2
+        while isRepeated(name.."_"..i) do
+            i = i + 1
+        end
+        return name.."_"..i
+    end
+end

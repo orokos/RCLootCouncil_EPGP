@@ -12,7 +12,7 @@ local RCLootCouncilML = addon:GetModule("RCLootCouncilML")
 
 -- Edit the following versions every update, and should also update the version in TOC file.
 RCEPGP.version = "2.0.0"
-RCEPGP.testVersion = "Release"
+RCEPGP.testVersion = "Alpha.1"
 RCEPGP.tocVersion = GetAddOnMetadata("RCLootCouncil_EPGP", "Version")
 RCEPGP.testTocVersion = GetAddOnMetadata("RCLootCouncil_EPGP", "X-TestVersion")
 
@@ -34,12 +34,17 @@ local session = 1
 function RCEPGP:GetEPGPdb()
     if not addon:Getdb().epgp then
         addon:Getdb().epgp = {}
-        self:SetDefaults()
     end
     return addon:Getdb().epgp
 end
 
 function RCEPGP:OnInitialize()
+    self.generalDefaults = {
+        sendEPGPSettings = true,
+        biddingEnabled = false,
+    }
+    self:SetdbDefaults(self:GetGeneraldb(), self.generalDefaults, false)
+
     self:RegisterMessage("RCCustomGPRuleChanged", "OnMessageReceived")
     self:RegisterMessage("RCMLAwardSuccess", "OnMessageReceived")
     self:RegisterMessage("RCSessionChangedPre", "OnMessageReceived")
@@ -62,8 +67,6 @@ function RCEPGP:OnInitialize()
     self:EnableGPTooltip()
     self:DisablezhCNProfanityFilter()
 
-    self:SetDefaults()
-
     self:AddOptions()
     self:RefreshOptionsTable()
 
@@ -83,8 +86,9 @@ function RCEPGP:OnInitialize()
     -- Added in v2.0
     local lastVersion = self:GetEPGPdb().version
     if not lastVersion then lastVersion = "1.9.2" end
-    if addon:VersionCompare(lastVersion, "2.0.0") then
+    if addon:VersionCompare(lastVersion, "2.0.1") then
         self:UpdateAnnounceKeyword_v2_0_0()
+        self:ShowSettingResetNotification()
     end
 
     self:GetEPGPdb().version = self.version
@@ -184,7 +188,7 @@ function RCEPGP:TestVersionCompare(v1, v2)
     end
     local testName1, testVer1 = strsplit(".", v1)
     local testName2, testVer2 = strsplit(".", v2)
-    return tonumber(v1) < tonumber(v2)
+    return tonumber(testVer1) < tonumber(testVer2)
 end
 
 function RCEPGP:IsTestVersion(v)
@@ -290,7 +294,7 @@ function RCEPGP:SetupColumns()
     ReinsertColumnAtTheEnd(RCVotingFrame.scrollCols, gp)
     ReinsertColumnAtTheEnd(RCVotingFrame.scrollCols, pr)
 
-    if self:GetEPGPdb().biddingEnabled then
+    if self:GetGeneraldb().biddingEnabled then
         ReinsertColumnAtTheEnd(RCVotingFrame.scrollCols, bid)
     else
         RemoveColumn(RCVotingFrame.scrollCols, bid)
@@ -683,7 +687,7 @@ RCEPGP.rightClickEntries = {
     { -- Level 1
         { -- Button 1
             pos = 2,
-            hidden = function() return not RCEPGP:GetEPGPdb().biddingEnabled end,
+            hidden = function() return not RCEPGP:GetGeneraldb().biddingEnabled end,
             notCheckable = true,
             func = function(name)
                 local data, name, item, responseGP, gp, bid = GetGPInfo(name)
@@ -760,7 +764,7 @@ LibDialog:Register("RCEPGP_CONFIRM_AWARD", {
 })
 
 function RCEPGP:AddChatCommand()
-    addon:CustomChatCmd(self, "OpenOptions", LEP["chat_commands"], "EPGP", "epgp")
+    addon:CustomChatCmd(self, "OpenOptions", LEP["chat_commands"], "epgp")
 end
 
 function RCEPGP:AddAnnouncement()
@@ -828,6 +832,17 @@ function RCEPGP:SendVersion(channel)
     self:Debug("Sent version ", serializedMsg, channel)
 end
 
+function RCEPGP:ShowSettingResetNotification()
+    StaticPopupDialogs["RCEPGP_SETTING_RESET"] = {
+        text = LEP["setting_reset_notification"],
+        button1 = OKAY,
+        whileDead = true,
+        hideOnEscape = true,
+    }
+    StaticPopup_Show ("RCEPGP_SETTING_RESET", self.version.."-"..self.testVersion)
+    self:Print(string.format(LEP["setting_reset_notification"], self.version..self.testVersion))
+end
+
 function RCEPGP:ShowNeedRestartNotification()
     StaticPopupDialogs["RCEPGP_NEED_RESTART"] = {
         text = LEP["need_restart_notification"],
@@ -835,8 +850,8 @@ function RCEPGP:ShowNeedRestartNotification()
         whileDead = true,
         hideOnEscape = true,
     }
-    StaticPopup_Show ("RCEPGP_NEED_RESTART", self.version)
-    self:Print(string.format(LEP["need_restart_notification"], self.version))
+    StaticPopup_Show ("RCEPGP_NEED_RESTART", self.version.."-"..self.testVersion)
+    self:Print(string.format(LEP["need_restart_notification"], self.version.."-"..self.testVersion))
 end
 
 function RCEPGP:ShowRCVersionBelowMinNotification()
@@ -881,7 +896,7 @@ end
 
 -- Restore settings stored in RC to EPGP(dkp reloaded)
 function RCEPGP:RCToEPGPDkpReloadedSetting()
-    if not self:GetEPGPdb().sendEPGPSettings then return end
+    if not self:GetGeneraldb().sendEPGPSettings then return end
 
     if self:GetEPGPdb().EPGPDkpReloadedDB and self:GetEPGPdb().EPGPDkpReloadedDB.children then
         for module, entry in pairs(self:GetEPGPdb().EPGPDkpReloadedDB.children) do
@@ -937,6 +952,7 @@ function RCEPGP:DebugPrint(msg, ...)
 end
 
 -- Copy from AceConsole:Print. Just replaced "tostring(self)" to "RCLootCouncil - EPGP".
+-- Also resloves the display problem when the string is too long.
 local tmp={}
 local function Print(self,frame,...)
 	local n=0
@@ -948,7 +964,15 @@ local function Print(self,frame,...)
 		n=n+1
 		tmp[n] = tostring(select(i, ...))
 	end
-	frame:AddMessage(table.concat(tmp," ",1,n) )
+
+    local msg = table.concat(tmp," ",1,n)
+    for _,line in ipairs({strsplit("\n", msg)}) do
+        if line == "" then
+            frame:AddMessage(" ")
+        else
+            frame:AddMessage(line)
+        end
+    end
 end
 
 -- Copy from AceConsole:Print
@@ -1030,4 +1054,33 @@ function RCEPGP:GetFuncEnv(overrides)
       return exec_env[k]
     end
     return exec_env
+end
+
+function RCEPGP:SetdbDefaults(db, defaults, restoreDefaults)
+    for info, value in pairs(defaults) do
+        if restoreDefaults or db[info] == nil or db[info] == "" then
+            db[info] = value
+        end
+    end
+end
+
+
+function RCEPGP:GetGeneraldb()
+    if not self:GetEPGPdb().general then
+        self:GetEPGPdb().general = {}
+    end
+    return self:GetEPGPdb().general
+end
+
+function RCEPGP.GeneralOptionGetter(info)
+    return RCEPGP:GetGeneraldb()[info[#info]]
+end
+
+function RCEPGP.GeneralOptionSetter(info, value)
+    RCEPGP:GetGeneraldb()[info[#info]] = value
+end
+
+function RCEPGP:GeneralRestoreToDefault()
+    self:SetdbDefaults(self:GetGeneraldb(), self.generalDefaults, true)
+    self:SendMessage("RCEPGPGeneralOptionRestoreToDefault")
 end

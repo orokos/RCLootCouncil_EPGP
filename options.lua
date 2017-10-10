@@ -2,6 +2,7 @@ local addon = LibStub("AceAddon-3.0"):GetAddon("RCLootCouncil")
 local RCEPGP = addon:GetModule("RCEPGP")
 local RCCustomGP = RCEPGP:GetModule("RCCustomGP", true)
 local RCCustomEP = RCEPGP:GetModule("RCCustomEP", true)
+local RCCustomEPGUI = RCEPGP:GetModule("RCCustomEPGUI", true)
 
 ------------------------------
 
@@ -10,79 +11,13 @@ local LEP = LibStub("AceLocale-3.0"):GetLocale("RCEPGP")
 
 local options =
 {
-    name = "RCLootCouncil - EPGP v"..RCEPGP.version,
+    name = "RCLootCouncil - EPGP",
     order = 1,
     type = "group",
     childGroups = "tab",
     inline = false,
 }
 RCEPGP.epgpOptions = options
-
-
------- Options ------
-local defaults = {
-    customGPEnabled = false,
-    INVTYPE_HEAD = 1,
-    INVTYPE_CHEST = 1,
-    INVTYPE_ROBE = 1,
-    INVTYPE_LEGS = 1,
-    INVTYPE_WRIST = 0.56,
-    INVTYPE_FINGER = 0.56,
-    INVTYPE_CLOAK = 0.56,
-    INVTYPE_NECK = 0.56,
-    INVTYPE_SHOULDER = 0.75,
-    INVTYPE_WAIST = 0.75,
-    INVTYPE_FEET = 0.75,
-    INVTYPE_HAND = 0.75,
-    INVTYPE_TRINKET = 1.25,
-    INVTYPE_RELIC = 0.667,
-    formula = "1000 * 2 ^ (-915/30) * 2 ^ (ilvl/30) * slotWeights + hasSpeed * 25 + numSocket * 200",
-    EPFormulas = {{name = "default", desc = "Whatever", formula = "100"}},
-    sendEPGPSettings = true,
-}
-
-RCEPGP.defaults = defaults
-
-function RCEPGP:SetDefaults(restoreDefaults)
-    for info, value in pairs(defaults) do
-        if restoreDefaults or self:GetEPGPdb()[info] == nil or self:GetEPGPdb()[info] == "" then
-            if type(value) == "boolean" then
-                self:GetEPGPdb()[info] = value
-            elseif type(value) == "table" then
-                self:GetEPGPdb()[info] = value
-            else
-                self:GetEPGPdb()[info] = tostring(value)
-            end
-        end
-    end
-end
-
-local function ValidateStatWeights(info, value)
-    if value == "" then
-        return true
-    end
-    if not tonumber(value) then
-        addon:Print(LEP["Input must be a number."])
-        return LEP["Input must be a number."]
-    end
-    return true
-end
-
-local function Getter(info, value)
-    return RCEPGP:GetEPGPdb()[info[#info]]
-end
-
-local function Setter(info, value)
-    if (not value) or value == "" then
-        value = tostring(defaults[info[#info]])
-    end
-    RCEPGP:GetEPGPdb()[info[#info]] = value
-end
-
-local function CustomGPDisabled()
-    return (not RCEPGP:GetEPGPdb().customGPEnabled)
-end
-
 
 function RCEPGP:AddGPOptions()
     local options = addon:OptionsTable()
@@ -183,43 +118,34 @@ function RCEPGP:AddGPOptions()
 end
 
 function RCEPGP:RefreshOptionsTable()
-    if not RCCustomGP.initialize then
+    if (not RCCustomGP.initialize) or (not RCCustomEP.initialize) then
         C_Timer.After(1, function() self:RefreshOptionsTable() end)
         return
     end
 
-    local function EPFormulaGetUnrepeatedName(name)
-        local function isRepeated(name)
-            for _, entry in pairs(self:GetEPGPdb().EPFormulas) do
-                if entry.name == name then
-                    return true
-                end
-            end
-            return false
-        end
-        if not isRepeated(name) then
-            return name
-        else
-            local i = 2
-            while isRepeated(name.."_"..i) do
-                i = i + 1
-            end
-            return name.."_"..i
-        end
-    end
-
     local options = self.epgpOptions
-
-    options.name = "RCLootCouncil - EPGP v"..self.version
-    options.order = 1
-    options.type = "group"
-    options.childGroups = "tab"
-    options.inline = false
     options.args = {
-            gpTab = {
-                name = "GP",
+            version = {
+                name = function() return "|cFF87CEFAv"..self.version.."|r-"..self.testVersion end,
+                type = "description",
                 order = 1,
+            },
+            addonDesc = {
+                name = LEP["RCEPGP_desc"],
+                type = "description",
+                order = 2,
+            },
+            website = {
+                name = "|cffffd000https://mods.curse.com/addons/wow/269161-rclootcouncil-epgp|r",
+                type = "description",
+                order = 3,
+            },
+            generalTab = {
+                name = LEP["General"],
+                order = 5,
                 type = "group",
+                get = self.GeneralOptionGetter,
+                set = self.GeneralOptionSetter,
                 args = {
                     gpOptions = {
                         name = LEP["gpOptions"],
@@ -241,19 +167,17 @@ function RCEPGP:RefreshOptionsTable()
                         },
                     },
                     sync = {
-                        name = "Sync",
+                        name = LEP["Setting Sync"],
                         order = 4,
                         type = "group",
                         inline = true,
                         args = {
                             sendEPGPSettings = {
-                                name = "Send EPGP(dkp reloaded) settings",
-                                desc = "If checked, '/rc sync' also sync EPGP(dkp reloaded) settings",
+                                name = LEP["send_epgp_settings"],
+                                desc = LEP["send_epgp_setting_desc"],
                                 order = 1,
                                 type = "toggle",
                                 width = "full",
-                                get = Getter,
-                                set = Setter,
                             },
                         },
                     },
@@ -269,99 +193,104 @@ function RCEPGP:RefreshOptionsTable()
                                 order = 1,
                                 type = "toggle",
                                 width = "full",
-                                get = function() return self:GetEPGPdb().biddingEnabled end,
-                                set = function(info, value) self:GetEPGPdb().biddingEnabled = value; self:SetupColumns() end,
+                                set = function(info, value) self.GeneralOptionSetter(info, value); self:SetupColumns() end,
                             },
                         },
                     },
-                    customGP = {
-                        name = LEP["Custom GP"],
-                        order = 10,
+                    restoreDefault = {
+                        name = L["Reset to default"],
+                        order = 1000,
+                        type = "execute",
+                        func = function() self:GeneralRestoreToDefault() end,
+                    },
+                },
+            },
+            gpTab = {
+                name = LEP["Custom GP"],
+                order = 6,
+                type = "group",
+                get = RCCustomGP.OptionGetter,
+                set = RCCustomGP.OptionSetter,
+                args = {
+                    customGPdesc = {
+                        name = LEP["customGP_desc"],
+                        order = 1,
+                        type = "description",
+                        width = "full",
+                    },
+                    customGPEnabled = {
+                        name = LEP["enable_custom_gp"],
+                        order = 2,
+                        type = "toggle",
+                        width = "double",
+                    },
+                    slotWeights = {
+                        name = LEP["slot_weights"],
+                        order = 3,
                         type = "group",
                         inline = true,
+                        disabled = function() return (not RCCustomGP:GetCustomGPdb().customGPEnabled) end,
                         args = {
-                            customGPEnabled = {
-                                name = LEP["enable_custom_gp"],
-                                order = 1,
-                                type = "toggle",
-                                width = "double",
-                                get = Getter,
-                                set = function(info, value)
-                                    self:GetEPGPdb()[info[#info]] = value
-                                end,
-                            },
-                            restoreDefault = {
-                                name = LEP["restore_default"],
-                                order = 2,
-                                type = "execute",
-                                func = function() self:SetDefaults(true) end,
-                            },
-                            slotWeights = {
-                                name = LEP["slot_weights"],
-                                order = 3,
-                                type = "group",
-                                inline = true,
-                                args = {
-                                    -- Fill in later
-                                },
-                            },
-
-                            formulaHelp = {
-                                name = LEP["formula_help"],
-                                order = 100,
-                                type = "description",
-                                width = "full",
-                            },
-                            space1 = {
-                                name = "",
-                                order = 101,
-                                type = "description",
-                            },
-                            formula = {
-                                name = LEP["gp_formula"],
-                                order = 150,
-                                multiline = 1,
-                                type = "input",
-                                width = "full",
-                                get = Getter,
-                                set = function(info, value)
-                                    if value == "" then
-                                        value = tostring(defaults[info[#info]])
-                                    end
-                                    self:GetEPGPdb()[info[#info]] = value
-                                    local func, err = RCCustomGP:GetFormulaFunc()
-                                    if not func then
-                                        self.epgpOptions.args.gpTab.args.customGP.args.errorMsg.name = LEP["formula_syntax_error"]
-                                        self.epgpOptions.args.gpTab.args.customGP.args.errorDetailedMsg.name = err
-                                    else
-                                        self.epgpOptions.args.gpTab.args.customGP.args.errorMsg.name = ""
-                                        self.epgpOptions.args.gpTab.args.customGP.args.errorDetailedMsg.name = ""
-                                    end
-                                    LibStub("AceConfigRegistry-3.0"):NotifyChange("RCLootCouncil");
-                                    self:SendMessage("RCCustomGPOptionChanged")
-                                end,
-                                disabled = CustomGPDisabled,
-                            },
-                            errorMsg = {
-                                name = "",
-                                order = 151,
-                                type = "description",
-                                width = "full",
-                            },
-                            errorDetailedMsg = {
-                                name = "",
-                                order = 152,
-                                type = "description",
-                                width = "full",
-                            },
+                            -- Fill in later
                         },
                     },
-
+                    formulaHelp = {
+                        name = LEP["gp_formula_help"],
+                        order = 100,
+                        type = "description",
+                        width = "full",
+                    },
+                    space1 = {
+                        name = "",
+                        order = 101,
+                        type = "description",
+                    },
+                    formula = {
+                        name = LEP["gp_formula"],
+                        order = 150,
+                        multiline = 1,
+                        type = "input",
+                        width = "full",
+                        disabled = function() return (not RCCustomGP:GetCustomGPdb().customGPEnabled) end,
+                        set = function(info, value)
+                            if value == "" then
+                                value = tostring(RCCustomGP.defaults[info[#info]])
+                            end
+                            RCCustomGP.OptionSetter(info, value)
+                            local func, err = RCCustomGP:GetFormulaFunc()
+                            if not func then
+                                self.epgpOptions.args.gpTab.args.errorMsg.name = LEP["gp_formula_syntax_error"]
+                                self.epgpOptions.args.gpTab.args.errorDetailedMsg.name = err
+                            else
+                                self.epgpOptions.args.gpTab.args.errorMsg.name = ""
+                                self.epgpOptions.args.gpTab.args.errorDetailedMsg.name = ""
+                            end
+                            LibStub("AceConfigRegistry-3.0"):NotifyChange("RCLootCouncil");
+                        end,
+                    },
+                    errorMsg = {
+                        name = "",
+                        order = 151,
+                        type = "description",
+                        width = "full",
+                    },
+                    errorDetailedMsg = {
+                        name = "",
+                        order = 152,
+                        type = "description",
+                        width = "full",
+                    },
+                    restoreDefault = {
+                        name = L["Reset to default"],
+                        order = 1000,
+                        type = "execute",
+                        func = function() RCCustomGP:RestoreToDefault() end,
+                    },
                 },
             },
             epTab = {
-                name = "EP",
-                order = 2,
+                name = LEP["Custom EP"],
+                order = 7,
                 type = "group",
                 args = {
                         desc = {
@@ -371,21 +300,33 @@ function RCEPGP:RefreshOptionsTable()
                         },
                         add = {
                             order = 2,
-                            name = "Add Formula",
+                            name = LEP["Add EP Formula"],
                             type = "execute",
-                            disabled = function() return #self:GetEPGPdb().EPFormulas >= RCCustomEP.MaxFormulas end,
-                            func = function() table.insert(self:GetEPGPdb().EPFormulas, {
-                                    name = EPFormulaGetUnrepeatedName("New"),
+                            disabled = function() return #RCCustomEP:GetCustomEPdb().EPFormulas >= RCCustomEP.MaxFormulas end,
+                            func = function() table.insert(RCCustomEP:GetCustomEPdb().EPFormulas, {
+                                    name = RCCustomEP:EPFormulaGetUnrepeatedName("New"),
                                     desc = "",
                                     formula = "0",
                                 }) end,
+                        },
+                        openEPGUI = {
+                            order = 3,
+                            name = LEP["Option EP GUI"],
+                            type = "execute",
+                            func = function() RCCustomEPGUI:ShowFrame() end,
+                        },
+                        restoreDefault = {
+                            name = L["Reset to default"],
+                            order = 4,
+                            type = "execute",
+                            func = function() RCCustomEP:RestoreToDefault() end,
                         },
 
                     },
             },
            epVariablesTab = {
                name = LEP["Custom EP Variables"],
-               order = 3,
+               order = 8,
                type = "group",
                args = {
                    desc = {
@@ -397,43 +338,28 @@ function RCEPGP:RefreshOptionsTable()
            }
         }
 
-    local function EPFormulaGetter(index, category)
-        if (not self:GetEPGPdb().EPFormulas) or (not self:GetEPGPdb().EPFormulas[index]) then
-            return ""
-        end
-        return self:GetEPGPdb().EPFormulas[index][category]
-    end
-    local function EPFormulaSetter(index, category, value)
-        if (not self:GetEPGPdb().EPFormulas) then
-            self:GetEPGPdb().EPFormulas = {}
-        end
-        if (not self:GetEPGPdb().EPFormulas[index]) then
-            self:GetEPGPdb().EPFormulas[index] = {}
-        end
-        self:GetEPGPdb().EPFormulas[index][category] = value
-    end
-
     -- Add EP Formulas
     for i=1,RCCustomEP.MaxFormulas do
         local formulaName = "Name"..i
         local description = "DESC1"..i
         local formula = "FORMULA"..i
         options.args.epTab.args["EPFormula"..i] = {
-            name = function() return i..". "..EPFormulaGetter(i, "name") end,
+            name = function() return i..". "..RCCustomEP.EPFormulaGetter(i, "name") end,
             type = "group",
             order = 100+i,
-            hidden = function() return i > #self:GetEPGPdb().EPFormulas;  end,
+            hidden = function() return i > #RCCustomEP:GetCustomEPdb().EPFormulas;  end,
             args = {
                 up = {
                     name = "Move up",
                     type = "execute",
                     order = 1,
+                    disabled = function() return i == 1 end,
                     func = function()
                         if i ~= 1 then
-                            local entry1 = self:GetEPGPdb().EPFormulas[i-1]
-                            local entry2 = self:GetEPGPdb().EPFormulas[i]
-                            self:GetEPGPdb().EPFormulas[i-1] = entry2
-                            self:GetEPGPdb().EPFormulas[i] = entry1
+                            local entry1 = RCCustomEP:GetCustomEPdb().EPFormulas[i-1]
+                            local entry2 = RCCustomEP:GetCustomEPdb().EPFormulas[i]
+                            RCCustomEP:GetCustomEPdb().EPFormulas[i-1] = entry2
+                            RCCustomEP:GetCustomEPdb().EPFormulas[i] = entry1
                             LibStub("AceConfigDialog-3.0"):SelectGroup("RCLootCouncil - EPGP", "epTab", "EPFormula"..(i-1))
                         end
                     end,
@@ -448,12 +374,13 @@ function RCEPGP:RefreshOptionsTable()
                     name = "Move down",
                     type = "execute",
                     order = 3,
+                    disabled = function() return i == #RCCustomEP:GetCustomEPdb().EPFormulas end,
                     func = function()
-                        if i ~= #self:GetEPGPdb().EPFormulas then
-                            local entry1 = self:GetEPGPdb().EPFormulas[i+1]
-                            local entry2 = self:GetEPGPdb().EPFormulas[i]
-                            self:GetEPGPdb().EPFormulas[i+1] = entry2
-                            self:GetEPGPdb().EPFormulas[i] = entry1
+                        if i ~= #RCCustomEP:GetCustomEPdb().EPFormulas then
+                            local entry1 = RCCustomEP:GetCustomEPdb().EPFormulas[i+1]
+                            local entry2 = RCCustomEP:GetCustomEPdb().EPFormulas[i]
+                            RCCustomEP:GetCustomEPdb().EPFormulas[i+1] = entry2
+                            RCCustomEP:GetCustomEPdb().EPFormulas[i] = entry1
                             LibStub("AceConfigDialog-3.0"):SelectGroup("RCLootCouncil - EPGP", "epTab", "EPFormula"..(i+1))
                         end
                     end,
@@ -468,8 +395,8 @@ function RCEPGP:RefreshOptionsTable()
                     name = "Delete",
                     type = "execute",
                     order = 5,
-                    confirm = function() return "Do you confirm to delete formula No."..i.." "..EPFormulaGetter(i, "name").."?" end,
-                    func = function() table.remove(self:GetEPGPdb().EPFormulas, i) end,
+                    confirm = function() return string.format(LEP["ep_formula_delete_confirm"], i..". "..RCCustomEP.EPFormulaGetter(i, "name")) end,
+                    func = function() table.remove(RCCustomEP:GetCustomEPdb().EPFormulas, i) end,
                 },
                 space3 = {
                     name = "  ",
@@ -480,9 +407,10 @@ function RCEPGP:RefreshOptionsTable()
                 name = {
                     name = "Name",
                     type = "input",
+                    desc = LEP["ep_formula_name_desc"],
                     order = 7,
-                    get = function() return EPFormulaGetter(i, "name") end,
-                    set = function(_, value) EPFormulaSetter(i, "name", value) end,
+                    get = function() return RCCustomEP.EPFormulaGetter(i, "name") end,
+                    set = function(_, value) RCCustomEP.EPFormulaSetter(i, "name", value) end,
                 },
                 space4 = {
                     name = "  ",
@@ -494,18 +422,20 @@ function RCEPGP:RefreshOptionsTable()
                     name = "Description",
                     type = "input",
                     width = "full",
-                    get = function() return EPFormulaGetter(i, "desc") end,
-                    set = function(_, value) EPFormulaSetter(i, "desc", value) end,
+                    desc = LEP["ep_formula_desc_desc"],
+                    get = function() return RCCustomEP.EPFormulaGetter(i, "desc") end,
+                    set = function(_, value) RCCustomEP.EPFormulaSetter(i, "desc", value) end,
                     order = 9,
                 },
                 formula = {
                     name = "Formula",
                     type = "input",
                     width = "full",
+                    desc = LEP["ep_formula_formula_desc"],
                     multiline = 7,
-                    get = function() return EPFormulaGetter(i, "formula") end,
+                    get = function() return RCCustomEP.EPFormulaGetter(i, "formula") end,
                     set = function(_, value)
-                        EPFormulaSetter(i, "formula", value)
+                        RCCustomEP.EPFormulaSetter(i, "formula", value)
                         local func, err = RCCustomEP:GetEPFormulaFunc(i)
                         if not func then
                             self.epgpOptions.args.epTab.args["EPFormula"..i].args.errorMsg.name = LEP["formula_syntax_error"]
@@ -536,29 +466,35 @@ function RCEPGP:RefreshOptionsTable()
     -- Add Options to set slot weights
     for i = 1, #RCCustomGP.slots do
         local slot = RCCustomGP.slots[i]
-        options.args.gpTab.args.customGP.args.slotWeights.args[slot] = {
+        options.args.gpTab.args.slotWeights.args[slot] = {
             name = getglobal(slot),
             order = 10 + i,
             type = "input",
             width = "half",
-            validate = ValidateStatWeights,
-            get = Getter,
-            set = function(info, value) Setter(info, value); self:SendMessage("RCCustomGPOptionChanged") end,
-            disabled = CustomGPDisabled,
+            validate = function(info, value)
+                if value == "" then
+                    return true
+                end
+                if not tonumber(value) then
+                    self:Print(LEP["Input must be a number."])
+                    return LEP["Input must be a number."]
+                end
+                return true
+            end,
         }
     end
 
     -- Add descriptions for GP variables
     for i = 1, #RCCustomGP.GPVariables do
         local variableName = RCCustomGP.GPVariables[i].name
-        options.args.gpTab.args.customGP.args["variable"..variableName] = {
+        options.args.gpTab.args["variable"..variableName] = {
             name = "|cFFFFFF00"..variableName.."|r",
             order = 100 + i * 2,
             fontSize = "medium",
             type = "description",
             width = "normal",
         }
-        options.args.gpTab.args.customGP.args["variable"..variableName.."help"] = {
+        options.args.gpTab.args["variable"..variableName.."help"] = {
             name = RCCustomGP.GPVariables[i].help,
             order = 101 + i * 2,
             fontSize = "small",

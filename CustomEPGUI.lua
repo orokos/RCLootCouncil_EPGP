@@ -7,10 +7,7 @@ local LEP = LibStub("AceLocale-3.0"):GetLocale("RCEPGP")
 local EPGP = LibStub("AceAddon-3.0"):GetAddon("EPGP")
 
 function RCCustomEPGUI:OnInitialize()
-    addon:CustomChatCmd(self, "ShowFrame","Show GUI", "epgui")
-
-    --TODO delete next line
-    --self:GetFrame():Show()
+    addon:CustomChatCmd(self, "ShowFrame", LEP["slash_rc_epgui_help"], "epgui")
     self:RegisterMessage("RCCustomEPQueueRemoved", "EPQueueChanged")
     self:RegisterMessage("RCCustomEPQueueAdded", "EPQueueChanged")
 end
@@ -20,7 +17,7 @@ function RCCustomEPGUI:ShowFrame()
 end
 
 function RCCustomEPGUI:EPQueueChanged()
-    print("EP queue changed")
+    RCEPGP:DebugPrint("GUI: EP queue changed")
     self:BuildST()
 end
 
@@ -28,175 +25,203 @@ function RCCustomEPGUI:GetFrame()
     if self.frame then
         return self.frame
     end
-    local f = addon:CreateFrame("RCEPGPCustomEPFrame", "RCCustomEP", "RCLootCouncil Custom EP GUI", 250,600)
+    local f = addon:CreateFrame("RCEPGPCustomEPFrame", "RCCustomEPGUI", LEP["RCLootCouncil-EPGP Custom EP GUI"], 250, 510)
     self.frame = f
 
-    local b1 = CreateFrame("Button", nil, f.content, "UIPanelCloseButton")
-    b1:SetSize(40, 40)
-	b1:SetPoint("TOPRIGHT", f, "TOPRIGHT", 6, 6)
-	b1:SetScript("OnClick", function()
+    local closeBtn = CreateFrame("Button", nil, f.content, "UIPanelCloseButton")
+    closeBtn:SetSize(40, 40)
+	closeBtn:SetPoint("TOPRIGHT", f, "TOPRIGHT", 6, 6)
+	closeBtn:SetScript("OnClick", function()
 		f:Hide()
 	end)
-	f.closeBtn = b1
+	f.closeBtn = closeBtn
 
 	local awardReasonStr = f.content:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-	awardReasonStr:SetPoint("TOPLEFT", f.content, "TOPLEFT", 20, -20)
-	awardReasonStr:SetText("Reason")
+	awardReasonStr:SetPoint("TOPLEFT", f.content, "TOPLEFT", 20, -30)
+	awardReasonStr:SetText(LEP["Award Reason"])
+    awardReasonStr:SetTextColor(1, 0, 0)
 	f.awardReasonStr = awardReasonStr
 
-    local e1 = CreateFrame("EditBox", nil, f.content, "InputBoxTemplate")
-    e1:SetSize(150, 32)
-    e1:SetText("123213213")
-    e1:SetFontObject("GameFontHighlight")
-    e1:SetAutoFocus(false)
-    e1:SetPoint("TOPLEFT", awardReasonStr, "BOTTOMLEFT", 0, -4)
-    e1:Show()
-    e1:SetScript("OnEnter", function()
-    	GameTooltip:SetOwner(e1, "ANCHOR_TOPRIGHT")
-    	GameTooltip:AddLine("Award Reason",1,1,1) -- TODO
+    local awardReasonEditbox = CreateFrame("EditBox", nil, f.content, "InputBoxTemplate")
+    awardReasonEditbox:SetSize(175, 32)
+    awardReasonEditbox:SetText("")
+    awardReasonEditbox:SetFontObject("GameFontHighlight")
+    awardReasonEditbox:SetAutoFocus(false)
+    awardReasonEditbox:SetPoint("TOPLEFT", awardReasonStr, "BOTTOMLEFT", 0, -4)
+    awardReasonEditbox:Show()
+    awardReasonEditbox:SetScript("OnEnter", function(self)
+    	GameTooltip:SetOwner(self, "ANCHOR_TOPRIGHT")
+    	GameTooltip:AddLine(LEP["gui_award_reason_tooltip1"], 1, 1, 1)
+        GameTooltip:AddLine(LEP["gui_award_reason_tooltip2"], 1, 1, 1)
     	GameTooltip:Show()
     end)
-    e1:SetScript("OnLeave", function()
+    awardReasonEditbox:SetScript("OnLeave", function()
     	addon:HideTooltip()
     end)
-    f.reasonEditbox = e1
+
+    awardReasonEditbox:SetScript("OnTextChanged", function(self)
+        if self:GetText() == "" then
+            GameTooltip:SetOwner(self, "ANCHOR_TOPRIGHT")
+            GameTooltip:AddLine(LEP["gui_award_reason_tooltip1"], 1, 1, 1)
+            GameTooltip:AddLine(LEP["gui_award_reason_tooltip2"], 1, 1, 1)
+            GameTooltip:Show()
+            awardReasonStr:SetTextColor(1, 0, 0)
+        else
+            awardReasonStr:SetTextColor(1, 0.82, 0)
+        end
+    end)
+    f.awardReasonEditbox = awardReasonEditbox
 
     local awardAmountStr = f.content:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    awardAmountStr:SetPoint("TOPLEFT", e1, "BOTTOMLEFT", 0, -4)
-    awardAmountStr:SetText("Amount")
+    awardAmountStr:SetPoint("LEFT", awardReasonStr, "LEFT", 225, 0)
+    awardAmountStr:SetText(LEP["EP Award Amount"])
+    awardAmountStr:SetTextColor(1, 0, 0)
     f.awardAmountStr = awardAmountStr
 
-    local e2 = CreateFrame("EditBox", nil, f.content, "InputBoxTemplate")
-    e2:SetSize(150, 32)
-    e2:SetText("123213213")
-    e2:SetFontObject("GameFontHighlight")
-    e2:SetAutoFocus(false)
-    e2:SetPoint("TOPLEFT", awardAmountStr, "BOTTOMLEFT", 0, -4)
-    e2:Show()
-    e2:SetScript("OnEnter", function()
-    	GameTooltip:SetOwner(e2, "ANCHOR_TOPRIGHT")
-    	GameTooltip:AddLine("Award Amount123213\n2132142141242134213",1,1,1) -- TODO
+    local awardAmountEditbox = CreateFrame("EditBox", nil, f.content, "InputBoxTemplate")
+    awardAmountEditbox:SetSize(175, 32)
+    awardAmountEditbox:SetText("")
+    awardAmountEditbox:SetFontObject("GameFontHighlight")
+    awardAmountEditbox:SetAutoFocus(false)
+    awardAmountEditbox:SetPoint("TOPLEFT", awardAmountStr, "BOTTOMLEFT", 0, -4)
+    awardAmountEditbox:Show()
+    awardAmountEditbox:SetScript("OnEnter", function(self)
+    	GameTooltip:SetOwner(self, "ANCHOR_TOPRIGHT")
+    	GameTooltip:AddLine(LEP["gui_award_amount_tooltip1"], 1, 1, 1)
+        GameTooltip:AddLine(LEP["gui_award_amount_tooltip2"], 1, 1, 1)
     	GameTooltip:Show()
     end)
-    e2:SetScript("OnLeave", function()
+    awardAmountEditbox:SetScript("OnLeave", function()
     	addon:HideTooltip()
     end)
-
-    local inputNameStr = f.content:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    inputNameStr:SetPoint("TOPLEFT", e2, "BOTTOMLEFT", 0, -4)
-    inputNameStr:SetText("Input Name")
-    f.targetNameStr = targetNameStr
-
-    local e3 = CreateFrame("EditBox", nil, f.content, "InputBoxTemplate")
-    e3:SetSize(150, 32)
-    e3:SetText("123213213")
-    e3:SetFontObject("GameFontHighlight")
-    e3:SetAutoFocus(false)
-    e3:SetPoint("TOPLEFT", inputNameStr, "BOTTOMLEFT", 0, -4)
-    e3:Show()
-    e3:SetScript("OnEnter", function()
-    	GameTooltip:SetOwner(e3, "ANCHOR_TOPRIGHT")
-    	GameTooltip:AddLine("Award Amount123213\n2132142141242134213",1,1,1) -- TODO
-    	GameTooltip:Show()
+    awardAmountEditbox.lastText = ""
+    awardAmountEditbox:SetScript("OnTextChanged", function(self, userInput)
+        if userInput then
+            if self:GetText() ~= "" and ((not tonumber(self:GetText())) or tonumber(self:GetText()) ~= math.floor(tonumber(self:GetText())+0.5)) then -- Only allows number input.
+                self:SetText(self.lastText)
+                GameTooltip:SetOwner(self, "ANCHOR_TOPRIGHT")
+            	GameTooltip:AddLine(LEP["gui_award_amount_tooltip1"], 1, 1, 1)
+                GameTooltip:AddLine(LEP["gui_award_amount_tooltip2"], 1, 1, 1)
+            	GameTooltip:Show()
+            else
+                self.lastText = self:GetText()
+            end
+        else
+            self.lastText = self:GetText()
+        end
+        if self:GetText() == "" then
+            awardAmountStr:SetTextColor(1, 0, 0)
+        else
+            awardAmountStr:SetTextColor(1, 0.82, 0)
+        end
     end)
-    e3:SetScript("OnLeave", function()
-    	addon:HideTooltip()
-    end)
-    f.targetNameEditbox = e3
+    f.awardAmountEditbox = awardAmountEditbox
 
-    local recurIntervalStr = f.content:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    recurIntervalStr:SetPoint("TOPLEFT", e3, "BOTTOMLEFT", 0, -4)
-    recurIntervalStr:SetText("Recur Interval")
-    f.recurIntervalStr = recurIntervalStr
+    local recurPeriodStr = f.content:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    recurPeriodStr:SetPoint("TOPLEFT", awardReasonEditbox, "BOTTOMLEFT", 0, -4)
+    recurPeriodStr:SetText(LEP["Recurring Award Period"])
+    f.recurPeriodStr = recurPeriodStr
 
-    local e4 = CreateFrame("EditBox", nil, f.content, "InputBoxTemplate")
-    e4:SetSize(150, 32)
-    e4:SetText("123213213")
-    e4:SetFontObject("GameFontHighlight")
-    e4:SetAutoFocus(false)
-    e4:SetPoint("TOPLEFT", recurIntervalStr, "BOTTOMLEFT", 0, -4)
-    e4:Show()
-    e4:SetScript("OnEnter", function()
-        GameTooltip:SetOwner(e4, "ANCHOR_TOPRIGHT")
-        GameTooltip:AddLine("Recur Interval",1,1,1, true) -- TODO
+    local recurPeriodEditbox = CreateFrame("EditBox", nil, f.content, "InputBoxTemplate")
+    recurPeriodEditbox:SetSize(175, 32)
+    recurPeriodEditbox:SetText("")
+    recurPeriodEditbox:SetFontObject("GameFontHighlight")
+    recurPeriodEditbox:SetAutoFocus(false)
+    recurPeriodEditbox:SetPoint("TOPLEFT", recurPeriodStr, "BOTTOMLEFT", 0, -4)
+    recurPeriodEditbox:Show()
+    recurPeriodEditbox:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_TOPRIGHT")
+        GameTooltip:AddLine(LEP["gui_recurring_period_tooltip1"], 1, 1, 1, true)
+        GameTooltip:AddLine(LEP["gui_recurring_period_tooltip2"], 1, 1, 1, true)
+        GameTooltip:AddLine(LEP["gui_recurring_period_tooltip3"], 1, 1, 1, true)
         GameTooltip:Show()
     end)
-    e4:SetScript("OnLeave", function()
+    recurPeriodEditbox:SetScript("OnLeave", function()
         addon:HideTooltip()
     end)
-    f.recurIntervalEditbox = e4
-
-    local recurIntervalStr = f.content:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    recurIntervalStr:SetPoint("TOPLEFT", e3, "BOTTOMLEFT", 0, -4)
-    recurIntervalStr:SetText("Recur Interval")
-    f.recurIntervalStr = recurIntervalStr
-
-    local e4 = CreateFrame("EditBox", nil, f.content, "InputBoxTemplate")
-    e4:SetSize(150, 32)
-    e4:SetText("123213213")
-    e4:SetFontObject("GameFontHighlight")
-    e4:SetAutoFocus(false)
-    e4:SetPoint("TOPLEFT", recurIntervalStr, "BOTTOMLEFT", 0, -4)
-    e4:Show()
-    e4:SetScript("OnEnter", function()
-        GameTooltip:SetOwner(e4, "ANCHOR_TOPRIGHT")
-        GameTooltip:AddLine("Recur Interval",1,1,1, true) -- TODO
-        GameTooltip:Show()
+    recurPeriodEditbox.lastText = ""
+    recurPeriodEditbox:SetScript("OnTextChanged", function(self, userInput)
+        if userInput then
+            if self:GetText() ~= "" and ((not tonumber(self:GetText())) or tonumber(self:GetText()) < 0) then -- Only allows number input.
+                self:SetText(self.lastText)
+                GameTooltip:AddLine(LEP["gui_recurring_period_tooltip1"], 1, 1, 1, true)
+                GameTooltip:AddLine(LEP["gui_recurring_period_tooltip2"], 1, 1, 1, true)
+                GameTooltip:AddLine(LEP["gui_recurring_period_tooltip3"], 1, 1, 1, true)
+            else
+                self.lastText = self:GetText()
+            end
+        else
+            self.lastText = self:GetText()
+        end
     end)
-    e4:SetScript("OnLeave", function()
-        addon:HideTooltip()
-    end)
-    f.recurIntervalEditbox = e4
+    f.recurPeriodEditbox = recurPeriodEditbox
 
     local scheduleTimeStr = f.content:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    scheduleTimeStr:SetPoint("TOPLEFT", e4, "BOTTOMLEFT", 0, -4)
-    scheduleTimeStr:SetText("Schedule Time")
-    f.recurIntervalStr = scheduleTimeStr
+    scheduleTimeStr:SetPoint("TOPLEFT", awardAmountEditbox, "BOTTOMLEFT", 0, -4)
+    scheduleTimeStr:SetText(LEP["Scheduled Award Time"])
+    f.recurPeriodStr = scheduleTimeStr
 
-    local e5 = CreateFrame("EditBox", nil, f.content, "InputBoxTemplate")
-    e5:SetSize(150, 32)
-    e5:SetText("123213213")
-    e5:SetFontObject("GameFontHighlight")
-    e5:SetAutoFocus(false)
-    e5:SetPoint("TOPLEFT", scheduleTimeStr, "BOTTOMLEFT", 0, -4)
-    e5:Show()
-    e5:SetScript("OnEnter", function()
-        GameTooltip:SetOwner(e5, "ANCHOR_TOPRIGHT")
-        GameTooltip:AddLine("Schedule Time",1,1,1, true) -- TODO
+    local scheduleTimeEditbox = CreateFrame("EditBox", nil, f.content, "InputBoxTemplate")
+    scheduleTimeEditbox:SetSize(175, 32)
+    scheduleTimeEditbox:SetText("")
+    scheduleTimeEditbox:SetFontObject("GameFontHighlight")
+    scheduleTimeEditbox:SetAutoFocus(false)
+    scheduleTimeEditbox:SetPoint("TOPLEFT", scheduleTimeStr, "BOTTOMLEFT", 0, -4)
+    scheduleTimeEditbox:Show()
+    scheduleTimeEditbox:SetScript("OnEnter", function()
+        GameTooltip:SetOwner(scheduleTimeEditbox, "ANCHOR_TOPRIGHT")
+        GameTooltip:AddLine(LEP["gui_scheduled_time_tooltip1"], 1, 1, 1, true)
+        GameTooltip:AddLine(LEP["gui_scheduled_time_tooltip2"], 1, 1, 1, true)
+        GameTooltip:AddLine(LEP["gui_scheduled_time_tooltip3"], 1, 1, 1, true)
         GameTooltip:Show()
     end)
-    e5:SetScript("OnLeave", function()
+    scheduleTimeEditbox:SetScript("OnLeave", function()
         addon:HideTooltip()
     end)
-    f.scheduleTimeEditbox = e5
-
-    local favoriteNumber = 42 -- A user-configurable setting
+    scheduleTimeEditbox.lastText = ""
+    scheduleTimeEditbox:SetScript("OnTextChanged", function(self, userInput)
+        if userInput then
+            if self:GetText() ~= "" and (not RCCustomEP:GetUTCEndTime(self:GetText())) then -- Only allows time format.
+                self:SetText(self.lastText)
+                GameTooltip:SetOwner(scheduleTimeEditbox, "ANCHOR_TOPRIGHT")
+                GameTooltip:AddLine(LEP["gui_scheduled_time_tooltip1"], 1, 1, 1, true)
+                GameTooltip:AddLine(LEP["gui_scheduled_time_tooltip2"], 1, 1, 1, true)
+                GameTooltip:AddLine(LEP["gui_scheduled_time_tooltip3"], 1, 1, 1, true)
+                GameTooltip:Show()
+            else
+                self.lastText = self:GetText()
+            end
+        else
+            self.lastText = self:GetText()
+        end
+    end)
+    f.scheduleTimeEditbox = scheduleTimeEditbox
 
     local formulaStr = f.content:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    formulaStr:SetPoint("TOPLEFT", e5, "BOTTOMLEFT", 0, -4)
-    formulaStr:SetText("Formula")
-    f.recurIntervalStr = formulaStr
+    formulaStr:SetPoint("TOPLEFT", recurPeriodEditbox, "BOTTOMLEFT", 0, -4)
+    formulaStr:SetText(LEP["EP Award Formula"])
+    f.recurPeriodStr = formulaStr
 
     -- Create the dropdown, and configure its appearance
-    local dropDown = CreateFrame("FRAME", "WPDemoDropDown", f.content, "Lib_UIDropDownMenuTemplate")
-    dropDown:SetPoint("TOPLEFT", formulaStr, "BOTTOMLEFT", -23, -4)
-    Lib_UIDropDownMenu_SetWidth(dropDown, 200)
-    dropDown.selected = 0 -- The index of selected formula. Default 0: The default Mass EP Rule
-    Lib_UIDropDownMenu_SetText(dropDown, "Default MassEP Formula")
+    local formulaDropDown = CreateFrame("FRAME", "RCCustomEPGUIFormulaDropdown", f.content, "Lib_UIDropDownMenuTemplate")
+    formulaDropDown:SetPoint("TOPLEFT", formulaStr, "BOTTOMLEFT", -23, -4)
+    Lib_UIDropDownMenu_SetWidth(formulaDropDown, 175)
+    formulaDropDown.selected = 0 -- The index of selected formula. Default 0: The default Mass EP Rule
+    Lib_UIDropDownMenu_SetText(formulaDropDown, LEP["Default Mass EP Formula"])
 
     -- Create and bind the initialization function to the dropdown menu
-    Lib_UIDropDownMenu_Initialize(dropDown, function(menu, level)
-        local info = Lib_UIDropDownMenu_CreateInfo()
+    Lib_UIDropDownMenu_Initialize(formulaDropDown, function(menu, level)
         if (level or 1) == 1 then
         -- Display the 0-9, 10-19, ... groups
-            info.text = "Default MassEP Formula"
+            local info = Lib_UIDropDownMenu_CreateInfo()
+            info.text = LEP["Default Mass EP Formula"]
             info.checked = function() return menu.selected == 0 end
             info.hasArrow = false
-            info.tooltipTitle = "Default MassEP Formula"
-            info.tooltipText = "TODO desc"
+            info.tooltipTitle = "|cFFFFFF00"..LEP["Default Mass EP Formula"].."|r"
+            info.tooltipText = "\n|cFFFFFFFF"..LEP["Description"]..":\n"..LEP["default_mass_ep_formula_desc"].."\n\n"..LEP["Formula"]..":\nN/A|r"
             info.tooltipOnButton = true
             info.func = function()
-                Lib_UIDropDownMenu_SetText(menu, "Default MassEP Formula")
+                Lib_UIDropDownMenu_SetText(menu, LEP["Default Mass EP Formula"])
                 menu.selected = 0
                 Lib_CloseDropDownMenus()
             end
@@ -204,11 +229,12 @@ function RCCustomEPGUI:GetFrame()
 
             for i=1, #RCEPGP:GetEPGPdb().EPFormulas do
                 if RCCustomEP:GetEPFormulaFunc(i) then
+                    info = Lib_UIDropDownMenu_CreateInfo()
                     info.text = i..". "..RCEPGP:GetEPGPdb().EPFormulas[i].name
                     info.checked = function() return menu.selected == i end
                     info.hasArrow = false
                     info.tooltipTitle = "|cFFFFFF00"..i..". "..RCEPGP:GetEPGPdb().EPFormulas[i].name.."|r"
-                    info.tooltipText = "|cFFFFFFFFDescription:\n"..RCEPGP:GetEPGPdb().EPFormulas[i].desc.."\n\nFormula:\n"..RCEPGP:GetEPGPdb().EPFormulas[i].formula.."|r"
+                    info.tooltipText =  "\n|cFFFFFFFF"..LEP["Description"]..":\n"..RCEPGP:GetEPGPdb().EPFormulas[i].desc.."\n\n"..LEP["Formula"]..":\n"..RCEPGP:GetEPGPdb().EPFormulas[i].formula.."|r"
                     info.tooltipOnButton = true
                     info.func = function()
                         Lib_UIDropDownMenu_SetText(menu, i..". "..RCEPGP:GetEPGPdb().EPFormulas[i].name)
@@ -219,7 +245,8 @@ function RCCustomEPGUI:GetFrame()
                 end
             end
 
-            info.text = "Modify Formulas..."
+            info = Lib_UIDropDownMenu_CreateInfo()
+            info.text = LEP["Modify Formulas..."]
             info.notCheckable = true
             info.hasArrow = false
             info.func = function()
@@ -230,14 +257,136 @@ function RCCustomEPGUI:GetFrame()
             Lib_UIDropDownMenu_AddButton(info)
         end
     end)
+    f.formulaDropDown = formulaDropDown
+
+    local targetNameStr = f.content:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    targetNameStr:SetPoint("LEFT", formulaStr, "LEFT", 225, 0)
+    targetNameStr:SetText(LEP["Formula Target Name"])
+    f.targetNameStr = targetNameStr
+
+    local targetNameEditbox = CreateFrame("EditBox", nil, f.content, "InputBoxTemplate")
+    targetNameEditbox:SetSize(175, 32)
+    targetNameEditbox:SetText("")
+    targetNameEditbox:SetFontObject("GameFontHighlight")
+    targetNameEditbox:SetAutoFocus(false)
+    targetNameEditbox:SetPoint("TOPLEFT", targetNameStr, "BOTTOMLEFT", 0, 0)
+    targetNameEditbox:Show()
+    targetNameEditbox:SetScript("OnEnter", function()
+    	GameTooltip:SetOwner(targetNameEditbox, "ANCHOR_TOPRIGHT")
+    	GameTooltip:AddLine(LEP["gui_target_name_tooltip1"], 1, 1, 1)
+    	GameTooltip:AddLine(LEP["gui_target_name_tooltip2"], 1, 1, 1)
+    	GameTooltip:AddLine(LEP["gui_target_name_tooltip3"], 1, 1, 1)
+    	GameTooltip:Show()
+    end)
+    targetNameEditbox:SetScript("OnLeave", function()
+    	addon:HideTooltip()
+    end)
+    targetNameEditbox:SetScript("OnUpdate", function(self)
+        if formulaDropDown.selected == 0 then
+            self:Disable()
+            self:SetText("")
+            targetNameStr:SetText("|cff808080"..LEP["Formula Target Name"].."|r")
+        else
+            targetNameStr:SetText(LEP["Formula Target Name"])
+            self:Enable()
+        end
+    end)
+    targetNameEditbox.lastText = ""
+    targetNameEditbox:SetScript("OnTextChanged", function(self, userInput)
+        if userInput then
+            if self:GetText():find(" ") then -- Only allows number input.
+                self:SetText(self.lastText)
+                GameTooltip:SetOwner(targetNameEditbox, "ANCHOR_TOPRIGHT")
+                GameTooltip:AddLine(LEP["gui_target_name_tooltip1"], 1, 1, 1)
+            	GameTooltip:AddLine(LEP["gui_target_name_tooltip2"], 1, 1, 1)
+            	GameTooltip:AddLine(LEP["gui_target_name_tooltip3"], 1, 1, 1)
+                GameTooltip:Show()
+            else
+                self.lastText = self:GetText()
+            end
+        else
+            self.lastText = self:GetText()
+        end
+    end)
+    f.targetNameEditbox = targetNameEditbox
+
+    local epAwardBtn = CreateFrame("Button", nil, f.content, "UIPanelButtonTemplate")
+	epAwardBtn:SetText(LEP["Mass EP Award"])
+    epAwardBtn:SetPoint("TOPLEFT", formulaDropDown, "BOTTOMLEFT", 75, -10)
+	epAwardBtn:SetSize(300,30)
+    epAwardBtn:Show()
+    epAwardBtn:SetScript("OnUpdate", function(self)
+        local isScheduling = true
+        if scheduleTimeEditbox:GetText() == "" or tonumber(scheduleTimeEditbox:GetText()) == 0 then
+            isScheduling = false
+        end
+        local isRecurring = true
+        if recurPeriodEditbox:GetText() == "" or tonumber(recurPeriodEditbox:GetText()) == 0 then
+            isRecurring = false
+        end
+        if isScheduling and isRecurring then
+            self:SetText(LEP["Schedule to Start Recurring Mass EP Award"])
+        elseif not isScheduling and isRecurring then
+            self:SetText(LEP["Start Recurring Mass EP Award"])
+        elseif isScheduling and not isRecurring then
+            self:SetText(LEP["Schedule Mass EP Award"])
+        else
+            self:SetText(LEP["Mass EP Award"])
+        end
+
+        local reason = awardReasonEditbox:GetText()
+        local amount = tonumber(awardAmountEditbox:GetText())
+
+        local shouldDisable = false
+        if reason == "" then
+            shouldDisable = true
+        elseif amount == nil then
+            shouldDisable = true
+        elseif formulaDropDown.selected == 0 and (not EPGP:CanIncEPBy(reason, amount)) then
+            shouldDisable = true
+        elseif (not EPGP:CanIncEPBy(reason, 1)) then -- For custom EP formula, 0 amount is allowed.
+            shouldDisable = true
+        end
+
+        if shouldDisable then
+            self:Disable()
+        else
+            self:Enable()
+        end
+    end)
+    epAwardBtn:SetScript("OnClick", function(self)
+        local periodMin = recurPeriodEditbox:GetText()
+        local reason = awardReasonEditbox:GetText()
+        local amount = awardAmountEditbox:GetText(0)
+        local formulaIndexOrName = formulaDropDown.selected
+        if formulaDropDown.selected == 0 then
+            formulaIndexOrName = nil
+        end
+        local targetName = targetNameEditbox:GetText()
+        local scheduleTime = scheduleTimeEditbox:GetText()
+
+        if periodMin == "0" or periodMin == "" then
+            RCCustomEP:Massep(reason, amount, formulaIndexOrName, targetName, scheduleTime)
+        else
+            RCCustomEP:Recurep(periodMin, reason, amount, formulaIndexOrName, targetName, scheduleTime)
+        end
+    end)
+    f.epAwardBtn = epAwardBtn
 
     RCCustomEPGUI.guiCols = {
-        { name = "Formula Index", colName = "index", width = 50, DoCellUpdate = RCCustomEPGUI.SetCellFormulaIndex, },
-        { name = "Formula Name", colName = "name", width = 50, DoCellUpdate = RCCustomEPGUI.SetCellFormulaName, },
-        { name = "Countdown(s)", colName = "countdown", width = 50, DoCellUpdate = RCCustomEPGUI.SetCellCountdown, },
-        { name = "End Time (Realm Time)", colName = "endtime", width = 100, DoCellUpdate = RCCustomEPGUI.SetCellEndTime, },
-        { name = "Cancel", colName = "cancel", width = 100, DoCellUpdate = RCCustomEPGUI.SetCellCancel, },
+        { name = LEP["Index"], colName = "index", width = 50, DoCellUpdate = RCCustomEPGUI.SetCellFormulaIndex, align = "CENTER"},
+        { name = LEP["Name"], colName = "name", width = 100, DoCellUpdate = RCCustomEPGUI.SetCellFormulaName, align = "CENTER"},
+        { name = LEP["Award Period"], colName = "type", width = 50, DoCellUpdate = RCCustomEPGUI.SellCellAwardPeriod, align = "CENTER", },
+        { name = LEP["Countdown(s)"], colName = "countdown", width = 75, DoCellUpdate = RCCustomEPGUI.SetCellCountdown, align = "CENTER"},
+        { name = LEP["End Time\n(Realm Time)"], colName = "endtime", width = 75, DoCellUpdate = RCCustomEPGUI.SetCellEndTime, align = "CENTER"},
+        { name = LEP["Cancel"], colName = "cancel", width = 50, DoCellUpdate = RCCustomEPGUI.SetCellCancel, align = "CENTER"},
     }
+
+    local scheduledAwardStr = f.content:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    scheduledAwardStr:SetPoint("CENTER", f.content, "CENTER", 0, -3)
+    scheduledAwardStr:SetTextColor(1, 0.82, 0)
+    scheduledAwardStr:SetText(LEP["Scheduled EP Award"])
+    f.scheduledAwardStr = scheduledAwardStr
 
     local st = LibStub("ScrollingTable"):CreateST(RCCustomEPGUI.guiCols, 6, 30, { ["r"] = 1.0, ["g"] = 0.9, ["b"] = 0.0, ["a"] = 0.5 }, f.content)
     st.frame:SetPoint("BOTTOMLEFT", f, "BOTTOMLEFT", 10, 10)
@@ -303,6 +452,27 @@ function RCCustomEPGUI.SetCellFormulaName(rowFrame, frame, data, cols, row, real
     end
 end
 
+function RCCustomEPGUI.SetCellAwardPeriod(rowFrame, frame, data, cols, row, realrow, column, fShow, table, ...)
+    local entry = data[realrow].entry
+    if entry then
+        local periodMin = 0
+        local formulaIndexOrName = entry.formulaIndexOrName
+        local name = ""
+        for i, entry in ipairs(RCEPGP:GetEPGPdb().EPFormulas) do
+            if i == tonumber(formulaIndexOrName) or entry.name == formulaIndexOrName then
+                if entry.type == "recurep" then
+                    periodMin = entry.periodMin
+                end
+                break
+            end
+        end
+        if periodMin ~= 0 then
+            frame.text:SetText(periodMin)
+        end
+        data[realrow].cols[column].value = periodMin
+    end
+end
+
 function RCCustomEPGUI.SetCellCountdown(rowFrame, frame, data, cols, row, realrow, column, fShow, table, ...)
     local entry = data[realrow].entry
     if entry then
@@ -345,3 +515,6 @@ function RCCustomEPGUI.SetCellCancel(rowFrame, frame, data, cols, row, realrow, 
         end)
     end
 end
+
+-- TODO: type in dropdown
+-- TODO: queue
