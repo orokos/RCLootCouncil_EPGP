@@ -43,21 +43,21 @@ function RCCustomGP:OnInitialize()
         formula = "1000 * 2 ^ (-915/30) * 2 ^ (ilvl/30) * slotWeights + hasSpeed * 25 + numSocket * 200",
     }
     self.GPVariables = {
-        { name = "ilvl", help = LEP["gp_variable_ilvl_help"], value = function(itemLink) return select(2, self.GetRarityIlvlEquipLoc(itemLink)) or 0 end, },
-        { unCached = true, name = "slotWeights", help = LEP["gp_variable_slotWeights_help"], value = function(itemLink) return RCCustomGP.GetSlotWeights(itemLink) or 0 end, },
-        { name = "isToken", help = LEP["gp_variable_isToken_help"], value = function(itemLink) return self.IsItemToken(itemLink) and 1 or 0 end, },
-        { name = "hasAvoid", help = LEP["gp_variable_hasAvoid_help"], value = function(itemLink) return self.GetBonusInfo(itemLink).hasAvoid and 1 or 0 end, },
-        { name = "hasLeech", help = LEP["gp_variable_hasLeech_help"], value = function(itemLink) return self.GetBonusInfo(itemLink).hasLeech and 1 or 0 end, },
-        { name = "hasSpeed", help = LEP["gp_variable_hasSpeed_help"], value = function(itemLink) return self.GetBonusInfo(itemLink).hasSpeed and 1 or 0 end, },
-        { name = "hasIndes", help = LEP["gp_variable_hasIndes_help"], value = function(itemLink) return self.GetBonusInfo(itemLink).hasIndes and 1 or 0 end, },
-        { name = "numSocket", help = LEP["gp_variable_numSocket_help"], value = function(itemLink) return self.GetBonusInfo(itemLink).numSocket or 0 end, },
-        { name = "rarity", help = LEP["gp_variable_rarity_help"], value = function(itemLink) return select(1, self.GetRarityIlvlEquipLoc(itemLink)) or 0 end, },
-        { name = "itemID", help = LEP["gp_variable_itemID_help"], value = function(itemLink) return self.GetItemID(itemLink) or 0 end, },
-        { name = "isNormal", help = LEP["gp_variable_isNormal_help"], value = function(itemLink) return self.IsItemNormalDifficulty(itemLink) and 1 or 0 end, },
-        { name = "isHeroic", help = LEP["gp_variable_isHeroic_help"], value = function(itemLink) return self.IsItemHeroicDifficulty(itemLink) and 1 or 0 end, },
-        { name = "isMythic", help = LEP["gp_variable_isMythic_help"], value = function(itemLink) return self.IsItemMythicDifficulty(itemLink) and 1 or 0 end, },
-        { name = "isWarforged", help = LEP["gp_variable_isWarforged_help"], value = function(itemLink) return self.IsItemWarforged(itemLink) and 1 or 0 end, },
-        { name = "isTitanforged", help = LEP["gp_variable_isTitanforged_help"], value = function(itemLink) return self.IsItemTitanforged(itemLink) and 1 or 0 end, },
+        { name = "ilvl", help = LEP["gp_variable_ilvl_help"], value = function(itemLink) return select(2, self:GetRarityIlvlEquipLoc(itemLink)) or 0 end, },
+        { unCached = true, name = "slotWeights", help = LEP["gp_variable_slotWeights_help"], value = function(itemLink) return RCCustomGP:GetSlotWeights(itemLink) or 0 end, },
+        { name = "isToken", help = LEP["gp_variable_isToken_help"], value = function(itemLink) return self:IsItemToken(itemLink) and 1 or 0 end, },
+        { name = "hasAvoid", help = LEP["gp_variable_hasAvoid_help"], value = function(itemLink) return self:GetBonusInfo(itemLink).hasAvoid and 1 or 0 end, },
+        { name = "hasLeech", help = LEP["gp_variable_hasLeech_help"], value = function(itemLink) return self:GetBonusInfo(itemLink).hasLeech and 1 or 0 end, },
+        { name = "hasSpeed", help = LEP["gp_variable_hasSpeed_help"], value = function(itemLink) return self:GetBonusInfo(itemLink).hasSpeed and 1 or 0 end, },
+        { name = "hasIndes", help = LEP["gp_variable_hasIndes_help"], value = function(itemLink) return self:GetBonusInfo(itemLink).hasIndes and 1 or 0 end, },
+        { name = "numSocket", help = LEP["gp_variable_numSocket_help"], value = function(itemLink) return self:GetBonusInfo(itemLink).numSocket or 0 end, },
+        { name = "rarity", help = LEP["gp_variable_rarity_help"], value = function(itemLink) return select(1, self:GetRarityIlvlEquipLoc(itemLink)) or 0 end, },
+        { name = "itemID", help = LEP["gp_variable_itemID_help"], value = function(itemLink) return self:GetItemID(itemLink) or 0 end, },
+        { name = "isNormal", help = LEP["gp_variable_isNormal_help"], value = function(itemLink) return self:IsItemNormalDifficulty(itemLink) and 1 or 0 end, },
+        { name = "isHeroic", help = LEP["gp_variable_isHeroic_help"], value = function(itemLink) return self:IsItemHeroicDifficulty(itemLink) and 1 or 0 end, },
+        { name = "isMythic", help = LEP["gp_variable_isMythic_help"], value = function(itemLink) return self:IsItemMythicDifficulty(itemLink) and 1 or 0 end, },
+        { name = "isWarforged", help = LEP["gp_variable_isWarforged_help"], value = function(itemLink) return self:IsItemWarforged(itemLink) and 1 or 0 end, },
+        { name = "isTitanforged", help = LEP["gp_variable_isTitanforged_help"], value = function(itemLink) return self:IsItemTitanforged(itemLink) and 1 or 0 end, },
         { name = "link", help = LEP["gp_variable_link_help"], value = function(itemLink) return itemLink or 0 end, },
     }
     self.slots = {"INVTYPE_HEAD", "INVTYPE_NECK", "INVTYPE_SHOULDER", "INVTYPE_CLOAK", "INVTYPE_NECK", "INVTYPE_CHEST", "INVTYPE_NECK", "INVTYPE_WRIST",
@@ -856,6 +856,10 @@ local ITEM_BONUS_TYPE = {
     [1808] = "SOCKET", -- extra socket
 }
 
+function RCCustomGP:GetTokenIlvl(itemLink)
+    RCCustomGP:GetItemID(itemLink)
+end
+
 function lib:GetValue(item)
     if not RCCustomGP:GetCustomGPdb().customGPEnabled then
         return functionOldLibGearPoints["GetValue"](oldLib, item)
@@ -871,7 +875,7 @@ function lib:GetValue(item)
         return gpCache[itemLink]
     end
 
-    local itemID = RCCustomGP.GetItemID(itemLink)
+    local itemID = RCCustomGP:GetItemID(itemLink)
     if level < 463 and not CUSTOM_ITEM_DATA[itemID] then
         return nil, nil, level, rarity, equipLoc
     end
@@ -986,7 +990,7 @@ local function GetTextLeft2(link)
     return ""
 end
 
-function RCCustomGP.IsItemHasKeyword(item, keyword)
+function RCCustomGP:IsItemHasKeyword(item, keyword)
     if (not keyword) or keyword == "" then return false end
     local link = select(2, GetItemInfo(item))
     tooltip:SetOwner(UIParent, "ANCHOR_NONE")
@@ -1009,13 +1013,13 @@ end
 
 ------------------------------------------------------------------------------
 
-function RCCustomGP.GetRarityIlvlEquipLoc(itemLink)
+function RCCustomGP:GetRarityIlvlEquipLoc(itemLink)
     local _, itemLink, rarity, level, _, itemClass, itemSubClass, _, equipLoc = GetItemInfo(itemLink)
     local itemBonuses = ItemUtils:BonusIDs(itemLink)
     if equipLoc == "" and itemSubClass == GetRelicSubClassString() then
         equipLoc = "INVTYPE_RELIC"
     end
-    local itemID = RCCustomGP.GetItemID(itemLink)
+    local itemID = RCCustomGP:GetItemID(itemLink)
     if CUSTOM_ITEM_DATA[itemID] then
         rarity, level, equipLoc, useItemBonuses = unpack(CUSTOM_ITEM_DATA[itemID])
         if useItemBonuses then
@@ -1025,7 +1029,7 @@ function RCCustomGP.GetRarityIlvlEquipLoc(itemLink)
     return rarity, level, equipLoc
 end
 
-function RCCustomGP.GetBonusInfo(itemLink)
+function RCCustomGP:GetBonusInfo(itemLink)
     local itemBonuses = ItemUtils:BonusIDs(itemLink)
     local hasAvoid = false
     local hasLeech = false
@@ -1050,41 +1054,41 @@ function RCCustomGP.GetBonusInfo(itemLink)
     return {hasAvoid = hasAvoid, hasLeech = hasLeech, hasSpeed = hasSpeed, hasIndes = hasIndes, numSocket = numSocket}
 end
 
-function RCCustomGP.GetSlotWeights(itemLink)
-    local equipLoc = select(3, RCCustomGP.GetRarityIlvlEquipLoc(itemLink))
+function RCCustomGP:GetSlotWeights(itemLink)
+    local equipLoc = select(3, RCCustomGP:GetRarityIlvlEquipLoc(itemLink))
     if RCCustomGP:GetCustomGPdb()[equipLoc] then
         return tonumber(RCCustomGP:GetCustomGPdb()[equipLoc])
     end
 end
 
-function RCCustomGP.IsItemToken(itemLink)
-    return not not CUSTOM_ITEM_DATA[RCCustomGP.GetItemID(itemLink)]
+function RCCustomGP:IsItemToken(itemLink)
+    return not not CUSTOM_ITEM_DATA[RCCustomGP:GetItemID(itemLink)]
 end
 
-function RCCustomGP.GetItemID(itemLink)
+function RCCustomGP:GetItemID(itemLink)
     return tonumber(itemLink:match("item:(%d+)"))
 end
 
-function RCCustomGP.IsItemNormalDifficulty(item)
-    return not (RCCustomGP.IsItemHeroicDifficulty(item) or RCCustomGP.IsItemMythicDifficulty(item) or RCCustomGP.IsItemLFRDifficulty(item) )
+function RCCustomGP:IsItemNormalDifficulty(item)
+    return not (self:IsItemHeroicDifficulty(item) or self:IsItemMythicDifficulty(item) or self:IsItemLFRDifficulty(item) )
 end
 
-function RCCustomGP.IsItemHeroicDifficulty(item)
-    return RCCustomGP.IsItemHasKeyword(item, GetTextLeft2(links.Heroic))
+function RCCustomGP:IsItemHeroicDifficulty(item)
+    return self:IsItemHasKeyword(item, GetTextLeft2(links.Heroic))
 end
 
-function RCCustomGP.IsItemMythicDifficulty(item)
-    return RCCustomGP.IsItemHasKeyword(item, GetTextLeft2(links.Mythic))
+function RCCustomGP:IsItemMythicDifficulty(item)
+    return self:IsItemHasKeyword(item, GetTextLeft2(links.Mythic))
 end
 
-function RCCustomGP.IsItemLFRDifficulty(item)
-    return RCCustomGP.IsItemHasKeyword(item, GetTextLeft2(links.LFR))
+function RCCustomGP:IsItemLFRDifficulty(item)
+    return self:IsItemHasKeyword(item, GetTextLeft2(links.LFR))
 end
 
-function RCCustomGP.IsItemWarforged(item)
-    return RCCustomGP.IsItemHasKeyword(item, GetTextLeft2(links.Warforged))
+function RCCustomGP:IsItemWarforged(item)
+    return self:IsItemHasKeyword(item, GetTextLeft2(links.Warforged))
 end
 
-function RCCustomGP.IsItemTitanforged(item)
-    return RCCustomGP.IsItemHasKeyword(item, GetTextLeft2(links.Titanforged))
+function RCCustomGP:IsItemTitanforged(item)
+    return self:IsItemHasKeyword(item, GetTextLeft2(links.Titanforged))
 end
