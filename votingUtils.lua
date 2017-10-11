@@ -12,7 +12,9 @@ local RCLootCouncilML = addon:GetModule("RCLootCouncilML")
 
 -- TODO: Edit the following versions every update, and should also update the version in TOC file.
 RCEPGP.version = "2.0.0" 
-RCEPGP.testVersion = "Alpha.1" -- format: Release/Beta/Alpha.num          testVersion compares only by number. eg. "Alpha.2" > "Beta.1"
+RCEPGP.testVersion = "Alpha.2" 
+							   -- format: Release/Beta/Alpha.num          
+							   -- testVersion compares only by number. eg. "Alpha.2" > "Beta.1"
 RCEPGP.tocVersion = GetAddOnMetadata("RCLootCouncil_EPGP", "Version")
 RCEPGP.testTocVersion = GetAddOnMetadata("RCLootCouncil_EPGP", "X-TestVersion")
 
