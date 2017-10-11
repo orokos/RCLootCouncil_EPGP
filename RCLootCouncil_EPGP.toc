@@ -15,7 +15,7 @@ Libs\LibGroupInSpecT-1.1\LibGroupInSpecT-1.1.lua
 
 Locale\Locales.xml
 votingUtils.lua
-CustomLibGearPoints-1.2.lua
+CustomGP.lua
 CustomEP.lua
 lootHistory.lua
 CustomEPGUI.lua
