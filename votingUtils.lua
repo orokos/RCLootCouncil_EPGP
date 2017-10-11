@@ -19,6 +19,8 @@ RCEPGP.testTocVersion = GetAddOnMetadata("RCLootCouncil_EPGP", "X-TestVersion")
 RCEPGP.lastVersionNeedingRestart = "2.0.0"
 RCEPGP.minRCVersion = "2.6.0"
 
+RCEPGP.isNewInstall = nil
+
 RCEPGP.debug = DEBUG
 
 local ExtraUtilities = addon:GetModule("RCExtraUtilities", true) -- nil if ExtraUtilites not enabled.
@@ -31,14 +33,20 @@ local currentAwardingGP = 0
 
 local session = 1
 
+
+
 function RCEPGP:GetEPGPdb()
     if not addon:Getdb().epgp then
         addon:Getdb().epgp = {}
+        if self.isNewInstall == nil then self.isNewInstall = true end
+    else
+        if self.isNewInstall == nil then self.isNewInstall = false end
     end
     return addon:Getdb().epgp
 end
 
 function RCEPGP:OnInitialize()
+
     self.generalDefaults = {
         sendEPGPSettings = true,
         biddingEnabled = false,
@@ -86,7 +94,7 @@ function RCEPGP:OnInitialize()
     -- Added in v2.0
     local lastVersion = self:GetEPGPdb().version
     if not lastVersion then lastVersion = "1.9.2" end
-    if addon:VersionCompare(lastVersion, "2.0.0") then
+    if (not self.isNewInstall) and addon:VersionCompare(lastVersion, "2.0.0") then
         self:UpdateAnnounceKeyword_v2_0_0()
         self:ShowSettingResetNotification()
     end
@@ -95,7 +103,7 @@ function RCEPGP:OnInitialize()
     self:GetEPGPdb().tocVersion = self.tocVersion
     self:GetEPGPdb().testVersion = self.testVersion
     self:GetEPGPdb().testTocVersion = self.testTocVersion
-    if addon:VersionCompare(self.tocVersion, self.lastVersionNeedingRestart) then
+    if (not self.isNewInstall) and addon:VersionCompare(self.tocVersion, self.lastVersionNeedingRestart) then
         self:ShowNeedRestartNotification()
     end
 
