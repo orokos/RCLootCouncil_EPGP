@@ -492,10 +492,25 @@ function RCEPGP:RefreshOptionsTable()
     --]] --TODO: feature not available in v2.0
 
     -- Add Options to set slot weights
-    for i = 1, #RCCustomGP.slots do
-        local slot = RCCustomGP.slots[i]
+    local orderedSlots = {}
+    for slot, info in pairs(RCCustomGP.slotsWithWeight) do
+        table.insert(orderedSlots, {
+            name = info.name,
+            order = info.order,
+            slot = slot,
+        })
+    end
+    table.sort(orderedSlots, function(a, b)
+        if not a.order then return false end
+        if not b.order then return true end
+        return a.order < b.order
+    end)
+
+    for i = 1, #orderedSlots do
+        local slot = orderedSlots[i].slot
+        local name = orderedSlots[i].name
         options.args.gpTab.args.slotWeights.args[slot] = {
-            name = getglobal(slot),
+            name = name,
             order = 10 + i,
             type = "input",
             width = "half",

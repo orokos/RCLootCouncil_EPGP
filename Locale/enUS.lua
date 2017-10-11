@@ -47,7 +47,7 @@ L["announce_awards_desc2"] = "\nRCLootCouncil-EPGP: #diffgp# for the amount of G
 L["customGP_desc"] = [=[
 
 Custom GP allows you to define a custom GP rule for every gear piece.
-You need to define a formula that calculates the GP value fot the gear.
+You need to define a formula that calculates the GP value for the gear.
 You can choose to disable this feature, to calculated GP in the default way of EPGP(dkp reloaded).
 ]=]
 
