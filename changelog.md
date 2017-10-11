@@ -8,6 +8,9 @@
 - The settings of EPGP(dkp reloaded) can now be sent to other people through '/rc sync'.
   - You can turn off this in the RCLootCouncil-EPGP settings, which can be opened by '/rc epgp'
   - This is enabled by default.
+- Add two chat commands:
+  - /rc gp name reason [amount]: Award GP to a player. Reason is usually the itemLink he's awarded. amount can be omitted to award the GP value calcuated by the addon.
+  - /rc undogp name [reason]: Undo the most recent GP operations to a player, if the reason is not specified, otherwise undo the most recent GP operations with the matching reason.
 - The keyword of award text is changed from '#xxxx' to '#xxxx#'.
   - For example, '#diffgp' is changed to '#diffgp#'
   - You shouldn't need to change the award text manually. The addon updates the text automatically.
@@ -15,6 +18,8 @@
 - Localization now uses the Curse automatic pacakaging system.
   - Update to the localization will be applied to the new downloads of the addon without the need to upload a version.
   - Go to https://wow.curseforge.com/projects/rclootcouncil-epgp/localization to help translate this addon.
+###### Bugfixes
+  - Fix a bug that custom GP returns unintended value for some chests.
 
 ### v1.9.2
 ---

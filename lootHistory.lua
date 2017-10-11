@@ -26,20 +26,6 @@ function RCEPGPHistory:OnMessageReceived(msg, ...)
     end
 end
 
-function RCEPGPHistory:GetLastGPAmount(name, item)
-    local logMod = EPGP:GetModule("log")
-    if logMod and logMod.db and logMod.db.profile and logMod.db.profile.log then
-        for i = #logMod.db.profile.log, 1, - 1 do
-            local entry = logMod.db.profile.log[i]
-            local timestamp, kind, name2, reason, amount = unpack(entry)
-            if kind == 'GP' and name2 == name and reason == item then
-                return amount
-            end
-        end
-    end
-    return 0
-end
-
 function RCEPGPHistory:GetEPGPNameByGuild(name)
     for i = 1, GetNumGuildMembers() do
         local fullName = GetGuildRosterInfo(index)
@@ -53,7 +39,6 @@ function RCEPGPHistory:GetEPGPNameByGuild(name)
     return name
 end
 
-
 local function GetGPInfo(data)
     if data then
         local entry = lootDB[data.name][data.num]
@@ -66,7 +51,7 @@ local function GetGPInfo(data)
         local responseGP = RCEPGP:GetResponseGP(responseID, isTier, isRelic) or 0
         local itemgp = GP:GetValue(item) or 0
         local gp = RCEPGP:GetFinalGP(responseGP, itemgp) or 0
-        local lastgp = RCEPGPHistory:GetLastGPAmount(name, item) or 0
+        local lastgp = RCEPGP:GetLastGPAmount(name, item) or 0
         return name, class, item, responseGP, gp, lastgp
     end
     return "UNKNOWN", "UNKNOWN", "UNKNOWN", 0, 0, 0 -- nil protection

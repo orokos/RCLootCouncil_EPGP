@@ -58,7 +58,7 @@ L["slash_rc_gp_help_detailed"] = [=[
 
 Award GP of amount to the character with name with reason.
 
-|cffffd000name|r: Required. The full name of the character. Realm name can be omitted if he's in the same realm of you. You can also use '%p' to specify yourself or '%t' to specify your target.
+|cffffd000name|r: Required. The full name of the character. Realm name can be omitted if he's in the same realm of you. You can also use '%p' to refer yourself or '%t' to refer your target.
 
 |cffffd000reason|r: Required. The reason to award. This is usually a item link of the gear piece.
 
@@ -76,6 +76,19 @@ L["send_epgp_settings"] = "'/rc sync' also sends EPGP(dkp reloaded) settings"
 L["send_epgp_setting_desc"] = "If checked, '/rc sync' also sync EPGP(dkp reloaded) settings"
 L["setting_reset_notification"] = "RCLootCouncil-EPGP v%s resets all settings. Please reconfig your settings if needed."
 L["RCEPGP_desc"] = "A RCLootCouncil plugin that adds EPGP support and customization. Author: Safetee"
+L["slash_rc_undogp_help_detailed"] = [=[
+
+/rc undogp name [reason]
+Undo the most recent GP operations to a character with the matching reason.
+
+|cffffd000name|r: Required. The name of the character you want to undo EP. Realm name can be omitted if he's in the same realm of you. You can also use '%p' to refer yourself or '%t' to refer your target.
+
+|cffffd000reason|r: Optional. This is usually empty or a itemLink. If empty, undo the most recent GP operation, otherwise, undo the most recent operation with the same reason as this one.
+]=]
+L["slash_rc_undogp_help"] = "- undogp name [reason]       - Undo the most recent GP operations to a character with the matching reason. See the detailed usage by '/rc undogp help'"
+L["slash_rc_command_failed"] = "Command fails. Please check if the inputs are correct."
+L["no_permission_to_edit_officer_note"] = "You don't have permission to edit officer note."
+L["error_no_target"] = "Error. You don't have a target."
 --[[
 L["Change name to %s"] = true
 L["Change Name To..."] = true
@@ -214,7 +227,6 @@ L["Custom EP"] = true
 
 L["Add EP Formula"] = true
 L["ep_formula_delete_confirm"] ="Do you confirm to delete the formula %s ?"
-L["error_no_target"] = "Error. You don't have a target."
 L["ep_formula_name_desc"] = "The name of EP formula."
 L["ep_formula_desc_desc"] = "The description of EP formula which help people to understand how this formula award EP."
 L["ep_formula_formula_desc"] = "The formula that calculates the EP to be awarded to every guild or raid members. The formula should return a number."

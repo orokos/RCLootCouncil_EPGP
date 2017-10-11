@@ -765,6 +765,8 @@ LibDialog:Register("RCEPGP_CONFIRM_AWARD", {
 
 function RCEPGP:AddChatCommand()
     addon:CustomChatCmd(self, "OpenOptions", LEP["chat_commands"], "epgp")
+    addon:CustomChatCmd(self, "IncGPBy", LEP["slash_rc_gp_help"], "gp")
+    addon:CustomChatCmd(self, "UndoGP", LEP["slash_rc_undogp_help"], "undogp")
 end
 
 function RCEPGP:AddAnnouncement()
@@ -1082,4 +1084,95 @@ end
 function RCEPGP:GeneralRestoreToDefault()
     self:SetdbDefaults(self:GetGeneraldb(), self.generalDefaults, true)
     self:SendMessage("RCEPGPGeneralOptionRestoreToDefault")
+end
+
+-- Get the amount of last GP operations with given name and reason.
+-- Reason can be not specified.
+function RCEPGP:GetLastGPAmount(name, reason)
+    local logMod = EPGP:GetModule("log")
+    if logMod and logMod.db and logMod.db.profile and logMod.db.profile.log then
+        for i = #logMod.db.profile.log, 1, - 1 do
+
+            local entry = logMod.db.profile.log[i]
+            local timestamp, kind, name2, reason2, amount = unpack(entry)
+            if kind == 'GP' and name2 == name  then
+                if not reason then
+                    return amount, reason2
+                elseif reason == reason2 then
+                    return amount, reason2
+                else
+                    local _, link = GetItemInfo(reason)
+                    local _, link2 = GetItemInfo(reason2)
+                    if link and link == link2 then
+                        return amount, reason2
+                    end
+                end
+            end
+        end
+    end
+    return 0
+end
+
+-- /rc gp name reason [amount]
+function RCEPGP:IncGPBy(name, reason, amount)
+    if name == "help" then
+        self:Print(LEP["slash_rc_gp_help_detailed"])
+        return
+    end
+    if not CanEditOfficerNote() then
+        self:Print(LEP["no_permission_to_edit_officer_note"])
+        return
+    end
+    if name == "%p" then
+        name = self:GetEPGPName("player")
+    elseif name == "%t" then
+        if not UnitExists("target") then
+            self:Print(LEP["error_no_target"])
+            return
+        end
+        name = self:GetEPGPName("target")
+    end
+
+    if not amount then
+        amount = LibStub:GetLibrary("LibGearPoints-1.2"):GetValue(reason)
+    else
+        amount = tonumber(amount)
+    end
+
+    if EPGP:CanIncGPBy(reason, amount) then
+        EPGP:IncGPBy(name, reason, amount)
+    else
+        self:Print(LEP["slash_rc_command_failed"])
+    end
+end
+
+-- /rc undogp name reason
+-- Undo the previous GP operations to 'name' with 'reason'
+-- Reason by be nil to match the most recent GP operation to 'name'
+function RCEPGP:UndoGP(name, reason)
+    if name == "help" then
+        self:Print(LEP["slash_rc_undogp_help_detailed"])
+        return
+    end
+    if not CanEditOfficerNote() then
+        self:Print(LEP["no_permission_to_edit_officer_note"])
+        return
+    end
+    if name == "%p" then
+        name = RCEPGP:GetEPGPName("player")
+    elseif name == "%t" then
+        if not UnitExists("target") then
+            RCEPGP:Print(LEP["error_no_target"])
+            return
+        end
+        name = self:GetEPGPName("target")
+    end
+
+    -- TODO: More error checking?
+    local amount, reason2  = self:GetLastGPAmount(name, reason)
+    if EPGP:CanIncGPBy(reason, amount) then
+        EPGP:IncGPBy(name, reason2, -amount)
+    else
+        self:Print(LEP["slash_rc_command_failed"])
+    end
 end
