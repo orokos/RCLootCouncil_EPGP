@@ -10,7 +10,7 @@ local GP = LibStub("LibGearPoints-1.2")
 local LibDialog = LibStub("LibDialog-1.0")
 local RCLootCouncilML = addon:GetModule("RCLootCouncilML")
 
--- Edit the following versions every update, and should also update the version in TOC file.
+-- TODO: Edit the following versions every update, and should also update the version in TOC file.
 RCEPGP.version = "2.0.0"
 RCEPGP.testVersion = "Alpha.1" -- format: Release/Beta/Alpha.num          testVersion compares only by number. eg. "Alpha.2" > "Beta.1"
 RCEPGP.tocVersion = GetAddOnMetadata("RCLootCouncil_EPGP", "Version")
@@ -83,14 +83,6 @@ function RCEPGP:OnInitialize()
     self:AddAnnouncement()
     self:SetupColumns()
 
-    self:SecureHook(RCLootCouncil, "UpdateDB", function()
-        self:GetEPGPdb().version = self.version
-        self:GetEPGPdb().tocVersion = self.tocVersion
-        self:GetEPGPdb().testVersion = self.testVersion
-        self:GetEPGPdb().testTocVersion = self.testTocVersion
-        self:RCToEPGPDkpReloadedSetting()
-    end)
-
     -- Added in v2.0
     local lastVersion = self:GetEPGPdb().version
     if not lastVersion then lastVersion = "1.9.2" end
@@ -133,6 +125,12 @@ function RCEPGP:OnMessageReceived(msg, ...)
         local s = unpack({...})
         session = s
         self:UpdateGPEditbox()
+    elseif msg == "RCUpdateDB" then
+        self:GetEPGPdb().version = self.version
+        self:GetEPGPdb().tocVersion = self.tocVersion
+        self:GetEPGPdb().testVersion = self.testVersion
+        self:GetEPGPdb().testTocVersion = self.testTocVersion
+        self:RCToEPGPDkpReloadedSetting()
     end
 end
 
