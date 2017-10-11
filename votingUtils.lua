@@ -12,7 +12,7 @@ local RCLootCouncilML = addon:GetModule("RCLootCouncilML")
 
 -- Edit the following versions every update, and should also update the version in TOC file.
 RCEPGP.version = "2.0.0"
-RCEPGP.testVersion = "Alpha.1"
+RCEPGP.testVersion = "Alpha.1" -- format: Release/Beta/Alpha.num          testVersion compares only by number. eg. "Alpha.2" > "Beta.1"
 RCEPGP.tocVersion = GetAddOnMetadata("RCLootCouncil_EPGP", "Version")
 RCEPGP.testTocVersion = GetAddOnMetadata("RCLootCouncil_EPGP", "X-TestVersion")
 
@@ -32,8 +32,6 @@ local newestTestVersionDetected = RCEPGP.testVersion
 local currentAwardingGP = 0
 
 local session = 1
-
-
 
 function RCEPGP:GetEPGPdb()
     if not addon:Getdb().epgp then
@@ -57,7 +55,6 @@ function RCEPGP:OnInitialize()
     self:RegisterMessage("RCMLAwardSuccess", "OnMessageReceived")
     self:RegisterMessage("RCSessionChangedPre", "OnMessageReceived")
 
-    self:RegisterComm("RCLC_EPGP", "OnCommReceived")
     self:RegisterComm("RCLootCouncil", "OnCommReceived")
 
     self:RegisterEvent("PLAYER_LOGIN", "OnEvent")
@@ -118,7 +115,7 @@ function RCEPGP:OnInitialize()
 end
 
 function RCEPGP:OnMessageReceived(msg, ...)
-    self:DebugPrint("RCEPGP_OnMessageReceived", msg)
+    self:DebugPrint("ReceiveMessage", msg)
     if msg == "RCCustomGPRuleChanged" then
         self:DebugPrint("Refresh menu due to GP rule changed.")
         self:UpdateGPEditbox()
@@ -149,14 +146,9 @@ function RCEPGP:OnCommReceived(prefix, serializedMsg, distri, sender)
 
         if test then
             if command == "change_response" then
-                self:DebugPrint("Refresh menu due to change response.")
+                self:DebugPrint("ReceiveComm", command, unpack(data))
                 self:RefreshMenu(1)
-            end
-        end
-    elseif prefix == "RCLC_EPGP" then
-        self:DebugPrint("RCEPGP_OnCommReceived_RCLC_EPGP", serializedMsg, distri, sender)
-        if test then
-            if command == "versionBroadcast" then
+            elseif command == "RCEPGP_VersionBroadcast" or command == "RCEPGP_VersionReply" then
                 local otherVersion, otherTestVersion = unpack(data)
 
                 -- Only report test version updates if a test version is installed.
@@ -170,28 +162,31 @@ function RCEPGP:OnCommReceived(prefix, serializedMsg, distri, sender)
                         newestTestVersionDetected = otherTestVersion
                     end
                 end
-                self:DebugPrint("Other version received by comm: ", otherVersion.."-"..otherTestVersion)
+                self:DebugPrint("ReceiveComm", command, unpack(data))
+                if command == "RCEPGP_VersionBroadcast" and (not UnitIsUnit("player", Ambiguate(sender, "short"))) then
+                    self:ReplyVersion(sender)
+                end
             end
         end
     end
 end
 
 function RCEPGP:OnEvent(event, ...)
-    self:DebugPrint("RCEPGP_OnEvent", event, ...)
+    self:DebugPrint("OnEvent", event, ...)
     if event == "PLAYER_LOGIN" then
-        C_Timer.After(5, function() self:SendVersion("GUILD") end)
+        C_Timer.After(5, function() self:BroadcastVersion("guild") end)
     elseif event == "GROUP_JOINED" then
-        C_Timer.After(5, function() self:SendVersion("RAID") end)
+        C_Timer.After(2, function() self:BroadcastVersion("group") end)
     end
 end
 
 -- Return true if test version 1 is older than test version 2
 -- testVersion looks like: Beta.1, and we only compare the number after the dot.
 function RCEPGP:TestVersionCompare(v1, v2)
-    if v1:find("Release") then
+    if v1:lower():find("release") then
         return false
     end
-    if v2:find("Release") then
+    if v2:lower():find("release") then
         return true
     end
     local testName1, testVer1 = strsplit(".", v1)
@@ -200,7 +195,7 @@ function RCEPGP:TestVersionCompare(v1, v2)
 end
 
 function RCEPGP:IsTestVersion(v)
-    return v and (v:find("Alpha") or v:find("Beta"))
+    return v and (v:lower():find("alpha") or v:lower():find("beta"))
 end
 
 function RCEPGP.UpdateVotingFrame()
@@ -221,8 +216,8 @@ end
 function RCEPGP:DisablezhCNProfanityFilter()
     if GetLocale() == "zhCN" then
         SetCVar("profanityFilter", "0")
+        self:DebugPrint("Diable profanity filter of zhCN client.")
     end
-    self:DebugPrint("Diable profanity filter of zhCN client.")
 end
 
 -- We only want to disable GP popup of EPGP(dkp reloaded) when RCLootCouncil Voting Frame is opening.
@@ -625,7 +620,7 @@ function RCEPGP:GetResponseGP(response, isTier, isRelic)
             end
         end
     end
-    self:DebugPrint("GetResponseGP returns ", responseGP, "arguments: ", response, isTier, isRelic)
+    self:DebugPrint("RCEPGP:GetResponseGP returns ", responseGP, "arguments: ", response, isTier, isRelic)
     return responseGP
 end
 
@@ -829,15 +824,14 @@ function RCEPGP:UpdateAnnounceKeyword_v2_0_0()
     self:Debug("Updated award text keyword to v2.0.0.")
 end
 
-function RCEPGP:SendVersion(channel)
-    if not self.initialize then -- If not initialized, then retry after 1s.
-        return C_Timer.After(1, function() self:SendVersion(channel) end)
-    end
-    if not IsInGuild() and channel == "GUILD" then return end
-    if not IsInGroup() and (channel == "RAID" or channel == "PARTY") then return end
-    local serializedMsg = self:Serialize("versionBroadcast", {self.version, self.testVersion})
-    self:SendCommMessage("RCLC_EPGP", serializedMsg, channel)
-    self:Debug("Sent version ", serializedMsg, channel)
+function RCEPGP:BroadcastVersion(target)
+    addon:SendCommand(target, "RCEPGP_VersionBroadcast", self.version, self.testVersion)
+    self:DebugPrint("SendComm", "RCEPGP_VersionBroadcast", self.version, self.testVersion)
+end
+
+function RCEPGP:ReplyVersion(target)
+    addon:SendCommand(target, "RCEPGP_VersionReply", self.version, self.testVersion)
+    self:DebugPrint("SendComm", "RCEPGP_VersionReply", self.version, self.testVersion)
 end
 
 function RCEPGP:ShowSettingResetNotification()

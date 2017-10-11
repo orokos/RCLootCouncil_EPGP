@@ -65,7 +65,7 @@ Award GP of amount to the character with name with reason.
 |cffffd000amount|r: Optional. Integer. The amount of GP awarding to the character. If omitted, this will be the GP value calculated by the addon whose item link is 'reason'
 ]=]
 
-L["new_version_detected"] = "Your version %s is outdated. Newer Version %s detected. You can update the addon from Curse.com or Twitch App."
+L["new_version_detected"] = "Your version %s is outdated. Newer Version %s detected. You can update the addon from [https://mods.curse.com/addons/wow/269161-rclootcouncil-epgp]"
 L["need_restart_notification"] = "RCLootCouncil-EPGP v%s update requires full restart of the client. Some features of the addon don't work until client restarts."
 L["rc_version_below_min_notification"] = "This version of RCLootCouncil-EPGP requires RCLootCouncil v%s+. Your RCLootCouncil is v%s. Please update your RCLootCouncil."
 L["EPGP_DKP_Reloaded_settings_received"] = "Received EPGP(dkp reloaded) settings through '/rc sync'."
