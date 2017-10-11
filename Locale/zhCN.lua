@@ -4,7 +4,7 @@
 local L = LibStub("AceLocale-3.0"):NewLocale("RCEPGP", "zhCN")
 if not L then return end
 
-L["gp_value_help"] = "例:\r\n100#: 使用100#GP值\r\n50#: 使用50#GP值\r\n25: 所有物品价值25GP"
+L["gp_value_help"] = "例:\r\n100%: 使用100%GP值\r\n50%: 使用50%GP值\r\n25: 所有物品价值25GP"
 L["enable_custom_gp"] = "启用自定义GP"
 L["formula_syntax_error"] = "公式有语法错误. 将使用默认公式."
 L["restore_default"] = "恢复默认设置"

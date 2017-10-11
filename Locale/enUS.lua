@@ -5,7 +5,7 @@
 local L = LibStub("AceLocale-3.0"):NewLocale("RCEPGP", "enUS", true)
 if not L then return end
 
-L["gp_value_help"] = "Example:\r\n100#: use 100# of normal GP value\r\n50#: use 50# of normal GP value \r\n25: all items are worth 25 GP"
+L["gp_value_help"] = "Example:\r\n100%: use 100% of normal GP value\r\n50%: use 50% of normal GP value \r\n25: all items are worth 25 GP"
 L["enable_custom_gp"] = "Enable Custom GearPoints"
 L["gp_formula_syntax_error"] = "Formula has syntax error. Default formula will be used instead."
 L["slot_weights"] = "Slot Weights"

@@ -1083,5 +1083,3 @@ function RCEPGP:GeneralRestoreToDefault()
     self:SetdbDefaults(self:GetGeneraldb(), self.generalDefaults, true)
     self:SendMessage("RCEPGPGeneralOptionRestoreToDefault")
 end
-
--- TODO: request version reply
