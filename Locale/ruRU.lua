@@ -4,6 +4,8 @@
 local L = LibStub("AceLocale-3.0"):NewLocale("RCEPGP", "ruRU")
 if not L then return end
 
+-- Manually export from Curse here if you want to update the addon from Github, but not guarantee to be update-to-date.
+--@debug@
 --Translation missing
 -- L["announce_awards_desc2"] = ""
 --Translation missing
@@ -95,3 +97,7 @@ L["Input must be a number."] = "Значение должно быть числ�
 -- L["slash_rc_undogp_help_detailed"] = ""
 L["slot_weights"] = "Вес слотов"
 L["Undo GP"] = "Отменить GP"
+--@end-debug@
+
+
+--@localization(locale="ruRU", format="lua_additive_table", same-key-is-true=true)@

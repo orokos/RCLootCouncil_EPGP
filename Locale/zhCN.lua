@@ -4,6 +4,8 @@
 local L = LibStub("AceLocale-3.0"):NewLocale("RCEPGP", "zhCN")
 if not L then return end
 
+-- Manually export from Curse here if you want to update the addon from Github, but not guarantee to be update-to-date.
+--@debug@
 L["announce_awards_desc2"] = [=[
 RCLootCouncil-EPGP: #diffgp# 指代玩家从物品获取的GP量. #ep# 指代玩家的EP值. #gp# 指代玩家获取物品前的GP值. #pr# 指代玩家获取物品前的PR值. #newgp# 指代玩家获取物品后的GP值. #newpr# 指代玩家获取物品后的PR值.]=]
 L["announce_formula_runtime_error"] = "你的GP公式含有运行时错误.出错时会使用默认公式."
@@ -77,3 +79,7 @@ L["slash_rc_undogp_help_detailed"] = [=[/rc undogp name [reason]
 |cffffd000reason|r: 可选. 这一般为空或者为物品的链接. 如果为空，撤销最近的GP操作，否则撤销最近的原因与此相同的GP操作.]=]
 L["slot_weights"] = "栏位权重"
 L["Undo GP"] = "撤销GP"
+--@end-debug@
+
+
+--@localization(locale="zhCN", format="lua_additive_table", same-key-is-true=true)@
