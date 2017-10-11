@@ -1,8 +1,8 @@
 local addon = LibStub("AceAddon-3.0"):GetAddon("RCLootCouncil")
 local RCEPGP = addon:GetModule("RCEPGP")
 local RCCustomGP = RCEPGP:GetModule("RCCustomGP", true)
-local RCCustomEP = RCEPGP:GetModule("RCCustomEP", true)
-local RCCustomEPGUI = RCEPGP:GetModule("RCCustomEPGUI", true)
+--local RCCustomEP = RCEPGP:GetModule("RCCustomEP", true) -- TODO
+--local RCCustomEPGUI = RCEPGP:GetModule("RCCustomEPGUI", true)
 
 ------------------------------
 
@@ -118,7 +118,8 @@ function RCEPGP:AddGPOptions()
 end
 
 function RCEPGP:RefreshOptionsTable()
-    if (not RCCustomGP.initialize) or (not RCCustomEP.initialize) then
+    if (not RCCustomGP.initialize) -- or (not RCCustomEP.initialize) TODO
+    then
         C_Timer.After(1, function() self:RefreshOptionsTable() end)
         return
     end
@@ -288,6 +289,7 @@ function RCEPGP:RefreshOptionsTable()
                     },
                 },
             },
+            --[[
             epTab = {
                 name = LEP["Custom EP"],
                 order = 7,
@@ -336,8 +338,10 @@ function RCEPGP:RefreshOptionsTable()
                    },
                },
            }
+           --]] --TODO: feature not available in v2.0
         }
 
+        --[[
     -- Add EP Formulas
     for i=1,RCCustomEP.MaxFormulas do
         local formulaName = "Name"..i
@@ -463,6 +467,30 @@ function RCEPGP:RefreshOptionsTable()
         }
     end
 
+    -- Add descriptions for EP variables
+    local EPVariablesDisplayed = {}
+    for i = 1, #RCCustomEP.EPVariables do
+        local variableName = RCCustomEP.EPVariables[i].display_name or RCCustomEP.EPVariables[i].name
+        if not EPVariablesDisplayed[variableName] then
+            EPVariablesDisplayed[variableName] = true
+            options.args.epVariablesTab.args["variable"..variableName] = {
+                name = "|cFFFFFF00"..variableName.."|r",
+                order = 100 + i * 2,
+                fontSize = "medium",
+                type = "description",
+                width = "normal",
+            }
+            options.args.epVariablesTab.args["variable"..variableName.."help"] = {
+                name = RCCustomEP.EPVariables[i].help,
+                order = 101 + i * 2,
+                fontSize = "small",
+                type = "description",
+                width = "double",
+            }
+        end
+    end
+    --]] --TODO: feature not available in v2.0
+
     -- Add Options to set slot weights
     for i = 1, #RCCustomGP.slots do
         local slot = RCCustomGP.slots[i]
@@ -503,28 +531,7 @@ function RCEPGP:RefreshOptionsTable()
         }
     end
 
-    -- Add descriptions for EP variables
-    local EPVariablesDisplayed = {}
-    for i = 1, #RCCustomEP.EPVariables do
-        local variableName = RCCustomEP.EPVariables[i].display_name or RCCustomEP.EPVariables[i].name
-        if not EPVariablesDisplayed[variableName] then
-            EPVariablesDisplayed[variableName] = true
-            options.args.epVariablesTab.args["variable"..variableName] = {
-                name = "|cFFFFFF00"..variableName.."|r",
-                order = 100 + i * 2,
-                fontSize = "medium",
-                type = "description",
-                width = "normal",
-            }
-            options.args.epVariablesTab.args["variable"..variableName.."help"] = {
-                name = RCCustomEP.EPVariables[i].help,
-                order = 101 + i * 2,
-                fontSize = "small",
-                type = "description",
-                width = "double",
-            }
-        end
-    end
+
     return options
 end
 

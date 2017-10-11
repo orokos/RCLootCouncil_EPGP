@@ -86,7 +86,7 @@ function RCEPGP:OnInitialize()
     -- Added in v2.0
     local lastVersion = self:GetEPGPdb().version
     if not lastVersion then lastVersion = "1.9.2" end
-    if addon:VersionCompare(lastVersion, "2.0.1") then
+    if addon:VersionCompare(lastVersion, "2.0.0") then
         self:UpdateAnnounceKeyword_v2_0_0()
         self:ShowSettingResetNotification()
     end

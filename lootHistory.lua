@@ -133,19 +133,8 @@ RCEPGPHistory.rightClickEntries = {
                 return not EPGP:CanIncGPBy(item, 1) -- disable if have no officer note permission.
             end
         },
-        { -- Button 4: Change Name to..
+        {-- Button 4 :Empty button
             pos = 4,
-            text = LEP["Change Name To..."],
-            notCheckable = true,
-            func = function(name, data)
-                LibDialog:Spawn("RCEPGP_LOOTHISTORY_EDITNAME", {
-                    data = data,
-                    item = lootDB[data.name][data.num].lootWon,
-                })
-            end,
-        },
-        {-- Button 5 :Empty button
-            pos = 5,
             text = "",
             notCheckable = true,
             disabled = true
@@ -219,109 +208,6 @@ LibDialog:Register("RCEPGP_AWARD_GP", {
       self.buttons[1]:Disable()
     end
   end,
-  hide_on_escape = true,
-  show_while_dead = true,
-})
-
-LibDialog:Register("RCEPGP_LOOTHISTORY_EDITNAME", {
-  text = "Something is wrong",
-  icon = "Interface\DialogFrame\UI-Dialog-Icon-AlertNew",
-  buttons = {
-    {
-      text = _G.ACCEPT,
-      on_click = function(self, data, reason)
-          local data = data.data
-          local name = RCEPGP:GetEPGPName(self.editboxes[1]:GetText())
-          for _,i in ipairs(LootHistory.frame.name.sorttable) do
-              local v = LootHistory.frame.name.data[i]
-              if RCEPGP:GetEPGPName(v[2].name) == RCEPGP:GetEPGPName(name) then
-                  RCEPGP:Debug("Moving award from", data.name, "to", v[2].name)
-                  -- Since we store data as lootDB[name] = ..., we need to move the entire table to the new recipient
-                  tinsert(lootDB[v[2].name], tremove(lootDB[data.name], data.num))
-                  -- Now update the data in our display st, which coincidentally is data
-                  data.num = #lootDB[v[2].name]
-                  data.name = v[2].name
-                  data.class = v[1].args[1]
-                  -- We also need to update the class saved with the loot:
-                  lootDB[data.name][data.num].class = data.class
-                  data.cols[1].args[1] = v[1].args[1]
-                  data.cols[2] = {value = v[2].value, color = addon:GetClassColor(data.class)}
-                  LootHistory.frame.st:SortData()
-                  addon:SendMessage("RCHistory_NameEdit", data)
-                  break
-              end
-          end
-      end,
-    },
-    {
-      text = _G.CANCEL,
-    },
-  },
-  editboxes = {
-    {
-      auto_focus = true,
-    },
-  },
-  on_show = function(self, data)
-    local _, _, _, _, _, _, _, _, _, icon = GetItemInfo(data.item)
-    self.icon:SetTexture(icon)
-    if UnitExists("target") then
-        self.editboxes[1]:SetText(UnitName("target"))
-    end
-    self.editboxes[1]:HighlightText()
-    if not self.icon_frame then
-      local icon_frame = CreateFrame("Frame", nil, self)
-      icon_frame:ClearAllPoints()
-      icon_frame:SetAllPoints(self.icon)
-      icon_frame:SetScript("OnEnter", function(self)
-        GameTooltip:SetOwner(self, "ANCHOR_BOTTOMLEFT", - 3, icon_frame:GetHeight() + 6)
-        GameTooltip:SetHyperlink(self:GetParent().data.item)
-      end)
-      icon_frame:SetScript("OnLeave", function(self)
-        GameTooltip:FadeOut()
-      end)
-      self.icon_frame = icon_frame
-    end
-    if self.icon_frame then
-      self.icon_frame:EnableMouse(true)
-      self.icon_frame:Show()
-    end
-  end,
-  on_hide = function(self, data)
-    if ChatEdit_GetActiveWindow() then
-      ChatEdit_FocusActiveWindow()
-    end
-    if self.icon_frame then
-      self.icon_frame:EnableMouse(false)
-      self.icon_frame:Hide()
-    end
-  end,
-  on_update = function(self, elapsed)
-    local name = RCEPGP:GetEPGPName(self.editboxes[1]:GetText())
-    local foundName = false
-    local class = "UNKNOWN"
-    if name ~= "" then
-        for _,i in ipairs(LootHistory.frame.name.sorttable) do
-            local v = LootHistory.frame.name.data[i]
-            if RCEPGP:GetEPGPName(v[2].name) == name then
-                foundName = true
-                class = v[1].args[1]
-                break
-            end
-        end
-    end
-
-    if foundName then
-      self.buttons[1]:Enable()
-      local color = addon:GetClassColor(class)
-      local colorCode = "|cff"..addon:RGBToHex(color.r, color.g, color.b)
-      self.text:SetFormattedText(LEP["Change name to %s"], colorCode..Ambiguate(name, "short").."|r")
-    else
-      self.buttons[1]:Disable()
-      self.text:SetFormattedText(LEP["Change name to %s"], "|cff808080"..Ambiguate(name, "short").."|r")
-    end
-  end,
-
   hide_on_escape = true,
   show_while_dead = true,
 })

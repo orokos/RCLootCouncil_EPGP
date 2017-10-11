@@ -44,6 +44,45 @@ L["gp_variable_isWarforged_help"] = "Integer. 1 if the item is warforged, 0 othe
 L["gp_variable_isTitanforged_help"] = "Integer. 1 if the item is titanforged, 0 otherwise."
 L["announce_awards_desc2"] = "\nRCLootCouncil-EPGP: #diffgp# for the amount of GP the player gains from the item. #ep# for the EP of player. #gp# for the GP of player before getting the item. #pr# for the PR of player before getting the item. #newgp# for the GP of player after getting the item. #newpr# for the PR of player after getting the item."
 
+L["customGP_desc"] = [=[
+
+Custom GP allows you to define a custom GP rule for every gear piece.
+You need to define a formula that calculates the GP value fot the gear.
+You can choose to disable this feature, to calculated GP in the default way of EPGP(dkp reloaded).
+]=]
+
+L["slash_rc_gp_help"] = "- gp name reason [amount]      - Reward GP of amount to the character with name with reason. See the detailed usage by '/rc gp help'"
+L["slash_rc_gp_help_detailed"] = [=[
+
+/rc gp name reason [amount]
+
+Award GP of amount to the character with name with reason.
+
+|cffffd000name|r: Required. The full name of the character. Realm name can be omitted if he's in the same realm of you. You can also use '%p' to specify yourself or '%t' to specify your target.
+
+|cffffd000reason|r: Required. The reason to award. This is usually a item link of the gear piece.
+
+|cffffd000amount|r: Optional. Integer. The amount of GP awarding to the character. If omitted, this will be the GP value calculated by the addon whose item link is 'reason'
+]=]
+
+L["new_version_detected"] = "Your version %s is outdated. Newer Version %s detected. You can update the addon from Curse.com or Twitch App."
+L["need_restart_notification"] = "RCLootCouncil-EPGP v%s update requires full restart of the client. Some features of the addon don't work until client restarts."
+L["rc_version_below_min_notification"] = "This version of RCLootCouncil-EPGP requires RCLootCouncil v%s+. Your RCLootCouncil is v%s. Please update your RCLootCouncil."
+L["EPGP_DKP_Reloaded_settings_received"] = "Received EPGP(dkp reloaded) settings through '/rc sync'."
+
+L["General"] = true
+L["Setting Sync"] = true
+L["send_epgp_settings"] = "'/rc sync' also sends EPGP(dkp reloaded) settings"
+L["send_epgp_setting_desc"] = "If checked, '/rc sync' also sync EPGP(dkp reloaded) settings"
+L["setting_reset_notification"] = "RCLootCouncil-EPGP v%s resets all settings. Please reconfig your settings if needed."
+L["RCEPGP_desc"] = "A RCLootCouncil plugin that adds EPGP support and customization. Author: Safetee"
+--[[
+L["Change name to %s"] = true
+L["Change Name To..."] = true
+--]]
+
+--[[
+
 L["ep_variable_name_help"] = "String. The full name of the characher we are processing."
 L["ep_variable_isOnline_help"] = "Integer. 1 if that character is online. 0 otherwise."
 L["ep_variable_guildName_help"] = "String. The name of that character's guild."
@@ -79,12 +118,7 @@ L["ep_variable_isNormalRaid_help"] = "Integer. 1 if the raid difficulty is norma
 L["ep_variable_isHeroicRaid_help"] = "Integer. 1 if the raid difficulty is heroic. 0 otherwise."
 L["ep_variable_isMythicRaid_help"] = "Integer. 1 if the raid difficulty is mythic. 0 otherwise."
 L["Custom EP Variables"] = true
-L["customGP_desc"] = [=[
 
-Custom GP allows you to define a custom GP rule for every gear piece.
-You need to define a formula that calculates the GP value fot the gear.
-You can choose to disable this feature, to calculated GP in the default way of EPGP(dkp reloaded).
-]=]
 L["customEP_desc"] = [=[
 
 Custom EP allows you to customize who and how much to award while doing a mass EP award and you need to define formulas here for that.
@@ -96,12 +130,8 @@ You can get their information by '/rc help'.
 ]=]
 L["customEPVariable_desc"] = "These variables are used for custom EP. Check the 'Custom EP' Tab for extra information."
 L["ep_variable_calendarSignedUp_help"] = "Function whose argument is no argument or a string. Returns 1 if the character signups up in one of today's calendar event (whose title contains the argument, if argument exists). Return 0 otherwise. For example, 'calendarSignedUp()' returns 1 if the character has signed up in one of today's calendar event."
-L["new_version_detected"] = "Your version %s is outdated. Newer Version %s detected. You can update the addon from Curse.com or Twitch App."
-L["need_restart_notification"] = "RCLootCouncil-EPGP v%s update requires full restart of the client. Some features of the addon don't work until client restarts."
-L["rc_version_below_min_notification"] = "This version of RCLootCouncil-EPGP requires RCLootCouncil v%s+. Your RCLootCouncil is v%s. Please update your RCLootCouncil."
-L["EPGP_DKP_Reloaded_settings_received"] = "Received EPGP(dkp reloaded) settings through '/rc sync'."
-L["Change name to %s"] = true
-L["Change Name To..."] = true
+
+
 
 -- Locale to Custom EP GUI
 L["RCLootCouncil-EPGP Custom EP GUI"] = true
@@ -181,10 +211,7 @@ Start a recurring mass EP award that do award every periodMin.
 |cffffd000scheduledTime|r: Optional. If this is 0 or empty, the mass ep award is done immediately right now. Otherwise, the award is scheduled at a later time. If this is a number X, the award is scheduled after X seconds. If this is a time HH:MM:SS or HH:MM, the award is scheduled at the next realm time of HH:MM:SS(or HH:MM:00). You can use '/rc epgui' or '/rc cancelallscheduledep' to cancel the scheduled EP award.
 ]=]
 L["Custom EP"] = true
-L["General"] = true
-L["Setting Sync"] = true
-L["send_epgp_settings"] = "'/rc sync' also sends EPGP(dkp reloaded) settings"
-L["send_epgp_setting_desc"] = "If checked, '/rc sync' also sync EPGP(dkp reloaded) settings"
+
 L["Add EP Formula"] = true
 L["ep_formula_delete_confirm"] ="Do you confirm to delete the formula %s ?"
 L["error_no_target"] = "Error. You don't have a target."
@@ -192,8 +219,7 @@ L["ep_formula_name_desc"] = "The name of EP formula."
 L["ep_formula_desc_desc"] = "The description of EP formula which help people to understand how this formula award EP."
 L["ep_formula_formula_desc"] = "The formula that calculates the EP to be awarded to every guild or raid members. The formula should return a number."
 L["Option EP GUI"] = true
-L["RCEPGP_desc"] = "A RCLootCouncil plugin that adds EPGP support and customization. Author: Safetee"
-L["setting_reset_notification"] = "RCLootCouncil-EPGP v%s resets all settings. Please reconfig your settings if needed."
+
 L["slash_rc_ep_help"] = "- ep name reason amount      - Reward EP of amount to the character with name with reason. See the detailed usage by '/rc ep help'"
 L["slash_rc_ep_help_detailed"] = [=[
 
@@ -208,19 +234,7 @@ Award EP of amount to the character with name with reason.
 |cffffd000amount|r: Required. Integer. The amount of EP awarding to the character.
 ]=]
 
-L["slash_rc_gp_help"] = "- gp name reason [amount]      - Reward GP of amount to the character with name with reason. See the detailed usage by '/rc gp help'"
-L["slash_rc_gp_help_detailed"] = [=[
-
-/rc gp name reason [amount]
-
-Award GP of amount to the character with name with reason.
-
-|cffffd000name|r: Required. The full name of the character. Realm name can be omitted if he's in the same realm of you. You can also use '%p' to specify yourself or '%t' to specify your target.
-
-|cffffd000reason|r: Required. The reason to award. This is usually a item link of the gear piece.
-
-|cffffd000amount|r: Optional. Integer. The amount of GP awarding to the character. If omitted, this will be the GP value calculated by the addon whose item link is 'reason'
-]=]
 L["slash_rc_cancelallscheduledep_help"] = "- cancelallscheduledep    - Cancel all scheduled ep operations."
 L["RCEPGP_CUSTOMEP_SCHEDULE_RESUME"] = "RCLootCouncil-EPGP: Do you want to resume the schduled EP operations?"
 L["cancel_all_scheduled_ep"] = "All scheduled EP operations have been canceled."
+--]] -- TODO
