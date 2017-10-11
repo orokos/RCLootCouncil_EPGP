@@ -44,6 +44,9 @@ function RCEPGP:GetEPGPdb()
 end
 
 function RCEPGP:OnInitialize()
+    if addon:VersionCompare(addon.version, self.minRCVersion) then
+        self:ShowRCVersionBelowMinNotification()
+    end
 
     self.generalDefaults = {
         sendEPGPSettings = true,
@@ -102,10 +105,6 @@ function RCEPGP:OnInitialize()
     self:GetEPGPdb().testTocVersion = self.testTocVersion
     if (not self.isNewInstall) and addon:VersionCompare(self.tocVersion, self.lastVersionNeedingRestart) then
         self:ShowNeedRestartNotification()
-    end
-
-    if addon:VersionCompare(addon.version, self.minRCVersion) then
-        self:ShowRCVersionBelowMinNotification()
     end
 
     self:EPGPDkpReloadedSettingToRC()
