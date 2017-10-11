@@ -1,4 +1,7 @@
-This is an _**UNOFFICIAL**_ module of the loot distribution addon [RCLootCouncil](https://mods.curse.com/addons/wow/rclootcouncil) that adds full EPGP support to it.  
+**Before reporting any bugs, make sure to read the [FAQ](https://wow.curseforge.com/projects/rclootcouncil-epgp/pages/faq])!**
+
+
+This is an _**UNOFFICIAL**_ module of the loot distribution addon [RCLootCouncil](https://mods.curse.com/addons/wow/rclootcouncil) that adds full EPGP support and customization to it.  
 \(EPGP is a loot distribution system. [Read Here](http://www.epgpweb.com/help/system) for more information about the EPGP system.\)  
 
 **Requires [EPGP(dkp reloaded)](https://mods.curse.com/addons/wow/epgp-dkp-reloaded) and [RCLootCouncil](https://mods.curse.com/addons/wow/rclootcouncil)**  
@@ -28,6 +31,8 @@ This is an _**UNOFFICIAL**_ module of the loot distribution addon [RCLootCouncil
 
 **Sync Settings Between Guild Members**
 ######  
+
++ v2.0.0+: The settings of EPGP(dkp reloaded) will also be sychronzied with '/rc sync'
 + This is actually the feature of RCLootCouncil itself, introduced by RCLootCouncil v2.5. Use command "/rc sync" to sync RCLootCouncil settings between guild members. The setting of this module is also synchronized because the setting of this module is a part of RCLootCouncil.   
 
 **Enhanced Award Announcements** (v1.8+)
@@ -104,9 +109,18 @@ Open Dungeon Journal and mouseover a loot. Check if the GP value shown in the to
 ## Commands
 ######  
 + **/rc epgp**   Open the RCLootCouncil - EPGP settings
++ **/rc gp name reason [amount]** Award GP to a character. Use '/rc gp help' for the detailed usage.
++ **/rc undogp name [reason]** Undo the most recent GP operations to a character. Use '/rc undogp help' for the detailed usage.
+
+## Tips
++ **Easily award GP when the raid member changes his mind after responsed to RCLootCouncil, BEFORE the loot is distributed.**  
+Often a person click "Pass" and later tells the loot master that he actually wants this item. You may find it hard to award GP to him because the award GP button awards 0GP to person who pass. Simply click "Change Response" button to change his reponse to fix this problem.
+
++ **Easily fix GP when the raid member changes his mind AFTER the loot is distributed.**  
+If two raid members notifies the loot master and trades the loot after RCLootCouncil session ends and GP has been awarded, you can easily fix the GP of two members. Use '/rc history' to open the history frame. Find the item and undo the GP operation to the origin awardee in the Rightclick menu. Then change the name of awardee in the rightclick menu. Then award the GP to the new awardee.
 
 ## Planned Features
-######
+######  
 + Enhancement to how EP is rewarded.
   + Add features similar to quick DKP v2 that gives different EP percentage to players offline, out of zone, different guild rank, using alt, etc.
   + Add ZeroSum EP Award among raid members in the zone. Many guild gives player minus EP if they make mistakes, but it is unfair to the people in the zone and good for subs because subs can never make a mistake. ZeroSum EP Award will help to solve this problem by moving EP of the player who makes a mistake to other players in the raid zone. This will make the average EP of players in the raid zone and subs unchanged, so it will be fair for everyone.
@@ -116,6 +130,7 @@ Open Dungeon Journal and mouseover a loot. Check if the GP value shown in the to
 + Need translation for many languages. Only English, Chinese Simplified and Chinese traditional are fully localized right now. I can only translate language I know. Help to localize this project [here](https://wow.curseforge.com/projects/rclootcouncil-epgp/localization)
 
 ## Bug Report
++ **Again, before reporting any bugs, make sure to read the [FAQ](https://wow.curseforge.com/projects/rclootcouncil-epgp/pages/faq])!**
 + Appreciate any bug report, especially when this addon is not working for you. I will work on the bugs ASAP if I know the bug exists. I am not always the Master Looter in the guild, so I may not know the bug exists.
 + Report bug or make suggestion in the [curseforge issue tracker](https://wow.curseforge.com/projects/rclootcouncil-epgp/issues) or [github issue tracker](https://github.com/SafeteeWoW/RCLootCouncil_EPGP/issues)
 
