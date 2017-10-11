@@ -47,6 +47,22 @@ function RCEPGP:OnInitialize()
     if addon:VersionCompare(addon.version, self.minRCVersion) then
         self:ShowRCVersionBelowMinNotification()
     end
+    -- Added in v2.0
+    local lastVersion = self:GetEPGPdb().version
+    if not lastVersion then lastVersion = "1.9.2" end
+    if (not self.isNewInstall) and addon:VersionCompare(self.tocVersion, self.lastVersionNeedingRestart) then
+        self:ShowNeedRestartNotification()
+    end
+
+    self:GetEPGPdb().version = self.version
+    self:GetEPGPdb().tocVersion = self.tocVersion
+    self:GetEPGPdb().testVersion = self.testVersion
+    self:GetEPGPdb().testTocVersion = self.testTocVersion
+
+    if (not self.isNewInstall) and addon:VersionCompare(lastVersion, "2.0.0") then
+        self:UpdateAnnounceKeyword_v2_0_0()
+        self:ShowSettingResetNotification()
+    end
 
     self.generalDefaults = {
         sendEPGPSettings = true,
@@ -82,22 +98,6 @@ function RCEPGP:OnInitialize()
     self:AddChatCommand()
     self:AddAnnouncement()
     self:SetupColumns()
-
-    -- Added in v2.0
-    local lastVersion = self:GetEPGPdb().version
-    if not lastVersion then lastVersion = "1.9.2" end
-    if (not self.isNewInstall) and addon:VersionCompare(lastVersion, "2.0.0") then
-        self:UpdateAnnounceKeyword_v2_0_0()
-        self:ShowSettingResetNotification()
-    end
-
-    self:GetEPGPdb().version = self.version
-    self:GetEPGPdb().tocVersion = self.tocVersion
-    self:GetEPGPdb().testVersion = self.testVersion
-    self:GetEPGPdb().testTocVersion = self.testTocVersion
-    if (not self.isNewInstall) and addon:VersionCompare(self.tocVersion, self.lastVersionNeedingRestart) then
-        self:ShowNeedRestartNotification()
-    end
 
     self:EPGPDkpReloadedSettingToRC()
 
