@@ -64,7 +64,31 @@ function RCCustomGP:OnInitialize()
     "INVTYPE_HAND", "INVTYPE_WAIST", "INVTYPE_LEGS", "INVTYPE_FEET", "INVTYPE_FINGER", "INVTYPE_TRINKET", "INVTYPE_RELIC", }
     RCEPGP:SetdbDefaults(self:GetCustomGPdb(), self.defaults, false)
     self:SendMessage("RCCustomGPRuleChanged")
+    addon:CustomChatCmd(self, "IncGPBy", LEP["slash_rc_gp_help"], "gp")
     self.initialize = true
+end
+
+-- /rc gp name reason amount
+function RCCustomGP:IncGPBy(name, reason, amount)
+    if name == "help" then
+        RCEPGP:Print(LEP["slash_rc_gp_help_detailed"])
+        return
+    end
+    if name == "%p" then
+        name = RCEPGP:GetEPGPName("player")
+    elseif name == "%t" then
+        if not UnitExists("target") then
+            RCEPGP:Print(LEP["error_no_target"])
+            return
+        end
+        name = RCEPGP:GetEPGPName("target")
+    end
+
+    if not amount then
+        amount = LibStub:GetLibrary(MAJOR_VERSION):GetValue(reason)
+    end
+    -- TODO: more error checking?
+    EPGP:IncGPBy(name, reason, amount)
 end
 
 function RCCustomGP:GetCustomGPdb()

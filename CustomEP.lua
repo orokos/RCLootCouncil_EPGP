@@ -4,7 +4,7 @@ local RCCustomEP = RCEPGP:NewModule("RCCustomEP", "AceConsole-3.0", "AceEvent-3.
 local LEP = LibStub("AceLocale-3.0"):GetLocale("RCEPGP")
 local EPGP = LibStub("AceAddon-3.0"):GetAddon("EPGP")
 local LibSpec = LibStub("LibGroupInSpecT-1.1")
-
+local LibDialog = LibStub("LibDialog-1.0")
 
 local hasPlayerLogin = false
 local isInGuild = {}
@@ -19,11 +19,16 @@ RCCustomEP.MaxFormulas = 100  -- The max amount of formulas we are storing.
 RCCustomEP.EPVariables = {}
 
 function RCCustomEP:GetEPVariables()
-
-    -- name: The name of the variable
-    -- help: The description of the variable shown in the option.
-    -- value: a function with -- TODO
-    -- display_name: If specified, the option table show this as the name instead. Mutliple variables with the same display name are only shown once.
+    --[[
+       name: The name of the variable
+       help: The description of the variable shown in the option.
+       value: a function which receives 3 args: name, fenv, isFirstPass
+         Returns: Any value that suitable for the usage of this variable.
+         name: The full name of the character we are processing.
+         fenv: The function environment we are using. Useful when this returns a function that process a string.
+         isFirstPass: Some variable needs two passes for each character to get the final value. For example, the count variable.
+       display_name: If specified, the option table show this as the name instead. Mutliple variables with the same display name are only shown once.
+    --]]
 
     local EPVariables = {
         {name = "name", help = LEP["ep_variable_name_help"], value = function(name) return name or "UNKNOWN" end, },
@@ -157,19 +162,26 @@ function RCCustomEP:OnInitialize()
     self.initialize = true
 
     self:SecureHook(RCLootCouncil, "UpdateDB", function()
-        wipe(self:GetCustomEPdb().massEPQueue)
-        self:SendMessage("RCCustomEPQueueRemoved")
+        self:CancelAllScheduledEP()
     end)
 
 end
 
 -- /rc massep  reason amount [formulaIndexOrName] [targetName] [ScheduleTime AfterSecond/HH:MM:SS/HH:MM, realm time, 24hour format]
 function RCCustomEP:Massep(reason, amount, formulaIndexOrName, targetName, scheduleTime)
+    if reason == "help" then
+        RCEPGP:Print(LEP["slash_rc_massep_help_detailed"])
+        return
+    end
     self:IncMassEPBy(reason, tonumber(amount), formulaIndexOrName, targetName, scheduleTime)
 end
 
 -- /rc recurep periodMin reason amount [formulaIndexOrName] [targetName] [ScheduleTime AfterSecond/HH:MM:SS/HH:MM, realm time, 24hour format]
-function RCCustomEP:Recurep(periodin, reason, amount, formulaIndexOrName, targetName, scheduleTime)
+function RCCustomEP:Recurep(periodMin, reason, amount, formulaIndexOrName, targetName, scheduleTime)
+    if periodMin == "help" then
+        RCEPGP:Print(LEP["slash_rc_recurep_help_detailed"])
+        return
+    end
     if tonumber(periodMin) and tonumber(periodMin) > 0 then
         self:StartRecurringEP(reason, tonumber(amount), tonumber(periodMin), formulaIndexOrName, targetName, scheduleTime)
     else
@@ -183,25 +195,37 @@ function RCCustomEP:Stoprecur()
     EPGP:StopRecurringEP()
 end
 
-function RCCustomEP:HelpMassep()
-    RCEPGP:Print(LEP["slash_rc_massep_help_detailed"])
+-- /rc ep name reason amount
+function RCCustomEP:IncEPBy(name, reason, amount)
+    if name == "help" then
+        RCEPGP:Print(LEP["slash_rc_ep_help_detailed"])
+        return
+    end
+    if name == "%p" then
+        name = RCEPGP:GetEPGPName("player")
+    elseif name == "%t" then
+        if not UnitExists("target") then
+            RCEPGP:Print(LEP["error_no_target"])
+            return
+        end
+        name = RCEPGP:GetEPGPName("target")
+    end
+    -- TODO: more error checking?
+    EPGP:IncEPBy(name, reason, amount)
 end
 
-function RCCustomEP:HelpRecurep()
-    RCEPGP:Print(LEP["slash_rc_recurep_help_detailed"])
+function RCCustomEP:CancelAllScheduledEP()
+    wipe(self:GetCustomEPdb().massEPQueue)
+    RCEPGP:Print(LEP["cancel_all_scheduled_ep"])
+    self:SendMessage("RCCustomEPQueueRemoved")
 end
 
--- TODO: /rc ep
--- TODO: /rc gp
--- TODO: /rc cancelallscheduledep
--- TODO: dialog of if continue the scheduled ep award after a reload.
 function RCCustomEP:AddChatCommand()
-    --addon:CustomChatCmd(self, "ep", LEP[""])
+    addon:CustomChatCmd(self, "IncEPBy", LEP["slash_rc_ep_help"], "ep")
     addon:CustomChatCmd(self, "Massep", LEP["slash_rc_massep_help"], "massep")
     addon:CustomChatCmd(self, "Recurep", LEP["slash_rc_recurep_help"], "recurep")
     addon:CustomChatCmd(self, "Stoprecur", LEP["slash_rc_stoprecur_help"], "stoprecur")
-    addon:CustomChatCmd(self, "HelpMassep", LEP["slash_rc_helpmassep_help"], "helpmassep")
-    addon:CustomChatCmd(self, "HelpRecurep", LEP["slash_rc_helprecurep_help"], "helprecurep")
+    addon:CustomChatCmd(self, "CancelAllScheduledEP", LEP["slash_rc_cancelallscheduledep_help"], "cancelallscheduledep")
 end
 
 local timeLastCalendarUpdate = GetTime()
@@ -305,6 +329,9 @@ function RCCustomEP:PLAYER_LOGIN()
     RCEPGP:DebugPrint("PLAYER_LOGIN")
     RCEPGP:DebugPrint("RealmTimeDiff ", self.realmTimeDiff)
     self:RemoveExpiredEntryInQueue()
+    if next(self:GetMassEPQueue()) then
+        LibDialog:Spawn("RCEPGP_CUSTOMEP_SCHEDULE_RESUME")
+    end
 end
 
 function RCCustomEP:RemoveExpiredEntryInQueue()
@@ -606,9 +633,6 @@ RCCustomEP.recurTickFrame:SetScript("OnUpdate", function(self, elapsed)
 end)
 RCCustomEP.recurTickFrame:Show() -- TODO: Only show this frame when needed.
 
--- TODO: clear queue when DB update.
-
-
 function RCCustomEP:StartRecurringEP(reason, amount, periodMin, formulaIndexOrName, targetName, scheduleTime)
   -- TODO: Only guild officer can execute this func
   if type(reason) ~= "string" or type(amount) ~= "number" or #reason == 0 then
@@ -898,3 +922,31 @@ function RCCustomEP:EPFormulaGetUnrepeatedName(name, index)
         return name.."_"..i
     end
 end
+
+
+LibDialog:Register("RCEPGP_CUSTOMEP_SCHEDULE_RESUME", {
+    text = LEP["RCEPGP_CUSTOMEP_SCHEDULE_RESUME"],
+    buttons = {
+    {
+      text = _G.YES,
+      on_click = function(self, data, reason)
+      end,
+    },
+    {
+      text = _G.NO,
+      on_click = function(self, data, reason)
+        RCCustomEP:CancelAllScheduledEP()
+      end,
+    },
+    },
+    on_cancel = function(self, data, reason)
+        if reason ~= "override" then
+          RCCustomEP:CancelAllScheduledEP()
+        end
+    end,
+    hide_on_escape = true,
+    show_while_dead = true,
+})
+
+-- TODO: schedule /epgp decay
+-- TODO: ep operation fails when frame opens.

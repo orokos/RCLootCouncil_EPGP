@@ -142,8 +142,8 @@ L["End Time\n(Realm Time)"] = true
 L["Cancel"] = true
 L["Scheduled EP Award"] = true
 
-L["slash_rc_massep_help"] = "- massep reason amount [formulaIndexOrName] [targetName] [scheduledTime]      - Do a mass EP award. See the detailed usage by '/rc helpmassep'"
-L["slash_rc_recurep_help"] = "- recurep periodMin reason amount [formulaIndexOrName] [targetName] [scheduledTime]      - Start a recurring mass ep award. See the detailed usage by '/rc helprecurep'"
+L["slash_rc_massep_help"] = "- massep reason amount [formulaIndexOrName] [targetName] [scheduledTime]      - Do a mass EP award. See the detailed usage by '/rc massep help'"
+L["slash_rc_recurep_help"] = "- recurep periodMin reason amount [formulaIndexOrName] [targetName] [scheduledTime]      - Start a recurring mass ep award. See the detailed usage by '/rc recurep help'"
 L["slash_rc_stoprecur_help"] = "- stoprecur      - Stop recurring EP Award."
 L["peroid_not_positive_error"] = "'periodMin' must be a positive number."
 L["slash_rc_massep_help_detailed"] = [=[
@@ -180,8 +180,6 @@ Start a recurring mass EP award that do award every periodMin.
 
 |cffffd000scheduledTime|r: Optional. If this is 0 or empty, the mass ep award is done immediately right now. Otherwise, the award is scheduled at a later time. If this is a number X, the award is scheduled after X seconds. If this is a time HH:MM:SS or HH:MM, the award is scheduled at the next realm time of HH:MM:SS(or HH:MM:00). You can use '/rc epgui' or '/rc cancelallscheduledep' to cancel the scheduled EP award.
 ]=]
-L["slash_rc_helpmassep_help"] = "- helpmassep      - Show the detailed usage of '/rc massep'"
-L["slash_rc_helprecurep_help"] = "- helprecurep      - Show the detailed usage of '/rc recurep'"
 L["Custom EP"] = true
 L["General"] = true
 L["Setting Sync"] = true
@@ -196,3 +194,33 @@ L["ep_formula_formula_desc"] = "The formula that calculates the EP to be awarded
 L["Option EP GUI"] = true
 L["RCEPGP_desc"] = "A RCLootCouncil plugin that adds EPGP support and customization. Author: Safetee"
 L["setting_reset_notification"] = "RCLootCouncil-EPGP v%s resets all settings. Please reconfig your settings if needed."
+L["slash_rc_ep_help"] = "- ep name reason amount      - Reward EP of amount to the character with name with reason. See the detailed usage by '/rc ep help'"
+L["slash_rc_ep_help_detailed"] = [=[
+
+/rc ep name reason amount
+
+Award EP of amount to the character with name with reason.
+
+|cffffd000name|r: Required. The full name of the character. Realm name can be omitted if he's in the same realm of you. You can also use '%p' to specify yourself or '%t' to specify your target.
+
+|cffffd000reason|r: Required. The reason to award.
+
+|cffffd000amount|r: Required. Integer. The amount of EP awarding to the character.
+]=]
+
+L["slash_rc_gp_help"] = "- gp name reason [amount]      - Reward GP of amount to the character with name with reason. See the detailed usage by '/rc gp help'"
+L["slash_rc_gp_help_detailed"] = [=[
+
+/rc gp name reason [amount]
+
+Award GP of amount to the character with name with reason.
+
+|cffffd000name|r: Required. The full name of the character. Realm name can be omitted if he's in the same realm of you. You can also use '%p' to specify yourself or '%t' to specify your target.
+
+|cffffd000reason|r: Required. The reason to award. This is usually a item link of the gear piece.
+
+|cffffd000amount|r: Optional. Integer. The amount of GP awarding to the character. If omitted, this will be the GP value calculated by the addon whose item link is 'reason'
+]=]
+L["slash_rc_cancelallscheduledep_help"] = "- cancelallscheduledep    - Cancel all scheduled ep operations."
+L["RCEPGP_CUSTOMEP_SCHEDULE_RESUME"] = "RCLootCouncil-EPGP: Do you want to resume the schduled EP operations?"
+L["cancel_all_scheduled_ep"] = "All scheduled EP operations have been canceled."
