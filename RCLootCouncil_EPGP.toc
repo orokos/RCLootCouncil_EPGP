@@ -3,7 +3,7 @@
 ## Notes: An UNOFFICIAL RCLootCouncil module to add full EPGP support to it
 ## Title: RCLootCouncil - EPGP
 ## Version: 2.0.0
-## X-TestVersion: Alpha.2
+## X-TestVersion: Release
 ## Dependencies: RCLootCouncil
 ## Dependencies: EPGP
 ## OptionalDeps: RCLootCouncil_ExtraUtilities
