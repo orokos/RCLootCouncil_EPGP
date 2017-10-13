@@ -130,9 +130,17 @@ function RCCustomGP:OnInitialize()
         INVTYPE_TRINKET		    = "TrinketSlot",
         INVTYPE_RELIC           = "RelicSlot",
     }
+    self:RegisterMessage("RCUpdateDB", "OnMessageReceived")
     RCEPGP:SetdbDefaults(self:GetCustomGPdb(), self.defaults, false)
     self:SendMessage("RCCustomGPRuleChanged")
     self.initialize = true
+end
+
+function RCCustomGP:OnMessageReceived(msg, ...)
+    RCEPGP:DebugPrint("RCCustomGP", "ReceiveMessage", msg)
+    if msg == "RCUpdateDB" then
+        RCEPGP:SetdbDefaults(self:GetCustomGPdb(), self.defaults, false)
+    end
 end
 
 function RCCustomGP:GetCustomGPdb()

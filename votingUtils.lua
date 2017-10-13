@@ -1,4 +1,4 @@
-local DEBUG = false
+local DEBUG = true
 
 local addon = LibStub("AceAddon-3.0"):GetAddon("RCLootCouncil")
 local RCEPGP = addon:NewModule("RCEPGP", "AceComm-3.0", "AceConsole-3.0", "AceHook-3.0", "AceEvent-3.0", "AceTimer-3.0", "AceSerializer-3.0")
@@ -11,9 +11,9 @@ local LibDialog = LibStub("LibDialog-1.0")
 local RCLootCouncilML = addon:GetModule("RCLootCouncilML")
 
 -- TODO: Edit the following versions every update, and should also update the version in TOC file.
-RCEPGP.version = "2.0.0" 
-RCEPGP.testVersion = "Release" 
-							   -- format: Release/Beta/Alpha.num          
+RCEPGP.version = "2.0.0"
+RCEPGP.testVersion = "Release"
+							   -- format: Release/Beta/Alpha.num
 							   -- testVersion compares only by number. eg. "Alpha.2" > "Beta.1"
 RCEPGP.tocVersion = GetAddOnMetadata("RCLootCouncil_EPGP", "Version")
 RCEPGP.testTocVersion = GetAddOnMetadata("RCLootCouncil_EPGP", "X-TestVersion")
@@ -75,6 +75,7 @@ function RCEPGP:OnInitialize()
     self:RegisterMessage("RCCustomGPRuleChanged", "OnMessageReceived")
     self:RegisterMessage("RCMLAwardSuccess", "OnMessageReceived")
     self:RegisterMessage("RCSessionChangedPre", "OnMessageReceived")
+    self:RegisterMessage("RCUpdateDB", "OnMessageReceived")
 
     self:RegisterComm("RCLootCouncil", "OnCommReceived")
 
@@ -107,6 +108,8 @@ function RCEPGP:OnInitialize()
     self.initialize = true
 end
 
+-- MAKESURE all messages are registered
+-- MAKESURE all empty settings reseted to default when RCUpdateDB
 function RCEPGP:OnMessageReceived(msg, ...)
     self:DebugPrint("ReceiveMessage", msg)
     if msg == "RCCustomGPRuleChanged" then
@@ -133,6 +136,7 @@ function RCEPGP:OnMessageReceived(msg, ...)
         self:GetEPGPdb().testVersion = self.testVersion
         self:GetEPGPdb().testTocVersion = self.testTocVersion
         self:RCToEPGPDkpReloadedSetting()
+        self:SetdbDefaults(self:GetGeneraldb(), self.generalDefaults, false) -- should after self:RCToEPGPDkpReloadedSetting()
     end
 end
 
@@ -901,9 +905,16 @@ end
 function RCEPGP:RCToEPGPDkpReloadedSetting()
     if not self:GetGeneraldb().sendEPGPSettings then return end
 
+    local syncHappened = false
     if self:GetEPGPdb().EPGPDkpReloadedDB and self:GetEPGPdb().EPGPDkpReloadedDB.children then
         for module, entry in pairs(self:GetEPGPdb().EPGPDkpReloadedDB.children) do
             if module ~= "log" then -- Not gonna sync "log" module because it is too big. Probably will sync it with RCHistory Later.
+
+                if EPGP.db.children[module].profile and self:GetEPGPdb().EPGPDkpReloadedDB.children[module].profile and
+                    EPGP.db.children[module].profile ~= self:GetEPGPdb().EPGPDkpReloadedDB.children[module].profile then
+                    syncHappened = true
+                end
+
                 local mod = EPGP:GetModule(module)
                 -- Copy settings
                 deepcopy(EPGP.db.children[module].profile, self:GetEPGPdb().EPGPDkpReloadedDB.children[module].profile)
@@ -918,6 +929,8 @@ function RCEPGP:RCToEPGPDkpReloadedSetting()
             end
         end
     end
+
+    if not syncHappened then return end -- No actual sync happened. (This can happen when sync from a user without RCLootCoucil-EPGP installed).
 
     self:Debug("Restore EPGP(dkp reloaded) settings from RCLootCouncil Saved Variables.")
     self:EPGPDkpReloadedSettingToRC() -- Link table in RCEPGP's saved variable with EPGP's saved variable together.
@@ -996,7 +1009,7 @@ end
 -- Custom function environment to be used in Custom GP and custom EP.
 -- Some code is copy and paste from WeakAuras 2
 local function forbidden()
-  RCEPGP:Print("|cffffff00A A forbidden function is used in a formula, but has been blocked from doing so. Please check if your formulas contain any malicious code!|r")
+  RCEPGP:Print("|cffffff00"..LEP["forbidden_function_used"].."|r")
 end
 
 local blockedFunctions = {
