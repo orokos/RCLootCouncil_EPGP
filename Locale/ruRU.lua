@@ -29,6 +29,8 @@ L["enable_custom_gp"] = "Включить пользовательское зн�
 --Translation missing
 -- L["error_no_target"] = ""
 --Translation missing
+-- L["forbidden_function_used"] = ""
+--Translation missing
 -- L["General"] = ""
 L["GP Bid"] = "ставку GP"
 L["gp_formula"] = "Формула GP"

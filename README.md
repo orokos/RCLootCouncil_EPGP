@@ -1,4 +1,4 @@
-**Before reporting any bugs, make sure to read the [FAQ](https://wow.curseforge.com/projects/rclootcouncil-epgp/pages/faq])!**
+**Before reporting any bugs, make sure to read the [FAQ](https://wow.curseforge.com/projects/rclootcouncil-epgp/pages/faq)!**
 
 
 This is an _**UNOFFICIAL**_ module of the loot distribution addon [RCLootCouncil](https://mods.curse.com/addons/wow/rclootcouncil) that adds full EPGP support and customization to it.  
@@ -130,7 +130,7 @@ If two raid members notifies the loot master and trades the loot after RCLootCou
 + Need translation for many languages. Only English, Chinese Simplified and Chinese traditional are fully localized right now. I can only translate language I know. Help to localize this project [here](https://wow.curseforge.com/projects/rclootcouncil-epgp/localization)
 
 ## Bug Report
-+ **Again, before reporting any bugs, make sure to read the [FAQ](https://wow.curseforge.com/projects/rclootcouncil-epgp/pages/faq])!**
++ **Again, before reporting any bugs, make sure to read the [FAQ](https://wow.curseforge.com/projects/rclootcouncil-epgp/pages/faq)!**
 + Appreciate any bug report, especially when this addon is not working for you. I will work on the bugs ASAP if I know the bug exists. I am not always the Master Looter in the guild, so I may not know the bug exists.
 + Report bug or make suggestion in the [curseforge issue tracker](https://wow.curseforge.com/projects/rclootcouncil-epgp/issues) or [github issue tracker](https://github.com/SafeteeWoW/RCLootCouncil_EPGP/issues)
 

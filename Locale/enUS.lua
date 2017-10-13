@@ -25,6 +25,7 @@ L["Enable Bidding"] = true
 L["enable_custom_gp"] = "Enable Custom GearPoints"
 L["EPGP_DKP_Reloaded_settings_received"] = "Received EPGP(dkp reloaded) settings through '/rc sync'."
 L["error_no_target"] = "Error. You don't have a target."
+L["forbidden_function_used"] = "A forbidden function is used in a formula, but has been blocked from doing so. Please check if your formulas contain any malicious code!"
 L["General"] = true
 L["GP Bid"] = true
 L["gp_formula"] = "GP Formula"
