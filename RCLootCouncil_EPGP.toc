@@ -2,7 +2,7 @@
 ## Interface: 70300
 ## Notes: An UNOFFICIAL RCLootCouncil module to add full EPGP support to it
 ## Title: RCLootCouncil - EPGP
-## Version: 2.0.0
+## Version: 2.0.1
 ## X-TestVersion: Release
 ## Dependencies: RCLootCouncil
 ## Dependencies: EPGP

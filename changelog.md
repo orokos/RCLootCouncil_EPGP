@@ -1,3 +1,10 @@
+### v2.0.1
+---
+###### Bugfixes
+  - Fix bugs in setting synchronization
+    - Fix synchronization of EPGP(dkp reloaded) settings is not working.
+    - Fix nil error when sync from a user without RCLootCouncil-EPGP installed.
+
 ### v2.0.0
 ---
 - **All Settings of RCLootCouncil-EPGP are reseted.**

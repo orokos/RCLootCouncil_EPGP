@@ -13,8 +13,8 @@ local GP = LibStub("LibGearPoints-1.2")
 local LibDialog = LibStub("LibDialog-1.0")
 local RCLootCouncilML = addon:GetModule("RCLootCouncilML")
 
--- TODO: Edit the following versions every update, and should also update the version in TOC file.
-RCEPGP.version = "2.0.0"
+-- MAKESURE: Edit the following versions every update, and should also update the version in TOC file.
+RCEPGP.version = "2.0.1"
 RCEPGP.testVersion = "Release"
 							   -- format: Release/Beta/Alpha.num
 							   -- testVersion compares only by number. eg. "Alpha.2" > "Beta.1"
@@ -22,6 +22,7 @@ RCEPGP.tocVersion = GetAddOnMetadata("RCLootCouncil_EPGP", "Version")
 RCEPGP.testTocVersion = GetAddOnMetadata("RCLootCouncil_EPGP", "X-TestVersion")
 
 RCEPGP.lastVersionNeedingRestart = "2.0.0"
+RCEPGP.lastVersionResetSetting = "2.0.0"
 RCEPGP.minRCVersion = "2.6.0"
 
 RCEPGP.isNewInstall = nil
@@ -66,6 +67,8 @@ function RCEPGP:OnInitialize()
 
     if (not self.isNewInstall) and addon:VersionCompare(lastVersion, "2.0.0") then
         self:UpdateAnnounceKeyword_v2_0_0()
+    end
+    if (not self.isNewInstall) and addon:VersionCompare(lastVersion, self.lastVersionResetSetting) then
         self:ShowSettingResetNotification()
     end
 
