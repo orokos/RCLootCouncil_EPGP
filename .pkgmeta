@@ -1,10 +1,16 @@
 package-as: RCLootCouncil_EPGP
 
+enable-nolib-creation: no
+
+externals:
+    Libs/LibGroupInSpecT-1.1: svn://svn.wowace.com/wow/libgroupinspect/mainline/trunk
+
+ignore:
+
+
 manual-changelog:
     filename: changelog.md
     markup-type: markdown
-
-enable-nolib-creation: no
 
 license-output: LICENSE.md
 
