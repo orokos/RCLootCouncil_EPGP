@@ -1,3 +1,10 @@
+### v2.1
+---
+- New Feature: automatic screenshot when an item is awarded.
+  - Disabled by default. Enable this in the setting("/rc epgp")
+
+
+
 ### v2.0.1
 ---
 ###### Bugfixes

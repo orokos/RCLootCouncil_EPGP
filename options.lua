@@ -198,6 +198,41 @@ function RCEPGP:RefreshOptionsTable()
                             },
                         },
                     },
+                    screenshot = {
+                        name = LEP["Screenshot"],
+                        order = 6,
+                        type = "group",
+                        inline = true,
+                        args = {
+                            screenshotOnAward = {
+                                name = LEP["Screenshot when a item is awarded"],
+                                order = 1,
+                                type = "toggle",
+                                width = "full",
+                            },
+                            screenshotONlyWithGP = {
+                                name = LEP["Screenshot only when GP is awarded"],
+                                order = 2,
+                                disabled = function() return not self:GetGeneraldb().screenshotOnAward end,
+                                type = "toggle",
+                                width = "full",
+                            },
+                            screenshotOnTestAward = {
+                                name = LEP["Also screenshot in test mode"],
+                                order = 3,
+                                disabled = function() return not self:GetGeneraldb().screenshotOnAward end,
+                                type = "toggle",
+                                width = "full",
+                            },
+                            screenshotOnAwardLater = {
+                                name = LEP["Also screenshot when the item is bagged and will be awarded later"],
+                                order = 4,
+                                disabled = function() return not self:GetGeneraldb().screenshotOnAward end,
+                                type = "toggle",
+                                width = "full",
+                            },
+                        },
+                    },
                     restoreDefault = {
                         name = L["Reset to default"],
                         order = 1000,

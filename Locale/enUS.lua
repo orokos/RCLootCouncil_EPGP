@@ -5,6 +5,8 @@
 local L = LibStub("AceLocale-3.0"):NewLocale("RCEPGP", "enUS", true)
 if not L then return end
 
+L["Also screenshot in test mode"] = true
+L["Also screenshot when the item is bagged and will be awarded later"] = true
 L["announce_awards_desc2"] = [=[
 RCLootCouncil-EPGP: #diffgp# for the amount of GP the player gains from the item. #ep# for the EP of player. #gp# for the GP of player before getting the item. #pr# for the PR of player before getting the item. #newgp# for the GP of player after getting the item. #newpr# for the PR of player after getting the item.]=]
 L["announce_formula_runtime_error"] = "Your GP formula has runtime error. Default formula is used when error occurs."
@@ -36,7 +38,7 @@ The following are the variables usable in the code.]=]
 L["gp_formula_syntax_error"] = "Formula has syntax error. Default formula will be used instead."
 L["gp_value_help"] = [=[Example:
 100%: use 100% of normal GP value
-50%: use 50% of normal GP value 
+50%: use 50% of normal GP value
 25: all items are worth 25 GP]=]
 L["gp_variable_equipLoc_help"] = "String. The non-localized string representing the equipment slot. Recommend to use variable \"slotWeights\" instead if possible"
 L["gp_variable_hasAvoid_help"] = "Integer. 1 if the item has avoidance, 0 otherwise."
@@ -63,6 +65,11 @@ L["new_version_detected"] = "Your version %s is outdated. Newer Version %s detec
 L["no_permission_to_edit_officer_note"] = "You don't have permission to edit officer note."
 L["rc_version_below_min_notification"] = "This version of RCLootCouncil-EPGP requires RCLootCouncil v%s+. Your RCLootCouncil is v%s. Please update your RCLootCouncil."
 L["RCEPGP_desc"] = "A RCLootCouncil plugin that adds EPGP support and customization. Author: Safetee"
+L["Screenshot"] = true
+L["Screenshot succeeded"] = true
+L["Screenshot failed"] = true
+L["Screenshot only when GP is awarded"] = true
+L["Screenshot when a item is awarded"] = true
 L["send_epgp_setting_desc"] = "If checked, '/rc sync' also sync EPGP(dkp reloaded) settings"
 L["send_epgp_settings"] = "'/rc sync' also sends EPGP(dkp reloaded) settings"
 L["Setting Sync"] = "Setting Sync"
@@ -93,4 +100,3 @@ Undo the most recent GP operations to a character with the matching reason.
 ]=]
 L["slot_weights"] = "Slot Weights"
 L["Undo GP"] = "Undo GP"
-

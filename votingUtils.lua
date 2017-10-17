@@ -75,11 +75,15 @@ function RCEPGP:OnInitialize()
     self.generalDefaults = {
         sendEPGPSettings = true,
         biddingEnabled = false,
+        screenshotOnAward = false,
+        screenshotOnTestAward = false,
+        screenshotOnAwardLater = false,
     }
     self:SetdbDefaults(self:GetGeneraldb(), self.generalDefaults, false)
 
     self:RegisterMessage("RCCustomGPRuleChanged", "OnMessageReceived")
     self:RegisterMessage("RCMLAwardSuccess", "OnMessageReceived")
+    self:RegisterMessage("RCMLAwardFailed", "OnMessageReceived")
     self:RegisterMessage("RCSessionChangedPre", "OnMessageReceived")
     self:RegisterMessage("RCUpdateDB", "OnMessageReceived")
 
@@ -87,6 +91,8 @@ function RCEPGP:OnInitialize()
 
     self:RegisterEvent("PLAYER_LOGIN", "OnEvent")
     self:RegisterEvent("GROUP_JOINED", "OnEvent")
+    self:RegisterEvent("SCREENSHOT_SUCCEEDED", "OnEvent")
+    self:RegisterEvent("SCREENSHOT_FAILED", "OnEvent")
 
     EPGP.RegisterCallback(self, "StandingsChanged", self.UpdateVotingFrame)
 
@@ -124,6 +130,15 @@ function RCEPGP:OnMessageReceived(msg, ...)
         self:RefreshMenu(level)
     elseif msg == "RCMLAwardSuccess" then
         local session, winner, status = unpack({...})
+
+        if self:GetGeneraldb().screenshotOnAward and ((not self:GetGeneraldb().screenshotONlyWithGP) or (self:GetCurrentAwardingGP() and self:GetCurrentAwardingGP() > 0))then
+            if status == "normal" or (status == "test_mode" and self:GetGeneraldb().screenshotOnTestAward) then
+                RCVotingFrame:GetLootTable()[session].awarded = winner
+                RCVotingFrame:Update() -- Force to update the string thats shows the winner immediately. Should use a better way if RCLootCouncil changes API.
+                Screenshot()
+            end
+        end
+
         if winner then
             local gp = self:GetCurrentAwardingGP()
             local item = RCVotingFrame:GetLootTable() and RCVotingFrame:GetLootTable()[session] and RCVotingFrame:GetLootTable()[session].link
@@ -131,6 +146,11 @@ function RCEPGP:OnMessageReceived(msg, ...)
                 EPGP:IncGPBy(winner, item, gp)
                 self:Debug("Awarded GP: ", winner, item, gp)
             end
+        end
+    elseif msg == "RCMLAwardFailed" then
+        local session, winner, status = unpack({...})
+        if status == "bagged" and self:GetGeneraldb().screenshotOnAward and self:GetGeneraldb().screenshotOnAwardLater then
+            Screenshot()
         end
     elseif msg == "RCSessionChangedPre" then
         local s = unpack({...})
@@ -186,6 +206,14 @@ function RCEPGP:OnEvent(event, ...)
         C_Timer.After(5, function() self:BroadcastVersion("guild") end)
     elseif event == "GROUP_JOINED" then
         C_Timer.After(2, function() self:BroadcastVersion("group") end)
+    elseif event == "SCREENSHOT_SUCCEEDED" then
+        if RCVotingFrame:GetFrame() and RCVotingFrame:GetFrame():IsShown() then
+            self:Print(LEP["Screenshot succeeded"])
+        end
+    elseif event == "SCREENSHOT_FAILED" then
+        if RCVotingFrame:GetFrame() and RCVotingFrame:GetFrame():IsShown() then
+            self:Print("|cffff0000"..LEP["Screenshot failed"].."|r")
+        end
     end
 end
 
@@ -208,7 +236,9 @@ function RCEPGP:IsTestVersion(v)
 end
 
 function RCEPGP.UpdateVotingFrame()
-    RCVotingFrame:Update()
+    if RCVotingFrame:GetFrame() and RCVotingFrame:GetFrame():IsShown() then
+        RCVotingFrame:Update()
+    end
 end
 
 function RCEPGP:UpdateGPEditbox()
