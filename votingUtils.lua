@@ -648,6 +648,11 @@ function RCEPGP:AddWidgetsIntoVotingFrame()
                     editbox:ClearFocus()
                 end
             end
+            if addon.isMasterLooter then -- Cant enter text if not master looter.
+                self:Enable()
+            else
+                self:Disable()
+            end
         end)
 
         -- Clear focus when rightclick menu opens.
