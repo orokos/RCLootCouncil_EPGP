@@ -139,7 +139,7 @@ function RCEPGP:OnMessageReceived(msg, ...)
             if status == "normal" or (status == "test_mode" and self:GetGeneraldb().screenshotOnTestAward) then
                 RCVotingFrame:GetLootTable()[session].awarded = winner
                 RCVotingFrame:Update() -- Force to update the string thats shows the winner immediately. Should use a better way if RCLootCouncil changes API.
-                RCVotingFrame:GetLootTable()[session].gpAwarded = gpAwarded -- duplicate, reason is the same as above. Should try to find a better way...
+                RCVotingFrame:GetLootTable()[session].gpAwarded = self:GetCurrentAwardingGP() -- duplicate, reason is the same as above. Should try to find a better way...
                 self:UpdateGPAwardString()
                 Screenshot()
             end
