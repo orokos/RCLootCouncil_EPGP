@@ -1,7 +1,7 @@
 ﻿## Interface: 70300
 
 ## Title: RCLootCouncil - EPGP
-## Version: 2.0.1
+## Version: 2.1.0
 ## X-TestVersion: Release
 
 ## Author: Safetee
@@ -28,4 +28,3 @@ lootHistory.lua
 CustomEPGUI.lua
 
 options.lua
-
