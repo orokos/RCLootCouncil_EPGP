@@ -97,7 +97,7 @@ function RCEPGP:OnInitialize()
 
     EPGP.RegisterCallback(self, "StandingsChanged", self.UpdateVotingFrame)
 
-    self:SecureHook(RCVotingFrame, "OnEnable", "AddGPEditBox")
+    self:SecureHook(RCVotingFrame, "OnEnable", "AddWidgetsIntoVotingFrame")
     self:AddRightClickMenu(_G["RCLootCouncil_VotingFrame_RightclickMenu"], RCVotingFrame.rightClickEntries, self.rightClickEntries)
     if ExtraUtilities then
         self:SecureHook(ExtraUtilities, "SetupColumns", function() self:SetupColumns() end)
@@ -148,6 +148,7 @@ function RCEPGP:OnMessageReceived(msg, ...)
                 EPGP:IncGPBy(winner, item, gp)
                 self:Debug("Awarded GP: ", winner, item, gp)
             end
+            addon:SendCommand("group", "RCEPGP_awarded", {session=session, winner=winner, gp=gp})
         end
     elseif msg == "RCMLAwardFailed" then
         local session, winner, status = unpack({...})
@@ -249,7 +250,7 @@ function RCEPGP:UpdateGPEditbox()
         local t = lootTable[session]
         if t then
             local gp = GP:GetValue(t.link) or 0
-            RCVotingFrame.frame.gpEditbox:SetNumber(gp)
+            RCVotingFrame:GetFrame().gpEditbox:SetNumber(gp)
         end
     end
 end
@@ -346,8 +347,8 @@ function RCEPGP:SetupColumns()
 
     self:ResponseSortPRNext()
 
-    if RCVotingFrame.frame then
-        RCVotingFrame.frame.UpdateSt()
+    if RCVotingFrame:GetFrame() then
+        RCVotingFrame:GetFrame().UpdateSt()
     end
 end
 
@@ -544,20 +545,22 @@ function RCEPGP.PRSort(table, rowa, rowb, sortbycol)
 end
 
 ----------------------------------------------------------------
-function RCEPGP:AddGPEditBox()
-    if not RCVotingFrame.frame.gpString then
-        local gpstr = RCVotingFrame.frame.content:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-        gpstr:SetPoint("CENTER", RCVotingFrame.frame.content, "TOPLEFT", 300, - 60)
+function RCEPGP:AddWidgetsIntoVotingFrame()
+    local f = RCVotingFrame:GetFrame()
+
+    if not f.gpString then
+        local gpstr = f.content:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+        gpstr:SetPoint("CENTER", f.content, "TOPLEFT", 300, - 60)
         gpstr:SetText("GP: ")
         gpstr:Show()
         gpstr:SetTextColor(1, 1, 0, 1) -- Yellow
-        RCVotingFrame.frame.gpString = gpstr
+        f.gpString = gpstr
     end
 
 
     local editbox_name = "RCLootCouncil_GP_EditBox"
-    if not RCVotingFrame.frame.gpEditbox then
-        local editbox = _G.CreateFrame("EditBox", editbox_name, RCVotingFrame.frame.content, "AutoCompleteEditBoxTemplate")
+    if not f.gpEditbox then
+        local editbox = _G.CreateFrame("EditBox", editbox_name, f.content, "AutoCompleteEditBoxTemplate")
         editbox:SetWidth(40)
         editbox:SetHeight(32)
         editbox:SetFontObject("ChatFontNormal")
@@ -591,7 +594,7 @@ function RCEPGP:AddGPEditBox()
         editbox.mid = mid
         --editbox.label = label
 
-        editbox:SetPoint("LEFT", RCVotingFrame.frame.gpString, "RIGHT", 10, 0)
+        editbox:SetPoint("LEFT", f.gpString, "RIGHT", 10, 0)
         editbox:Show()
 
         -- Auto release Focus after 3s editbox is not used
@@ -614,13 +617,23 @@ function RCEPGP:AddGPEditBox()
         -- Clear focus when rightclick menu opens.
         if not self:IsHooked(_G["Lib_DropDownList1"], "OnShow") then
             self:SecureHookScript(_G["Lib_DropDownList1"], "OnShow", function()
-                if RCVotingFrame.frame and RCVotingFrame.frame.gpEditbox then
-                    RCVotingFrame.frame.gpEditbox:ClearFocus()
+                if f and f.gpEditbox then
+                    f.gpEditbox:ClearFocus()
                 end
             end)
         end
-        RCVotingFrame.frame.gpEditbox = editbox
+        f.gpEditbox = editbox
     end
+
+    if not f.awdGPstr then
+        local awdGPstr = f.content:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+        awdGPstr:SetPoint("BOTTOM", f.awardString, "TOP", 7.5, 3)
+        --awdGPstr:SetText("+1000 GP")
+        awdGPstr:SetTextColor(1, 1, 1, 1) -- White
+        awdGPstr:Show()
+        f.awdGPstr = awdGPstr
+    end
+
 end
 
 -- "response" needs to be the response id(Number), or the button name(not response name)
@@ -717,7 +730,7 @@ local function GetGPInfo(name)
     and name and lootTable[session].candidates[name] then
         local data = lootTable[session].candidates[name]
         local responseGP = RCEPGP:GetResponseGP(data.response, data.isTier, data.isRelic)
-        local editboxGP = RCVotingFrame.frame.gpEditbox:GetNumber()
+        local editboxGP = RCVotingFrame:GetFrame().gpEditbox:GetNumber()
         local gp = RCEPGP:GetFinalGP(responseGP, editboxGP)
         local item = lootTable[session].link
         local bid = RCEPGP:GetBid(name)
