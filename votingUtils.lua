@@ -122,6 +122,7 @@ end
 
 -- MAKESURE all messages are registered
 -- MAKESURE all empty settings reseted to default when RCUpdateDB
+-- MAKESURE statement are executed after the OnMessageReceived of RCLootCouncil if needed.
 function RCEPGP:OnMessageReceived(msg, ...)
     self:DebugPrint("ReceiveMessage", msg)
     if msg == "RCCustomGPRuleChanged" then
@@ -176,7 +177,7 @@ function RCEPGP:OnCommReceived(prefix, serializedMsg, distri, sender)
         if test then
             if command == "change_response" then
                 self:DebugPrint("ReceiveComm", command, unpack(data))
-                self:RefreshMenu(1)
+                C_Timer.After(0, function() self:RefreshMenu(1) end) -- to ensure this is run after RCVotingFrame:OnCommReceived of "change_response"
             elseif command == "RCEPGP_VersionBroadcast" or command == "RCEPGP_VersionReply" then
                 local otherVersion, otherTestVersion = unpack(data)
 

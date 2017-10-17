@@ -2,7 +2,8 @@
 ---
 - New Feature: automatic screenshot when an item is awarded.
   - Disabled by default. Enable this in the setting("/rc epgp")
-
+###### Bugfixes
+- Fix a bug that sometimes when you change response in the rightclick menu of voting frame, the content of rightclick menu is not refreshed.
 
 
 ### v2.0.1
