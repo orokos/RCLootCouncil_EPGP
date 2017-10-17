@@ -210,7 +210,7 @@ function RCEPGP:RefreshOptionsTable()
                                 type = "toggle",
                                 width = "full",
                             },
-                            screenshotONlyWithGP = {
+                            screenshotOnlyWithGP = {
                                 name = LEP["Screenshot only when GP is awarded"],
                                 order = 2,
                                 disabled = function() return not self:GetGeneraldb().screenshotOnAward end,

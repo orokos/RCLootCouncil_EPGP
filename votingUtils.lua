@@ -77,6 +77,7 @@ function RCEPGP:OnInitialize()
         biddingEnabled = false,
         screenshotOnAward = false,
         screenshotOnTestAward = false,
+        screenshotOnlyWithGP = false,
         screenshotOnAwardLater = false,
     }
     self:SetdbDefaults(self:GetGeneraldb(), self.generalDefaults, false)
@@ -132,7 +133,7 @@ function RCEPGP:OnMessageReceived(msg, ...)
     elseif msg == "RCMLAwardSuccess" then
         local session, winner, status = unpack({...})
 
-        if self:GetGeneraldb().screenshotOnAward and ((not self:GetGeneraldb().screenshotONlyWithGP) or (self:GetCurrentAwardingGP() and self:GetCurrentAwardingGP() > 0))then
+        if self:GetGeneraldb().screenshotOnAward and ((not self:GetGeneraldb().screenshotOnlyWithGP) or (self:GetCurrentAwardingGP() and self:GetCurrentAwardingGP() > 0))then
             if status == "normal" or (status == "test_mode" and self:GetGeneraldb().screenshotOnTestAward) then
                 RCVotingFrame:GetLootTable()[session].awarded = winner
                 RCVotingFrame:Update() -- Force to update the string thats shows the winner immediately. Should use a better way if RCLootCouncil changes API.
