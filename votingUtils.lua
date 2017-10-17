@@ -239,9 +239,8 @@ function RCEPGP:IsTestVersion(v)
 end
 
 function RCEPGP.UpdateVotingFrame()
-    if RCVotingFrame:GetFrame() and RCVotingFrame:GetFrame():IsShown() then
-        RCVotingFrame:Update()
-    end
+    -- Dont try to use RCVotingFrame:GetFrame() here, it causes lag on login.
+    RCVotingFrame:Update()
 end
 
 function RCEPGP:UpdateGPEditbox()
