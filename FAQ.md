@@ -1,5 +1,14 @@
 **Make sure you have read the [FAQ of RCLootCouncil](https://wow.curseforge.com/projects/rclootcouncil/pages/faq)**  
 
+**I installed the addon, but the addon is not in the in-game AddOn List.**  
+Make sure you installed in the correct path.
+If the path is correct, you should see the file "RCLootCouncil_EPGP.toc" under "WoW/Interface/Addons/RCLootCouncil_EPGP".
+Common mistake it that you put the addon file in an extra folder "WoW/Interface/Addons/RCLootCouncil_EPGP/RCLootCouncil_EPGP"
+
+**I installed and enabled the addon, but it seems the addon is not there.**  
+RCLootCouncil-EPGP depends on [RCLootCouncil](https://mods.curse.com/addons/wow/rclootcouncil) and [EPGP(DKP reloaded)](https://mods.curse.com/addons/wow/epgp-dkp-reloaded).
+Make sure you have installed and enabled **RCLootCouncil** and **EPGP** in-game with RCLootCouncil-EPGP.
+RCLootCouncil-EPGP won't be loaded without those two addons.
 
 **I encountered a bug.  Whether I should report it to RCLootCouncil or RCLootCouncil-EPGP and How should I report it?**  
 If the problem is EPGP related(eg. GP is not awarded, calculated GP value is wrong), or cannot be reproduced with RCLootCouncil-EPGP disabled, you should report it to RCLootCouncil-EPGP. Report to RCLootCouncil otherwise.  
