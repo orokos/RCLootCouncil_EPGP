@@ -182,7 +182,7 @@ function RCEPGP:OnCommReceived(prefix, serializedMsg, distri, sender)
         if addon:HandleXRealmComms(RCVotingFrame, command, data, sender) then return end
 
         if test then
-            if command == "change_response" then
+            if command == "change_response" or command == "response" then
                 self:DebugPrint("ReceiveComm", command, unpack(data))
                 C_Timer.After(0, function() self:RefreshMenu(1) end) -- to ensure this is run after RCVotingFrame:OnCommReceived of "change_response"
             elseif command == "RCEPGP_awarded" then
