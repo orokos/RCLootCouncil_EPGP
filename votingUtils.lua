@@ -132,11 +132,15 @@ function RCEPGP:OnMessageReceived(msg, ...)
         self:RefreshMenu(level)
     elseif msg == "RCMLAwardSuccess" then
         local session, winner, status = unpack({...})
-
+        if (not RCVotingFrame:GetLootTable()) or (not RCVotingFrame:GetLootTable()[session]) then
+            return
+        end
         if self:GetGeneraldb().screenshotOnAward and ((not self:GetGeneraldb().screenshotOnlyWithGP) or (self:GetCurrentAwardingGP() and self:GetCurrentAwardingGP() > 0))then
             if status == "normal" or (status == "test_mode" and self:GetGeneraldb().screenshotOnTestAward) then
                 RCVotingFrame:GetLootTable()[session].awarded = winner
                 RCVotingFrame:Update() -- Force to update the string thats shows the winner immediately. Should use a better way if RCLootCouncil changes API.
+                RCVotingFrame:GetLootTable()[session].gpAwarded = gpAwarded -- duplicate, reason is the same as above. Should try to find a better way...
+                self:UpdateGPAwardString()
                 Screenshot()
             end
         end
@@ -148,7 +152,7 @@ function RCEPGP:OnMessageReceived(msg, ...)
                 EPGP:IncGPBy(winner, item, gp)
                 self:Debug("Awarded GP: ", winner, item, gp)
             end
-            addon:SendCommand("group", "RCEPGP_awarded", {session=session, winner=winner, gp=gp})
+            addon:SendCommand("group", "RCEPGP_awarded", {session=session, winner=winner, gpAwarded=gp})
         end
     elseif msg == "RCMLAwardFailed" then
         local session, winner, status = unpack({...})
@@ -159,6 +163,7 @@ function RCEPGP:OnMessageReceived(msg, ...)
         local s = unpack({...})
         session = s
         self:UpdateGPEditbox()
+        self:UpdateGPAwardString()
     elseif msg == "RCUpdateDB" then
         self:GetEPGPdb().version = self.version
         self:GetEPGPdb().tocVersion = self.tocVersion
@@ -180,6 +185,16 @@ function RCEPGP:OnCommReceived(prefix, serializedMsg, distri, sender)
             if command == "change_response" then
                 self:DebugPrint("ReceiveComm", command, unpack(data))
                 C_Timer.After(0, function() self:RefreshMenu(1) end) -- to ensure this is run after RCVotingFrame:OnCommReceived of "change_response"
+            elseif command == "RCEPGP_awarded" then
+                -- Dont award GP here.
+                self:DebugPrint("ReceiveComm", command, unpack(data))
+                local data = unpack(data)
+                local session, winner, gpAwarded = data.session, data.winner, data.gpAwarded
+                if (not RCVotingFrame:GetLootTable()) or (not RCVotingFrame:GetLootTable()[session]) then
+                    return
+                end
+                RCVotingFrame:GetLootTable()[session].gpAwarded = gpAwarded
+                self:UpdateGPAwardString()
             elseif command == "RCEPGP_VersionBroadcast" or command == "RCEPGP_VersionReply" then
                 local otherVersion, otherTestVersion = unpack(data)
 
@@ -239,7 +254,7 @@ function RCEPGP:IsTestVersion(v)
 end
 
 function RCEPGP.UpdateVotingFrame()
-    -- Dont try to use RCVotingFrame:GetFrame() here, it causes lag on login.
+    -- Dont try to use RCVotingFrame:GetFrame() here, it causes lag on login.w
     RCVotingFrame:Update()
 end
 
@@ -250,6 +265,28 @@ function RCEPGP:UpdateGPEditbox()
         if t then
             local gp = GP:GetValue(t.link) or 0
             RCVotingFrame:GetFrame().gpEditbox:SetNumber(gp)
+        end
+    end
+end
+
+function RCEPGP:UpdateGPAwardString()
+    if RCVotingFrame.frame and RCVotingFrame.frame.awdGPstr then
+        if (not RCVotingFrame:GetLootTable()) or (not RCVotingFrame:GetLootTable()[session]) then
+            return
+        end
+        local gpAwarded = RCVotingFrame:GetLootTable()[session].gpAwarded
+        if not gpAwarded then
+            RCVotingFrame.frame.awdGPstr:SetText("")
+            RCVotingFrame.frame.awdGPstr:Hide()
+        else
+            local text = ""
+            if gpAwarded >= 0 then
+                text = "GP   +"..gpAwarded
+            elseif gpAwarded < 0 then
+                text = "GP   "..gpAwarded
+            end
+            RCVotingFrame.frame.awdGPstr:SetText(text)
+            RCVotingFrame.frame.awdGPstr:Show()
         end
     end
 end
@@ -625,14 +662,13 @@ function RCEPGP:AddWidgetsIntoVotingFrame()
     end
 
     if not f.awdGPstr then
-        local awdGPstr = f.content:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-        awdGPstr:SetPoint("BOTTOM", f.awardString, "TOP", 7.5, 3)
-        --awdGPstr:SetText("+1000 GP")
-        awdGPstr:SetTextColor(1, 1, 1, 1) -- White
-        awdGPstr:Show()
+        local awdGPstr = f.content:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+        awdGPstr:SetPoint("BOTTOM", f.awardString, "TOP", 0, 1)
+        awdGPstr:SetText("GP   +1000")
+        awdGPstr:SetTextColor(1, 1, 0, 1) -- Yellow
+        awdGPstr:Hide()
         f.awdGPstr = awdGPstr
     end
-
 end
 
 -- "response" needs to be the response id(Number), or the button name(not response name)

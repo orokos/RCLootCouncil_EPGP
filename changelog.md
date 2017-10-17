@@ -2,6 +2,7 @@
 ---
 - New Feature: automatic screenshot when an item is awarded.
   - Disabled by default. Enable this in the setting("/rc epgp")
+- A string that shows the amount of GP awarded is displayed in the voting frame.
 ###### Bugfixes
 - Fix a bug that sometimes when you change response in the rightclick menu of voting frame, the content of rightclick menu is not refreshed.
 
