@@ -328,11 +328,16 @@ function lib:GetValue(item)
     else -- Error
         formula = RCCustomGP:GetDefaultFormulaFunc()
         formula = setfenv(formula, fenv)
-        high = formula()
+        high = tonumber(formula())
         RCCustomGP:AnnounceRuntimeError(value)
     end
 
-    high = math.floor(0.5 + high)
+    if high then
+        high = math.floor(0.5 + high)
+    else
+        high = 0
+    end
+
     RCEPGP:DebugPrint("ItemGPUpdate", itemLink, high)
     gpCache[itemLink] = high
     return high, nil, level, rarity, equipLoc
