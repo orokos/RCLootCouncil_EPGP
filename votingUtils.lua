@@ -14,7 +14,7 @@ local LibDialog = LibStub("LibDialog-1.0")
 local RCLootCouncilML = addon:GetModule("RCLootCouncilML")
 
 -- MAKESURE: Edit the following versions every update, and should also update the version in TOC file.
-RCEPGP.version = "2.1.0"
+RCEPGP.version = "2.1.1"
 RCEPGP.testVersion = "Release"
 							   -- format: Release/Beta/Alpha.num
 							   -- testVersion compares only by number. eg. "Alpha.2" > "Beta.1"
