@@ -765,6 +765,7 @@ function RCEPGP:GetGPAndResponseGPText(gp, responseGP)
 end
 
 local function GetGPInfo(name)
+    name = RCEPGP:GetEPGPName(name) -- IMPORTANT!
     local lootTable = RCVotingFrame:GetLootTable()
     if lootTable and lootTable[session] and lootTable[session].candidates
     and name and lootTable[session].candidates[name] then

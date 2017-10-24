@@ -1,3 +1,8 @@
+### v2.1.1
+---
+###### Bugfixes
+- Fix a bug of wrong capitalization of Russian character name.
+
 ### v2.1
 ---
 - New Feature: automatic screenshot when an item is awarded.
