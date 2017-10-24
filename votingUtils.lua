@@ -149,8 +149,8 @@ function RCEPGP:OnMessageReceived(msg, ...)
             local gp = self:GetCurrentAwardingGP()
             local item = RCVotingFrame:GetLootTable() and RCVotingFrame:GetLootTable()[session] and RCVotingFrame:GetLootTable()[session].link
             if item and gp and gp ~= 0 then
-                EPGP:IncGPBy(winner, item, gp)
-                self:Debug("Awarded GP: ", winner, item, gp)
+                EPGP:IncGPBy(self:GetEPGPName(winner), item, gp) -- Fix GP not awarded for Russian name.
+                self:Debug("Awarded GP: ", self:GetEPGPName(winner), item, gp)
             end
             addon:SendCommand("group", "RCEPGP_awarded", {session=session, winner=winner, gpAwarded=gp})
         end
@@ -764,6 +764,7 @@ function RCEPGP:GetGPAndResponseGPText(gp, responseGP)
     return text
 end
 
+-- v2.1.1: We don't use RCEPGP:GetEPGPName() here because we need to use RC name for fetch RC data
 local function GetGPInfo(name)
     local lootTable = RCVotingFrame:GetLootTable()
     if lootTable and lootTable[session] and lootTable[session].candidates
@@ -774,7 +775,6 @@ local function GetGPInfo(name)
         local gp = RCEPGP:GetFinalGP(responseGP, editboxGP)
         local item = lootTable[session].link
         local bid = RCEPGP:GetBid(name)
-        name = RCEPGP:GetEPGPName(name) -- IMPORTANT to after RCEPGP:GetBid()
         return data, name, item, responseGP, gp, bid
     else -- Error occurs
         return nil, "UNKNOWN", "UNKNOWN", "UNKNOWN", 0, 0 -- nil protection
