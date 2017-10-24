@@ -765,7 +765,6 @@ function RCEPGP:GetGPAndResponseGPText(gp, responseGP)
 end
 
 local function GetGPInfo(name)
-    name = RCEPGP:GetEPGPName(name) -- IMPORTANT!
     local lootTable = RCVotingFrame:GetLootTable()
     if lootTable and lootTable[session] and lootTable[session].candidates
     and name and lootTable[session].candidates[name] then
@@ -775,6 +774,7 @@ local function GetGPInfo(name)
         local gp = RCEPGP:GetFinalGP(responseGP, editboxGP)
         local item = lootTable[session].link
         local bid = RCEPGP:GetBid(name)
+        name = RCEPGP:GetEPGPName(name) -- IMPORTANT to after RCEPGP:GetBid()
         return data, name, item, responseGP, gp, bid
     else -- Error occurs
         return nil, "UNKNOWN", "UNKNOWN", "UNKNOWN", 0, 0 -- nil protection
