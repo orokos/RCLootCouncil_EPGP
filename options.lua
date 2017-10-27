@@ -142,7 +142,7 @@ function RCEPGP:RefreshOptionsTable()
                 order = 3,
             },
             generalTab = {
-                name = LEP["General"],
+                name = _G.GENERAL,
                 order = 5,
                 type = "group",
                 get = self.GeneralOptionGetter,
@@ -183,13 +183,13 @@ function RCEPGP:RefreshOptionsTable()
                         },
                     },
                     bidding = {
-                        name = LEP["Bidding"],
+                        name = _G.BID,
                         order = 5,
                         type = "group",
                         inline = true,
                         args = {
                             biddingEnabled = {
-                                name = LEP["Enable Bidding"],
+                                name = _G.ENABLE,
                                 desc = LEP["bidding_desc"],
                                 order = 1,
                                 type = "toggle",
@@ -199,7 +199,7 @@ function RCEPGP:RefreshOptionsTable()
                         },
                     },
                     screenshot = {
-                        name = LEP["Screenshot"],
+                        name = _G.BINDING_NAME_SCREENSHOT, -- "Screen shot"
                         order = 6,
                         type = "group",
                         inline = true,
@@ -234,7 +234,7 @@ function RCEPGP:RefreshOptionsTable()
                         },
                     },
                     restoreDefault = {
-                        name = L["Reset to default"],
+                        name = _G.RESET_TO_DEFAULT,
                         order = 1000,
                         type = "execute",
                         func = function() self:GeneralRestoreToDefault() end,
@@ -255,7 +255,7 @@ function RCEPGP:RefreshOptionsTable()
                         width = "full",
                     },
                     customGPEnabled = {
-                        name = LEP["enable_custom_gp"],
+                        name = _G.ENABLE,
                         order = 2,
                         type = "toggle",
                         width = "double",
@@ -317,7 +317,7 @@ function RCEPGP:RefreshOptionsTable()
                         width = "full",
                     },
                     restoreDefault = {
-                        name = L["Reset to default"],
+                        name = _G.RESET_TO_DEFAULT,
                         order = 1000,
                         type = "execute",
                         func = function() RCCustomGP:RestoreToDefault() end,
@@ -353,7 +353,7 @@ function RCEPGP:RefreshOptionsTable()
                             func = function() RCCustomEPGUI:ShowFrame() end,
                         },
                         restoreDefault = {
-                            name = L["Reset to default"],
+                            name = _G.RESET_TO_DEFAULT,
                             order = 4,
                             type = "execute",
                             func = function() RCCustomEP:RestoreToDefault() end,

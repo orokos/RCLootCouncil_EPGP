@@ -226,11 +226,11 @@ function RCEPGP:OnEvent(event, ...)
         C_Timer.After(2, function() self:BroadcastVersion("group") end)
     elseif event == "SCREENSHOT_SUCCEEDED" then
         if RCVotingFrame:GetFrame() and RCVotingFrame:GetFrame():IsShown() then
-            self:Print(LEP["Screenshot succeeded"])
+            self:Print(_G.SCREENSHOT_SUCCESS)
         end
     elseif event == "SCREENSHOT_FAILED" then
         if RCVotingFrame:GetFrame() and RCVotingFrame:GetFrame():IsShown() then
-            self:Print("|cffff0000"..LEP["Screenshot failed"].."|r")
+            self:Print("|cffff0000".._G.SCREENSHOT_FAILURE.."|r")
         end
     end
 end
@@ -844,14 +844,14 @@ LibDialog:Register("RCEPGP_CONFIRM_AWARD", {
         end
     end,
     buttons = {
-        { text = L["Yes"],
+        { text = _G.YES,
             on_click = function(self, data)
                 currentAwardingGP = data and data.gp or 0
                 RCLootCouncilML.AwardPopupOnClickYes(self, data) -- GP Award is handled in RCEPGP:OnMessageReceived()
                 currentAwardingGP = 0
             end,
         },
-        { text = L["No"],
+        { text = _G.NO,
             on_click = function(self, data)
                 RCLootCouncilML.AwardPopupOnClickNo(self, data)
             end,
@@ -1234,7 +1234,7 @@ function RCEPGP:IncGPBy(name, reason, amount)
         name = self:GetEPGPName("player")
     elseif name == "%t" then
         if not UnitExists("target") then
-            self:Print(LEP["error_no_target"])
+            self:Print(L["You must select a target"])
             return
         end
         name = self:GetEPGPName("target")

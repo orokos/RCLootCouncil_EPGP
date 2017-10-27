@@ -11,7 +11,6 @@ L["announce_awards_desc2"] = [=[
 RCLootCouncil-EPGP: #diffgp# for the amount of GP the player gains from the item. #ep# for the EP of player. #gp# for the GP of player before getting the item. #pr# for the PR of player before getting the item. #newgp# for the GP of player after getting the item. #newpr# for the PR of player after getting the item.]=]
 L["announce_formula_runtime_error"] = "Your GP formula has runtime error. Default formula is used when error occurs."
 L["Award GP (Default: %s)"] = "Award GP (Default: %s)"
-L["Bidding"] = "Bidding"
 L["bidding_desc"] = "Player can send bid price to the loot master by sending a note that starts with integer in the RCLootCouncil popup."
 L["chat_commands"] = "- epgp      - Open the RCLootCouncil-EPGP options interface"
 L["Credit GP to %s"] = "Credit GP to %s"
@@ -23,12 +22,8 @@ You need to define a formula that calculates the GP value for the gear.
 You can choose to disable this feature, to calculated GP in the default way of EPGP(dkp reloaded).
 ]=]
 L["disable_gp_popup"] = "GP popup is automatically disabled by RCLootCouncil - EPGP."
-L["Enable Bidding"] = "Enable Bidding"
-L["enable_custom_gp"] = "Enable Custom GearPoints"
 L["EPGP_DKP_Reloaded_settings_received"] = "Received EPGP(dkp reloaded) settings through '/rc sync'."
-L["error_no_target"] = "Error. You don't have a target."
 L["forbidden_function_used"] = "A forbidden function is used in a formula, but has been blocked from doing so. Please check if your formulas contain any malicious code!"
-L["General"] = "General"
 L["GP Bid"] = "GP Bid"
 L["gp_formula"] = "GP Formula"
 L["gp_formula_help"] = [=[Enter lua code that returns GP value in the editbox below.
@@ -65,9 +60,6 @@ L["new_version_detected"] = "Your version %s is outdated. Newer Version %s detec
 L["no_permission_to_edit_officer_note"] = "You don't have permission to edit officer note."
 L["rc_version_below_min_notification"] = "This version of RCLootCouncil-EPGP requires RCLootCouncil v%s+. Your RCLootCouncil is v%s. Please update your RCLootCouncil."
 L["RCEPGP_desc"] = "A RCLootCouncil plugin that adds EPGP support and customization. Author: Safetee"
-L["Screenshot"] = true
-L["Screenshot succeeded"] = true
-L["Screenshot failed"] = true
 L["Screenshot only when GP is awarded"] = true
 L["Screenshot when a item is awarded"] = true
 L["send_epgp_setting_desc"] = "If checked, '/rc sync' also sync EPGP(dkp reloaded) settings"

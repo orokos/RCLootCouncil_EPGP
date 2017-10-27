@@ -207,7 +207,7 @@ function RCCustomEP:IncEPBy(name, reason, amount)
         name = RCEPGP:GetEPGPName("player")
     elseif name == "%t" then
         if not UnitExists("target") then
-            RCEPGP:Print(LEP["error_no_target"])
+            RCEPGP:Print(L["You must select a target"])
             return
         end
         name = RCEPGP:GetEPGPName("target")
@@ -744,7 +744,7 @@ function RCCustomEP:IncMassEPBy(reason, amount, formulaIndexOrName, targetName, 
 
   if targetName == "%t" then
       if not UnitExists("%t") then
-          self:Print(LEP["error_no_target"])
+          self:Print(L["You must select a target"])
       else
           targetName = self:GetFullName("target")
       end
