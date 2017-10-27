@@ -38,7 +38,7 @@ local function GetGPInfo(data)
         local lastgp = RCEPGP:GetLastGPAmount(name, item) or 0
         return name, class, item, responseGP, gp, lastgp
     end
-    return "UNKNOWN", "UNKNOWN", "UNKNOWN", 0, 0, 0 -- nil protection
+    return _G.UNKNOWN, _G.UNKNOWN, _G.UNKNOWN, 0, 0, 0 -- nil protection
 end
 
 RCEPGPHistory.rightClickEntries = {
@@ -48,12 +48,10 @@ RCEPGPHistory.rightClickEntries = {
             notCheckable = true,
             notClickable = true,
             text = function(name, data)
-                local name, class, item, responseGP, gp, lastgp = GetGPInfo(data)
-                local text = ""
+                local name, class = GetGPInfo(data)
                 local color = addon:GetClassColor(class)
                 local colorCode = "|cff"..addon:RGBToHex(color.r, color.g, color.b)
-                text = format("%s%s|r", colorCode, Ambiguate(name, "short"))
-                return text
+                return format("%s%s|r", colorCode, Ambiguate(name, "short"))
             end,
         },
         { -- Button 2: Undo button
