@@ -31,11 +31,8 @@ local function GetGPInfo(data)
         local entry = lootDB[data.name][data.num]
         local name = RCEPGP:GetEPGPName(data.name)
         local class = entry.class
-        local isTier = entry.tokenRoll
-        local isRelic = entry.relicRoll
         local item = entry.lootWon
-        local responseID = entry.responseID
-        local responseGP = RCEPGP:GetResponseGP(responseID, isTier, isRelic) or 0
+        local responseGP = RCEPGP:GetResponseGP(entry.responseID, entry.tokenRoll, entry.relicRoll) or 0
         local itemgp = GP:GetValue(item) or 0
         local gp = RCEPGP:GetFinalGP(responseGP, itemgp) or 0
         local lastgp = RCEPGP:GetLastGPAmount(name, item) or 0
