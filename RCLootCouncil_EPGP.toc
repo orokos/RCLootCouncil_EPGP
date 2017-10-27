@@ -21,13 +21,13 @@
 Libs\embeds.xml
 Locale\Locales.xml
 
-core.lua
-CustomGP.lua
-CustomEP.lua
-lootHistory.lua
-CustomEPGUI.lua
+Modules\core.lua
+Modules\CustomGP.lua
+Modules\CustomEP.lua
+Modules\lootHistory.lua
+Modules\CustomEPGUI.lua
 
-options.lua
+Modules\options.lua
 
-Util/popups.lua
-Util/SecureEnv.lua
+Util\popups.lua
+Util\SecureEnv.lua
