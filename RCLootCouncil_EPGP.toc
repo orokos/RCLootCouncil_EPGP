@@ -29,5 +29,7 @@ Modules\CustomEPGUI.lua
 
 Modules\options.lua
 
+Util\EPGPSettingSync.lua
 Util\popups.lua
 Util\SecureEnv.lua
+
