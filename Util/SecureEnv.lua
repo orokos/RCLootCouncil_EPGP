@@ -2,6 +2,7 @@
 -- @author: Safetee
 -- 10/27/2017
 local RCEPGP = addon:GetModule("RCLootCouncil-EPGP")
+local LEP = LibStub("AceLocale-3.0"):GetLocale("RCEPGP")
 
 local B = {} -- blocked functions
 -- Set the value below
