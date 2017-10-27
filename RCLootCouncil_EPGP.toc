@@ -30,3 +30,4 @@ CustomEPGUI.lua
 options.lua
 
 Util/popups.lua
+Util/SecureEnv.lua
