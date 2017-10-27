@@ -52,7 +52,7 @@ RCEPGPHistory.rightClickEntries = {
                 local text = ""
                 local color = addon:GetClassColor(class)
                 local colorCode = "|cff"..addon:RGBToHex(color.r, color.g, color.b)
-                text = string.format("%s%s|r", colorCode, Ambiguate(name, "short"))
+                text = format("%s%s|r", colorCode, Ambiguate(name, "short"))
                 return text
             end,
         },
@@ -70,7 +70,7 @@ RCEPGPHistory.rightClickEntries = {
             end,
             text = function(name, data)
                 local name, class, item, responseGP, gp, lastgp = GetGPInfo(data)
-                return string.format(LEP["Undo GP"].." (%s)", -lastgp)
+                return format(LEP["Undo GP"].." (%s)", -lastgp)
             end,
             disabled = function(name, data)
                 local name, class, item, responseGP, gp, lastgp = GetGPInfo(data)
@@ -91,9 +91,9 @@ RCEPGPHistory.rightClickEntries = {
             end,
             text = function(name, data)
                 local name, class, item, responseGP, gp, lastgp = GetGPInfo(data)
-                local text = string.format(LEP["Award GP (Default: %s)"], gp)
+                local text = format(LEP["Award GP (Default: %s)"], gp)
                 if string.match(responseGP, "^%d+%%") then
-                    text = string.format(LEP["Award GP (Default: %s)"], gp..", "..responseGP)
+                    text = format(LEP["Award GP (Default: %s)"], gp..", "..responseGP)
                 end
                 return text
             end,

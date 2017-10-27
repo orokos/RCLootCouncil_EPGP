@@ -201,11 +201,11 @@ function RCEPGP:OnCommReceived(prefix, serializedMsg, distri, sender)
                 -- Only report test version updates if a test version is installed.
                 if self:IsTestVersion(self.testVersion) or (not self:IsTestVersion(otherTestVersion)) then
                     if addon:VersionCompare(newestVersionDetected, otherVersion) then
-                        self:Print(string.format(LEP["new_version_detected"], self.version.."-"..self.testVersion, otherVersion.."-"..otherTestVersion))
+                        self:Print(format(LEP["new_version_detected"], self.version.."-"..self.testVersion, otherVersion.."-"..otherTestVersion))
                         newestVersionDetected = otherVersion
                         newestTestVersionDetected = otherTestVersion
                     elseif newestVersionDetected == otherVersion and self:TestVersionCompare(newestTestVersionDetected, otherTestVersion) then
-                        self:Print(string.format(LEP["new_version_detected"], self.version.."-"..self.testVersion, otherVersion.."-"..otherTestVersion))
+                        self:Print(format(LEP["new_version_detected"], self.version.."-"..self.testVersion, otherVersion.."-"..otherTestVersion))
                         newestTestVersionDetected = otherTestVersion
                     end
                 end
@@ -495,7 +495,7 @@ function RCEPGP.SetCellPR(rowFrame, frame, data, cols, row, realrow, column, fSh
     if not pr then
         frame.text:SetText("?")
     else
-        frame.text:SetText(string.format("%.4g", pr))
+        frame.text:SetText(format("%.4g", pr))
     end
 
     data[realrow].cols[column].value = pr or 0
@@ -849,12 +849,12 @@ function RCEPGP:AddAnnouncement()
             local newpr = "?"
             ep, gp = EPGP:GetEPGP(name)
             if ep and gp then
-                pr = string.format("%.4g", ep / gp)
+                pr = format("%.4g", ep / gp)
             end
 
             if ep and gp then
                 newgp = math.floor(gp + self:GetCurrentAwardingGP() + 0.5)
-                newpr = string.format("%.4g", ep / newgp)
+                newpr = format("%.4g", ep / newgp)
             end
 
             if not ep then ep = "?" end
@@ -910,7 +910,7 @@ function RCEPGP:ShowSettingResetNotification()
         hideOnEscape = true,
     }
     StaticPopup_Show ("RCEPGP_SETTING_RESET", self.version.."-"..self.testVersion)
-    self:Print(string.format(LEP["setting_reset_notification"], self.version..self.testVersion))
+    self:Print(format(LEP["setting_reset_notification"], self.version..self.testVersion))
 end
 
 function RCEPGP:ShowNeedRestartNotification()
@@ -921,7 +921,7 @@ function RCEPGP:ShowNeedRestartNotification()
         hideOnEscape = true,
     }
     StaticPopup_Show ("RCEPGP_NEED_RESTART", self.version.."-"..self.testVersion)
-    self:Print(string.format(LEP["need_restart_notification"], self.version.."-"..self.testVersion))
+    self:Print(format(LEP["need_restart_notification"], self.version.."-"..self.testVersion))
 end
 
 function RCEPGP:ShowRCVersionBelowMinNotification()
@@ -932,7 +932,7 @@ function RCEPGP:ShowRCVersionBelowMinNotification()
         hideOnEscape = true,
     }
     StaticPopup_Show ("RCEPGP_RC_VERSION_BELOW_MIN", self.minRCVersion, addon.version)
-    self:Print(string.format(LEP["rc_version_below_min_notification"], self.minRCVersion, addon.version))
+    self:Print(format(LEP["rc_version_below_min_notification"], self.minRCVersion, addon.version))
 end
 
 -- Link table in RCEPGP's saved variable with EPGP's saved variable together.

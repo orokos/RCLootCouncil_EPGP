@@ -434,7 +434,7 @@ function RCEPGP:RefreshOptionsTable()
                     name = "Delete",
                     type = "execute",
                     order = 5,
-                    confirm = function() return string.format(LEP["ep_formula_delete_confirm"], i..". "..RCCustomEP.EPFormulaGetter(i, "name")) end,
+                    confirm = function() return format(LEP["ep_formula_delete_confirm"], i..". "..RCCustomEP.EPFormulaGetter(i, "name")) end,
                     func = function() table.remove(RCCustomEP:GetCustomEPdb().EPFormulas, i) end,
                 },
                 space3 = {
