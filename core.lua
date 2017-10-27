@@ -832,35 +832,6 @@ function RCEPGP:GetCurrentAwardingGP()
     return currentAwardingGP
 end
 
--- Dialog input is the same as RCLOOTCOUNCIL_CONFIRM_AWARD, plus "gp" and "resonseGP".
-LibDialog:Register("RCEPGP_CONFIRM_AWARD", {
-    text = "something_went_wrong",
-    icon = "",
-    on_show = function(self, data)
-        RCLootCouncilML.AwardPopupOnShow(self, data)
-        if data.gp then
-            local text = self.text:GetText().." "..RCEPGP:GetGPAndResponseGPText(data.gp, data.responseGP)
-            self.text:SetText(text)
-        end
-    end,
-    buttons = {
-        { text = _G.YES,
-            on_click = function(self, data)
-                currentAwardingGP = data and data.gp or 0
-                RCLootCouncilML.AwardPopupOnClickYes(self, data) -- GP Award is handled in RCEPGP:OnMessageReceived()
-                currentAwardingGP = 0
-            end,
-        },
-        { text = _G.NO,
-            on_click = function(self, data)
-                RCLootCouncilML.AwardPopupOnClickNo(self, data)
-            end,
-        },
-    },
-    hide_on_escape = true,
-    show_while_dead = true,
-})
-
 function RCEPGP:AddChatCommand()
     addon:CustomChatCmd(self, "OpenOptions", LEP["chat_commands"], "epgp")
     addon:CustomChatCmd(self, "IncGPBy", LEP["slash_rc_gp_help"], "gp")

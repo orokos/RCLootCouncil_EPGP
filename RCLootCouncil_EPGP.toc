@@ -21,10 +21,12 @@
 Libs\embeds.xml
 Locale\Locales.xml
 
-votingUtils.lua
+core.lua
 CustomGP.lua
 CustomEP.lua
 lootHistory.lua
 CustomEPGUI.lua
 
 options.lua
+
+Util/popups.lua
