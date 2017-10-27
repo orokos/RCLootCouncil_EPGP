@@ -26,19 +26,6 @@ function RCEPGPHistory:OnMessageReceived(msg, ...)
     end
 end
 
-function RCEPGPHistory:GetEPGPNameByGuild(name)
-    for i = 1, GetNumGuildMembers() do
-        local fullName = GetGuildRosterInfo(index)
-        if fullName then
-            local shortName = Ambiguate(fullName, "short")
-            if shortName == Ambiguate(name, "short") then
-                return fullName
-            end
-        end
-    end
-    return name
-end
-
 local function GetGPInfo(data)
     if data then
         local entry = lootDB[data.name][data.num]
