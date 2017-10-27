@@ -4,7 +4,7 @@ end
 -- TODO: this feature is not available in v2.0
 
 local addon = LibStub("AceAddon-3.0"):GetAddon("RCLootCouncil")
-local RCEPGP = addon:GetModule("RCEPGP")
+local RCEPGP = addon:GetModule("RCLootCouncil-EPGP")
 local RCCustomEP = RCEPGP:GetModule("RCCustomEP")
 local RCCustomEPGUI = RCEPGP:NewModule("RCCustomEPGUI", "AceEvent-3.0")
 local L = LibStub("AceLocale-3.0"):GetLocale("RCLootCouncil")

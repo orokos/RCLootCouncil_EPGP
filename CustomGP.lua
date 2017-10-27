@@ -1,7 +1,7 @@
 -- A library to compute Gear Points for items as described in
 -- http://code.google.com/p/epgp/wiki/GearPoints
 local addon = LibStub("AceAddon-3.0"):GetAddon("RCLootCouncil")
-local RCEPGP = addon:GetModule("RCEPGP")
+local RCEPGP = addon:GetModule("RCLootCouncil-EPGP")
 local RCCustomGP = RCEPGP:NewModule("RCCustomGP", "AceConsole-3.0", "AceEvent-3.0")
 local LEP = LibStub("AceLocale-3.0"):GetLocale("RCEPGP")
 

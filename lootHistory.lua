@@ -1,5 +1,5 @@
 local addon = LibStub("AceAddon-3.0"):GetAddon("RCLootCouncil")
-local RCEPGP = addon:GetModule("RCEPGP")
+local RCEPGP = addon:GetModule("RCLootCouncil-EPGP")
 local RCEPGPHistory = RCEPGP:NewModule("RCEPGPHistory", "AceComm-3.0", "AceConsole-3.0", "AceHook-3.0", "AceEvent-3.0", "AceTimer-3.0")
 local EPGP = LibStub("AceAddon-3.0"):GetAddon("EPGP")
 local GS = LibStub("LibGuildStorage-1.2")

@@ -1,7 +1,7 @@
 if true then return end -- TODO: this feature is not available in v2.0
 
 local addon = LibStub("AceAddon-3.0"):GetAddon("RCLootCouncil")
-local RCEPGP = addon:GetModule("RCEPGP")
+local RCEPGP = addon:GetModule("RCLootCouncil-EPGP")
 local RCCustomEP = RCEPGP:NewModule("RCCustomEP", "AceConsole-3.0", "AceEvent-3.0", "AceHook-3.0", "AceComm-3.0")
 local LEP = LibStub("AceLocale-3.0"):GetLocale("RCEPGP")
 local EPGP = LibStub("AceAddon-3.0"):GetAddon("EPGP")

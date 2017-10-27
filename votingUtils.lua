@@ -4,7 +4,7 @@ DEBUG = false
 --@end-debug@
 
 local addon = LibStub("AceAddon-3.0"):GetAddon("RCLootCouncil")
-local RCEPGP = addon:NewModule("RCEPGP", "AceComm-3.0", "AceConsole-3.0", "AceHook-3.0", "AceEvent-3.0", "AceTimer-3.0", "AceSerializer-3.0")
+local RCEPGP = addon:NewModule("RCLootCouncil-EPGP", "AceComm-3.0", "AceConsole-3.0", "AceHook-3.0", "AceEvent-3.0", "AceTimer-3.0", "AceSerializer-3.0")
 local EPGP = LibStub("AceAddon-3.0"):GetAddon("EPGP")
 local GS = LibStub("LibGuildStorage-1.2")
 local L = LibStub("AceLocale-3.0"):GetLocale("RCLootCouncil")
@@ -1058,45 +1058,6 @@ function RCEPGP:DebugPrint(msg, ...)
 		end
 	end
 end
-
--- Copy from AceConsole:Print. Just replaced "tostring(self)" to "RCLootCouncil - EPGP".
--- Also resloves the display problem when the string is too long.
-local tmp={}
-local function Print(self,frame,...)
-	local n=0
-	if self ~= AceConsole then
-		n=n+1
-		tmp[n] = "|cff33ff99".."RCLootCouncil - EPGP".."|r:"
-	end
-	for i=1, select("#", ...) do
-		n=n+1
-		tmp[n] = tostring(select(i, ...))
-	end
-
-    local msg = table.concat(tmp," ",1,n)
-    for _,line in ipairs({strsplit("\n", msg)}) do
-        if line == "" then
-            frame:AddMessage(" ")
-        else
-            frame:AddMessage(line)
-        end
-    end
-end
-
--- Copy from AceConsole:Print
---- Print to DEFAULT_CHAT_FRAME or given ChatFrame (anything with an .AddMessage function)
--- @paramsig [chatframe ,] ...
--- @param chatframe Custom ChatFrame to print to (or any frame with an .AddMessage function)
--- @param ... List of any values to be printed
-function RCEPGP:Print(...)
-	local frame = ...
-	if type(frame) == "table" and frame.AddMessage then	-- Is first argument something with an .AddMessage member?
-		return Print(self, frame, select(2,...))
-	else
-		return Print(self, DEFAULT_CHAT_FRAME, ...)
-	end
-end
-
 
 -- Custom function environment to be used in Custom GP and custom EP.
 -- Some code is copy and paste from WeakAuras 2
