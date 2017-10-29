@@ -5,24 +5,23 @@ local L = LibStub("AceLocale-3.0"):GetLocale("RCLootCouncil")
 local LEP = LibStub("AceLocale-3.0"):GetLocale("RCEPGP")
 local GP = LibStub("LibGearPoints-1.2")
 
--- key: the command
--- func: the command function. Executed by '/rc command'
--- help: The help message shown in '/rc help'
--- helpDetailed: the help message of command. Printed by '/rc command help'
-RCEPGP.SlashCmds = {
-	["epgp"] = {func = RCEPGP.OpenOptions, help = LEP["chat_commands"], helpDetailed = nil, permission = false},
-	["gp"] = {func = RCEPGP.IncGPBy, help = LEP["slash_rc_gp_help"], helpDetailed = LEP["slash_rc_gp_help_detailed"], permission = true},
-	["undogp"] = {func = RCEPGP.UndoGP, help = LEP["slash_rc_undogp_help"], helpDetailed = LEP["slash_rc_undogp_help_detailed"], permission = true},
-}
-
 function RCEPGP:AddSlashCmds()
+	-- key: the command
+	-- func: the command function. Executed by '/rc command'
+	-- help: The help message shown in '/rc help'
+	-- helpDetailed: the help message of command. Printed by '/rc command help'
+	self.SlashCmds = {
+		["epgp"] = {func = RCEPGP.OpenOptions, help = LEP["chat_commands"], helpDetailed = nil, permission = false},
+		["gp"] = {func = RCEPGP.IncGPBy, help = LEP["slash_rc_gp_help"], helpDetailed = LEP["slash_rc_gp_help_detailed"], permission = true},
+		["undogp"] = {func = RCEPGP.UndoGP, help = LEP["slash_rc_undogp_help"], helpDetailed = LEP["slash_rc_undogp_help_detailed"], permission = true},
+	}
 	local i = 1
 	for command, v in pairs(self.SlashCmds) do
 		if v.func and v.help then
 			self["SlashCmdFunc"..i] = function(self, ...) self:ExecuteSlashCmd(command, ...) end
 			addon:CustomChatCmd(self, "SlashCmdFunc"..i, v.help, command)
 		else
-			error("SlashCmds func and help not specified.")
+			error("SlashCmds func and help not specified: "..command)
 		end
 		i = i + 1
 	end
