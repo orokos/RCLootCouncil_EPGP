@@ -96,7 +96,3 @@ function RCEPGP:UndoGP(name, reason)
 		return false
     end
 end
-
-function RCEPGP:AddChatCommand()
-
-end
