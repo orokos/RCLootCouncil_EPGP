@@ -116,7 +116,7 @@ function RCEPGP:OnInitialize()
     self:RefreshOptionsTable()
 
     self:AddGPOptions()
-    self:AddChatCommand()
+    self:AddSlashCmds()
     self:AddAnnouncement()
     self:SetupColumns()
 
@@ -835,12 +835,6 @@ RCEPGP.rightClickEntries = {
 
 function RCEPGP:GetCurrentAwardingGP()
     return currentAwardingGP
-end
-
-function RCEPGP:AddChatCommand()
-    addon:CustomChatCmd(self, "OpenOptions", LEP["chat_commands"], "epgp")
-    addon:CustomChatCmd(self, "IncGPBy", LEP["slash_rc_gp_help"], "gp")
-    addon:CustomChatCmd(self, "UndoGP", LEP["slash_rc_undogp_help"], "undogp")
 end
 
 function RCEPGP:AddAnnouncement()

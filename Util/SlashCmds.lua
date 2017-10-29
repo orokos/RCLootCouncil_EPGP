@@ -5,25 +5,43 @@ local L = LibStub("AceLocale-3.0"):GetLocale("RCLootCouncil")
 local LEP = LibStub("AceLocale-3.0"):GetLocale("RCEPGP")
 local GP = LibStub("LibGearPoints-1.2")
 
+-- key: the command
+-- func: the command function. Executed by '/rc command'
+-- help: The help message shown in '/rc help'
+-- helpDetailed: the help message of command. Printed by '/rc command help'
 RCEPGP.SlashCmds = {
-	["gp"] = {func = RCEPGP.IncGPBy, help = LEP["slash_rc_gp_help_detailed"]},
-	["undogp"] = {func = RCEPGP.UndoGP, help = LEP["slash_rc_undogp_help_detailed"]},
+	["epgp"] = {func = RCEPGP.OpenOptions, help = LEP["chat_commands"], helpDetailed = nil, permission = false},
+	["gp"] = {func = RCEPGP.IncGPBy, help = LEP["slash_rc_gp_help"], helpDetailed = LEP["slash_rc_gp_help_detailed"], permission = true},
+	["undogp"] = {func = RCEPGP.UndoGP, help = LEP["slash_rc_undogp_help"], helpDetailed = LEP["slash_rc_undogp_help_detailed"], permission = true},
 }
+
+function RCEPGP:AddSlashCmds()
+	local i = 1
+	for command, v in pairs(self.SlashCmds) do
+		if v.func and v.help then
+			self["SlashCmdFunc"..i] = function(self, ...) self:ExecuteSlashCmd(command, ...) end
+			addon:CustomChatCmd(self, "SlashCmdFunc"..i, v.help, command)
+		else
+			error("SlashCmds func and help not specified.")
+		end
+		i = i + 1
+	end
+end
 -- /rc command ...
 -- '/rc command help' shows the help of the command, if exists.
 -- Terminate the command if the player has no officer note permissions
 -- If the command function returns EXACTLY false, print command fails message.
 function RCEPGP:ExecuteSlashCmd(command, ...)
 	if self.SlashCmds[command] and self.SlashCmds[command].func then
-		if string.lower(select(1, ...)) == "help" and self.SlashCmds[command].help then
+		if self.SlashCmds[command].help and select(1, ...) and string.lower(tostring(select(1, ...))) == "help" then
 			self:Print(self.SlashCmds[command].help)
 			return
 		end
-		if not CanEditOfficerNote() then
+		if self.SlashCmds[command].permission and not CanEditOfficerNote() then
 			self:Print(LEP["no_permission_to_edit_officer_note"])
 			return
 		end
-		local ret = self.SlashCmds[command].func(...)
+		local ret = self.SlashCmds[command].func(self, ...)
 		if ret == false then
 			self:Print(LEP["slash_rc_command_failed"])
 		end
@@ -77,4 +95,8 @@ function RCEPGP:UndoGP(name, reason)
     else
 		return false
     end
+end
+
+function RCEPGP:AddChatCommand()
+
 end
