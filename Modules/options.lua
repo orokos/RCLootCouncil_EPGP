@@ -1,5 +1,5 @@
 local addon = LibStub("AceAddon-3.0"):GetAddon("RCLootCouncil")
-local RCEPGP = addon:GetModule("RCLootCouncil-EPGP")
+local RCEPGP = addon:GetModule("RCEPGP")
 local RCCustomGP = RCEPGP:GetModule("RCCustomGP", true)
 --local RCCustomEP = RCEPGP:GetModule("RCCustomEP", true) -- TODO
 --local RCCustomEPGUI = RCEPGP:GetModule("RCCustomEPGUI", true)

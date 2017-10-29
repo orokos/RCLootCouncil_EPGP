@@ -21,15 +21,7 @@
 Libs\embeds.xml
 Locale\Locales.xml
 
-Modules\core.lua
-Modules\CustomGP.lua
-Modules\CustomEP.lua
-Modules\lootHistory.lua
-Modules\CustomEPGUI.lua
+core.lua
 
-Modules\options.lua
-
-Util\EPGPSettingSync.lua
-Util\popups.lua
-Util\SecureEnv.lua
-
+Modules\Modules.xml
+Util\Util.xml

@@ -4,7 +4,7 @@ DEBUG = false
 --@end-debug@
 
 local addon = LibStub("AceAddon-3.0"):GetAddon("RCLootCouncil")
-local RCEPGP = addon:NewModule("RCLootCouncil-EPGP", "AceComm-3.0", "AceConsole-3.0", "AceHook-3.0", "AceEvent-3.0", "AceTimer-3.0", "AceSerializer-3.0")
+local RCEPGP = addon:NewModule("RCEPGP", "AceComm-3.0", "AceConsole-3.0", "AceHook-3.0", "AceEvent-3.0", "AceTimer-3.0", "AceSerializer-3.0")
 local EPGP = LibStub("AceAddon-3.0"):GetAddon("EPGP")
 local GS = LibStub("LibGuildStorage-1.2")
 local L = LibStub("AceLocale-3.0"):GetLocale("RCLootCouncil")

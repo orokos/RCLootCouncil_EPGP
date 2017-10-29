@@ -1,7 +1,8 @@
 --- Provide a secure environment to execute user code.
 -- @author: Safetee
 -- 10/27/2017
-local RCEPGP = addon:GetModule("RCLootCouncil-EPGP")
+local addon = LibStub("AceAddon-3.0"):GetAddon("RCLootCouncil")
+local RCEPGP = addon:GetModule("RCEPGP")
 local LEP = LibStub("AceLocale-3.0"):GetLocale("RCEPGP")
 
 local B = {} -- blocked functions
@@ -62,7 +63,7 @@ B["CalendarEventSetTitle"] = true
 B["CalendarNewEvent"] = true
 B["CalendarNewGuildAnnouncement"] = true
 B["CalendarNewGuildEvent"] = true
-B["CalendarRemoveEvent"] = true,
+B["CalendarRemoveEvent"] = true
 B["CancelAuction"] = true
 B["CancelSell"] = true
 B["CreateFont"] = true
@@ -76,7 +77,7 @@ B["DepositGuildBankMoney"] = true
 B["DevTools_DumpCommand"] = true
 B["DisableAddOn"] = true
 B["DisableAllAddOns"] = true
-B["EditMacro"] = true,
+B["EditMacro"] = true
 B["EnableAddOn"] = true
 B["EnableAllAddOns"] = true
 B["EnumerateFrames"] = true
@@ -90,7 +91,7 @@ B["GuildControlShiftRankDown"] = true
 B["GuildControlShiftRankUp"] = true
 B["GuildDemote"] = true
 B["GuildDisband"] = true
-B["GuildLeave"] = true,
+B["GuildLeave"] = true
 B["GuildPromote"] = true
 B["GuildRosterSetOfficerNote"] = true
 B["GuildRosterSetPublicNote"] = true
@@ -116,7 +117,7 @@ B["PickupMerchantItem"] = true
 B["PickupPetAction"] = true
 B["PickupPetAction"] = true
 B["PickupPlayerMoney"] = true
-B["PickupPlayerMoney"] = true,
+B["PickupPlayerMoney"] = true
 B["PickupSpell"] = true
 B["PickupStablePet"] = true
 B["PickupTradeMoney"] = true
@@ -162,6 +163,6 @@ B["StaticPopup_Show"] = true
 B["StaticPopupDialogs"] = true
 B["TradeFrame"] = true
 B["UIParent"] = true
-B["UninviteUnit"] = true,
-B["WithdrawGuildBankMoney"] = true,
+B["UninviteUnit"] = true
+B["WithdrawGuildBankMoney"] = true
 B["WorldFrame"] = true

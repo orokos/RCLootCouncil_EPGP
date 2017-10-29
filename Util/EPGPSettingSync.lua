@@ -2,6 +2,7 @@
 -- @author: Safetee
 -- 10/27/2017
 
+local addon = LibStub("AceAddon-3.0"):GetAddon("RCLootCouncil")
 local RCEPGP = addon:GetModule("RCLootCouncil-EPGP")
 local EPGP = LibStub("AceAddon-3.0"):GetAddon("EPGP")
 
