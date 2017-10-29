@@ -13,6 +13,11 @@ local GP = LibStub("LibGearPoints-1.2")
 local LibDialog = LibStub("LibDialog-1.0")
 local RCLootCouncilML = addon:GetModule("RCLootCouncilML")
 
+-- Set the addon name for self:Print()
+local RCEPGPMetaTable = getmetatable(RCEPGP)
+RCEPGPMetaTable.__tostring = function() return "RCLootCouncil-EPGP" end
+setmetatable(RCEPGP, RCEPGPMetaTable)
+
 -- MAKESURE: Edit the following versions every update, and should also update the version in TOC file.
 RCEPGP.version = "2.1.1"
 RCEPGP.testVersion = "Release"
