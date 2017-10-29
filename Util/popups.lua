@@ -11,10 +11,29 @@ local GP = LibStub("LibGearPoints-1.2")
 local LibDialog = LibStub("LibDialog-1.0")
 local RCLootCouncilML = addon:GetModule("RCLootCouncilML")
 
+function RCEPGP:ShowNotification(msg)
+	self:Print(msg)
+	LibDialog:Spawn("RCEPGP_SHOW_NOTIFICATION", msg)
+end
+
+LibDialog:Register("RCEPGP_SHOW_NOTIFICATION", {
+    text = "something_went_wrong",
+	icon = "",
+	on_show = function(self, data)
+		self.text:SetText(data)
+	end,
+    buttons = {
+		{
+			text = _G.OKAY,
+		}
+	},
+    show_while_dead = true,
+    hideOnEscape = true,
+})
+
 -- Dialog input is the same as RCLOOTCOUNCIL_CONFIRM_AWARD, plus "gp" and "resonseGP".
 LibDialog:Register("RCEPGP_CONFIRM_AWARD", {
 	text = "something_went_wrong",
-	icon = "",
 	on_show = function(self, data)
 		RCLootCouncilML.AwardPopupOnShow(self, data)
 		if data.gp then

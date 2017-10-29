@@ -56,13 +56,13 @@ end
 
 function RCEPGP:OnInitialize()
     if addon:VersionCompare(addon.version, self.minRCVersion) then
-        self:ShowRCVersionBelowMinNotification()
+		self:ShowNotification(format(LEP["rc_version_below_min_notification"], self.minRCVersion, addon.version))
     end
     -- Added in v2.0
     local lastVersion = self:GetEPGPdb().version
     if not lastVersion then lastVersion = "1.9.2" end
     if (not self.isNewInstall) and addon:VersionCompare(self.tocVersion, self.lastVersionNeedingRestart) then
-        self:ShowNeedRestartNotification()
+		self:ShowNotification(format(LEP["need_restart_notification"], self.version.."-"..self.testVersion))
     end
 
     self:GetEPGPdb().version = self.version
@@ -74,7 +74,7 @@ function RCEPGP:OnInitialize()
         self:UpdateAnnounceKeyword_v2_0_0()
     end
     if (not self.isNewInstall) and addon:VersionCompare(lastVersion, self.lastVersionResetSetting) then
-        self:ShowSettingResetNotification()
+		self:ShowNotification(format(LEP["setting_reset_notification"], self.version.."-"..self.testVersion))
     end
 
     self.generalDefaults = {
@@ -899,39 +899,6 @@ end
 function RCEPGP:ReplyVersion(target)
     addon:SendCommand(target, "RCEPGP_VersionReply", self.version, self.testVersion)
     self:DebugPrint("SendComm", "RCEPGP_VersionReply", self.version, self.testVersion)
-end
-
-function RCEPGP:ShowSettingResetNotification()
-    StaticPopupDialogs["RCEPGP_SETTING_RESET"] = {
-        text = LEP["setting_reset_notification"],
-        button1 = OKAY,
-        whileDead = true,
-        hideOnEscape = true,
-    }
-    StaticPopup_Show ("RCEPGP_SETTING_RESET", self.version.."-"..self.testVersion)
-    self:Print(format(LEP["setting_reset_notification"], self.version..self.testVersion))
-end
-
-function RCEPGP:ShowNeedRestartNotification()
-    StaticPopupDialogs["RCEPGP_NEED_RESTART"] = {
-        text = LEP["need_restart_notification"],
-        button1 = OKAY,
-        whileDead = true,
-        hideOnEscape = true,
-    }
-    StaticPopup_Show ("RCEPGP_NEED_RESTART", self.version.."-"..self.testVersion)
-    self:Print(format(LEP["need_restart_notification"], self.version.."-"..self.testVersion))
-end
-
-function RCEPGP:ShowRCVersionBelowMinNotification()
-    StaticPopupDialogs["RCEPGP_RC_VERSION_BELOW_MIN"] = {
-        text = LEP["rc_version_below_min_notification"],
-        button1 = OKAY,
-        whileDead = true,
-        hideOnEscape = true,
-    }
-    StaticPopup_Show ("RCEPGP_RC_VERSION_BELOW_MIN", self.minRCVersion, addon.version)
-    self:Print(format(LEP["rc_version_below_min_notification"], self.minRCVersion, addon.version))
 end
 
 -- Link table in RCEPGP's saved variable with EPGP's saved variable together.
