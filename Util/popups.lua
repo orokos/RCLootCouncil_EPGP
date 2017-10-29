@@ -44,9 +44,9 @@ LibDialog:Register("RCEPGP_CONFIRM_AWARD", {
 	buttons = {
 		{ text = _G.YES,
 			on_click = function(self, data)
-				currentAwardingGP = data and data.gp or 0
+				RCEPGP:SetCurrentAwardingGP(data and data.gp or 0)
 				RCLootCouncilML.AwardPopupOnClickYes(self, data) -- GP Award is handled in RCEPGP:OnMessageReceived()
-				currentAwardingGP = 0
+				RCEPGP:SetCurrentAwardingGP(0)
 			end,
 		},
 		{ text = _G.NO,
