@@ -216,7 +216,7 @@ function RCEPGP:OnCommReceived(prefix, serializedMsg, distri, sender)
                 end
                 self:DebugPrint("ReceiveComm", command, unpack(data))
                 if command == "RCEPGP_VersionBroadcast" and (not UnitIsUnit("player", Ambiguate(sender, "short"))) then
-                    self:ReplyVersion(sender)
+                    addon:SendCommand(sender, "RCEPGP_VersionReply", self.version, self.testVersion)
                 end
             end
         end
@@ -226,9 +226,9 @@ end
 function RCEPGP:OnEvent(event, ...)
     self:DebugPrint("OnEvent", event, ...)
     if event == "PLAYER_LOGIN" then
-        C_Timer.After(5, function() self:BroadcastVersion("guild") end)
+        C_Timer.After(5, function() addon:SendCommand("guild", "RCEPGP_VersionBroadcast", self.version, self.testVersion) end)
     elseif event == "GROUP_JOINED" then
-        C_Timer.After(2, function() self:BroadcastVersion("group") end)
+        C_Timer.After(2, function() addon:SendCommand("group", "RCEPGP_VersionBroadcast", self.version, self.testVersion) end)
     elseif event == "SCREENSHOT_SUCCEEDED" then
         if RCVotingFrame:GetFrame() and RCVotingFrame:GetFrame():IsShown() then
             self:Print(_G.SCREENSHOT_SUCCESS)
@@ -458,16 +458,6 @@ end
 
 function RCEPGP:GetCurrentAwardingGP()
     return currentAwardingGP
-end
-
-function RCEPGP:BroadcastVersion(target)
-    addon:SendCommand(target, "RCEPGP_VersionBroadcast", self.version, self.testVersion)
-    self:DebugPrint("SendComm", "RCEPGP_VersionBroadcast", self.version, self.testVersion)
-end
-
-function RCEPGP:ReplyVersion(target)
-    addon:SendCommand(target, "RCEPGP_VersionReply", self.version, self.testVersion)
-    self:DebugPrint("SendComm", "RCEPGP_VersionReply", self.version, self.testVersion)
 end
 
 -- debug print and log
