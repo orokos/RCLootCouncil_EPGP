@@ -87,7 +87,6 @@ function RCEPGP:OnInitialize()
     }
     self:SetdbDefaults(self:GetGeneraldb(), self.generalDefaults, false)
 
-    self:RegisterMessage("RCCustomGPRuleChanged", "OnMessageReceived")
     self:RegisterMessage("RCMLAwardSuccess", "OnMessageReceived")
     self:RegisterMessage("RCMLAwardFailed", "OnMessageReceived")
     self:RegisterMessage("RCSessionChangedPre", "OnMessageReceived")
@@ -100,10 +99,6 @@ function RCEPGP:OnInitialize()
     self:RegisterEvent("SCREENSHOT_SUCCEEDED", "OnEvent")
     self:RegisterEvent("SCREENSHOT_FAILED", "OnEvent")
 
-    EPGP.RegisterCallback(self, "StandingsChanged", self.UpdateVotingFrame)
-
-    self:SecureHook(RCVotingFrame, "OnEnable", "AddWidgetsIntoVotingFrame")
-    self:AddRightClickMenu(_G["RCLootCouncil_VotingFrame_RightclickMenu"], RCVotingFrame.rightClickEntries, self.rightClickEntries)
     if ExtraUtilities then
         self:SecureHook(ExtraUtilities, "SetupColumns", function() self:SetupColumns() end)
         self:SecureHook(ExtraUtilities, "UpdateColumn", function() self:SetupColumns() end)
@@ -118,11 +113,9 @@ function RCEPGP:OnInitialize()
     self:AddGPOptions()
     self:AddSlashCmds()
     self:AddAnnouncement()
-    self:SetupColumns()
+
 
     self:EPGPDkpReloadedSettingToRC()
-
-    self:Add0GPSuffixToRCAwardButtons()
     self.initialize = true
 end
 
@@ -164,11 +157,6 @@ function RCEPGP:OnMessageReceived(msg, ...)
         if status == "bagged" and self:GetGeneraldb().screenshotOnAward and self:GetGeneraldb().screenshotOnAwardLater then
             Screenshot()
         end
-    elseif msg == "RCSessionChangedPre" then
-        local s = unpack({...})
-        session = s
-        self:UpdateGPEditbox()
-        self:UpdateGPAwardString()
     elseif msg == "RCUpdateDB" then
         self:GetEPGPdb().version = self.version
         self:GetEPGPdb().tocVersion = self.tocVersion
@@ -532,4 +520,19 @@ function RCEPGP:GetLastGPAmount(name, reason)
         end
     end
     return 0
+end
+
+
+
+function RCEPGP:RemoveColumn(t, column)
+    for i = 1, #t do
+        if t[i] and t[i].colName == column.colName then
+            table.remove(t, i)
+        end
+    end
+end
+
+function RCEPGP:ReinsertColumnAtTheEnd(t, column)
+    self:RemoveColumn(t, column)
+    table.insert(t, column)
 end

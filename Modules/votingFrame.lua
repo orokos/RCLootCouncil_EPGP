@@ -9,15 +9,40 @@ local LibDialog = LibStub("LibDialog-1.0")
 local RCLootCouncilML = addon:GetModule("RCLootCouncilML")
 local ExtraUtilities = addon:GetModule("RCExtraUtilities", true) -- nil if ExtraUtilites not enabled.
 local RCVotingFrame = addon:GetModule("RCVotingFrame")
+local RCVF = RCEPGP:NewModule("RCEPGPVotingFrame", "AceComm-3.0", "AceConsole-3.0", "AceHook-3.0", "AceEvent-3.0", "AceTimer-3.0", "AceSerializer-3.0")
 
-function RCEPGP.UpdateVotingFrame()
+function RCVF:OnInitialize()
+	self:SecureHook(RCVotingFrame, "OnEnable", "AddWidgetsIntoVotingFrame")
+	self:RegisterMessage("RCCustomGPRuleChanged", "OnMessageReceived")
+	self:RegisterMessage("RCSessionChangedPre", "OnMessageReceived")
+	EPGP.RegisterCallback(self, "StandingsChanged", self.UpdateVotingFrame)
+    self:SetupColumns()
+	RCEPGP:AddRightClickMenu(_G["RCLootCouncil_VotingFrame_RightclickMenu"], RCVotingFrame.rightClickEntries, self.rightClickEntries)
+	self:Add0GPSuffixToRCAwardButtons()
+	self.initialize = true
+end
+
+function RCVF:OnMessageReceived(msg, ...)
+    RCEPGP:DebugPrint("RCVF", "ReceiveMessage", msg)
+    if msg == "RCCustomGPRuleChanged" then
+        RCEPGP:DebugPrint("Refresh menu due to GP rule changed.")
+        self:UpdateGPEditbox()
+        RCEPGP:RefreshMenu(level)
+	elseif msg == "RCSessionChangedPre" then
+		local s = unpack({...})
+		session = s
+		self:UpdateGPEditbox()
+		self:UpdateGPAwardString()
+	end
+end
+function RCVF.UpdateVotingFrame()
     -- Dont try to use RCVotingFrame:GetFrame() here, it causes lag on login.
 	if RCVotingFrame.frame then
     	RCVotingFrame:Update()
 	end
 end
 
-function RCEPGP:UpdateGPEditbox()
+function RCVF:UpdateGPEditbox()
     local lootTable = RCVotingFrame:GetLootTable()
     if lootTable then
         local t = lootTable[session]
@@ -28,7 +53,7 @@ function RCEPGP:UpdateGPEditbox()
     end
 end
 
-function RCEPGP:UpdateGPAwardString()
+function RCVF:UpdateGPAwardString()
     if RCVotingFrame.frame and RCVotingFrame.frame.awdGPstr then
         if (not RCVotingFrame:GetLootTable()) or (not RCVotingFrame:GetLootTable()[session]) then
             return
@@ -50,20 +75,15 @@ function RCEPGP:UpdateGPAwardString()
     end
 end
 
-local function RemoveColumn(t, column)
-    for i = 1, #t do
-        if t[i] and t[i].colName == column.colName then
-            table.remove(t, i)
+function RCVF:GetScrollColIndexFromName(colName)
+    for i, v in ipairs(RCVotingFrame.scrollCols) do
+        if v.colName == colName then
+            return i
         end
     end
 end
 
-local function ReinsertColumnAtTheEnd(t, column)
-    RemoveColumn(t, column)
-    table.insert(t, column)
-end
-
-function RCEPGP:SetupColumns()
+function RCVF:SetupColumns()
     local ep =
     { name = "EP", DoCellUpdate = self.SetCellEP, colName = "ep", sortnext = self:GetScrollColIndexFromName("response"), width = 60, align = "CENTER", defaultsort = "dsc" }
     local gp =
@@ -74,14 +94,14 @@ function RCEPGP:SetupColumns()
     { name = "Bid", DoCellUpdate = self.SetCellBid, colName = "bid", sortnext = self:GetScrollColIndexFromName("response"), width = 50, align = "CENTER",
     defaultsort = "dsc" }
 
-    ReinsertColumnAtTheEnd(RCVotingFrame.scrollCols, ep)
-    ReinsertColumnAtTheEnd(RCVotingFrame.scrollCols, gp)
-    ReinsertColumnAtTheEnd(RCVotingFrame.scrollCols, pr)
+    RCEPGP:ReinsertColumnAtTheEnd(RCVotingFrame.scrollCols, ep)
+    RCEPGP:ReinsertColumnAtTheEnd(RCVotingFrame.scrollCols, gp)
+    RCEPGP:ReinsertColumnAtTheEnd(RCVotingFrame.scrollCols, pr)
 
-    if self:GetGeneraldb().biddingEnabled then
-        ReinsertColumnAtTheEnd(RCVotingFrame.scrollCols, bid)
+    if RCEPGP:GetGeneraldb().biddingEnabled then
+        RCEPGP:ReinsertColumnAtTheEnd(RCVotingFrame.scrollCols, bid)
     else
-        RemoveColumn(RCVotingFrame.scrollCols, bid)
+        RCEPGP:RemoveColumn(RCVotingFrame.scrollCols, bid)
     end
 
     self:ResponseSortPRNext()
@@ -91,15 +111,7 @@ function RCEPGP:SetupColumns()
     end
 end
 
-function RCEPGP:GetScrollColIndexFromName(colName)
-    for i, v in ipairs(RCVotingFrame.scrollCols) do
-        if v.colName == colName then
-            return i
-        end
-    end
-end
-
-function RCEPGP:ResponseSortPRNext()
+function RCVF:ResponseSortPRNext()
     local responseIdx = self:GetScrollColIndexFromName("response")
     local prIdx = self:GetScrollColIndexFromName("pr")
     if responseIdx then
@@ -110,7 +122,7 @@ end
 local COLOR_RED = "|cFFFF0000"
 local COLOR_GREY = "|cFF808080"
 
-function RCEPGP.SetCellEP(rowFrame, frame, data, cols, row, realrow, column, fShow, table, ...)
+function RCVF.SetCellEP(rowFrame, frame, data, cols, row, realrow, column, fShow, table, ...)
     local name = data[realrow].name
     name = RCEPGP:GetEPGPName(name)
     local ep, gp, main = EPGP:GetEPGP(name)
@@ -124,7 +136,7 @@ function RCEPGP.SetCellEP(rowFrame, frame, data, cols, row, realrow, column, fSh
     data[realrow].cols[column].value = ep or 0
 end
 
-function RCEPGP.SetCellGP(rowFrame, frame, data, cols, row, realrow, column, fShow, table, ...)
+function RCVF.SetCellGP(rowFrame, frame, data, cols, row, realrow, column, fShow, table, ...)
     local name = data[realrow].name
     name = RCEPGP:GetEPGPName(name)
     local ep, gp, main = EPGP:GetEPGP(name)
@@ -136,7 +148,7 @@ function RCEPGP.SetCellGP(rowFrame, frame, data, cols, row, realrow, column, fSh
     data[realrow].cols[column].value = gp or 0
 end
 
-function RCEPGP.SetCellPR(rowFrame, frame, data, cols, row, realrow, column, fShow, table, ...)
+function RCVF.SetCellPR(rowFrame, frame, data, cols, row, realrow, column, fShow, table, ...)
     local name = data[realrow].name
     name = RCEPGP:GetEPGPName(name)
     local ep, gp, main = EPGP:GetEPGP(name)
@@ -154,7 +166,7 @@ function RCEPGP.SetCellPR(rowFrame, frame, data, cols, row, realrow, column, fSh
     data[realrow].cols[column].value = pr or 0
 end
 
-function RCEPGP:GetBid(name)
+function RCVF:GetBid(name)
     local lootTable = RCVotingFrame:GetLootTable()
 
     -- nil protection
@@ -168,7 +180,7 @@ function RCEPGP:GetBid(name)
     end
 end
 
-function RCEPGP.SetCellBid(rowFrame, frame, data, cols, row, realrow, column, fShow, table, ...)
+function RCVF.SetCellBid(rowFrame, frame, data, cols, row, realrow, column, fShow, table, ...)
     local name = data[realrow].name
     local bid = RCEPGP:GetBid(name)
     if bid then
@@ -180,7 +192,7 @@ function RCEPGP.SetCellBid(rowFrame, frame, data, cols, row, realrow, column, fS
     end
 end
 
-function RCEPGP.PRSort(table, rowa, rowb, sortbycol)
+function RCVF.PRSort(table, rowa, rowb, sortbycol)
     local column = table.cols[sortbycol]
     local a, b = table:GetRow(rowa), table:GetRow(rowb);
     -- Extract the rank index from the name, fallback to 100 if not found
@@ -234,7 +246,7 @@ function RCEPGP.PRSort(table, rowa, rowb, sortbycol)
 end
 
 ----------------------------------------------------------------
-function RCEPGP:AddWidgetsIntoVotingFrame()
+function RCVF:AddWidgetsIntoVotingFrame()
     local f = RCVotingFrame:GetFrame()
 
     if not f.gpString then
@@ -339,14 +351,14 @@ local function GetGPInfo(name)
         local editboxGP = RCVotingFrame:GetFrame().gpEditbox:GetNumber()
         local gp = RCEPGP:GetFinalGP(responseGP, editboxGP)
         local item = lootTable[session].link
-        local bid = RCEPGP:GetBid(name)
+        local bid = RCVF:GetBid(name)
         return data, name, item, responseGP, gp, bid
     else -- Error occurs
         return nil, "UNKNOWN", "UNKNOWN", "UNKNOWN", 0, 0 -- nil protection
     end
 end
 
-RCEPGP.rightClickEntries = {
+RCVF.rightClickEntries = {
     { -- Level 1
         { -- Button 1
             pos = 2,
@@ -393,7 +405,7 @@ RCEPGP.rightClickEntries = {
     },
 }
 
-function RCEPGP:Add0GPSuffixToRCAwardButtons()
+function RCVF:Add0GPSuffixToRCAwardButtons()
     for _, entry in ipairs(RCVotingFrame.rightClickEntries[1]) do
         if entry.text == L["Award"] then
             entry.text = L["Award"].." (0 GP)"
@@ -402,5 +414,5 @@ function RCEPGP:Add0GPSuffixToRCAwardButtons()
             entry.text = L["Award for ..."].." (0 GP)"
         end
     end
-    self:DebugPrint("Added 0GP suffix to RC Award Buttons.")
+    RCEPGP:DebugPrint("Added 0GP suffix to RC Award Buttons.")
 end
