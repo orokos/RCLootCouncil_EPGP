@@ -198,47 +198,6 @@ function RCEPGP:RefreshOptionsTable()
                             },
                         },
                     },
-                    screenshot = {
-                        name = _G.BINDING_NAME_SCREENSHOT, -- "Screen shot"
-                        order = 6,
-                        type = "group",
-                        inline = true,
-                        args = {
-                            screenshotOnAward = {
-                                name = LEP["Screenshot when a item is awarded"],
-                                order = 1,
-                                type = "toggle",
-                                width = "full",
-                            },
-                            screenshotOnlyWithGP = {
-                                name = LEP["Screenshot only when GP is awarded"],
-                                order = 2,
-                                disabled = function() return not self:GetGeneraldb().screenshotOnAward end,
-                                type = "toggle",
-                                width = "full",
-                            },
-                            screenshotOnTestAward = {
-                                name = LEP["Also screenshot in test mode"],
-                                order = 3,
-                                disabled = function() return not self:GetGeneraldb().screenshotOnAward end,
-                                type = "toggle",
-                                width = "full",
-                            },
-                            screenshotOnAwardLater = {
-                                name = LEP["Also screenshot when the item is bagged and will be awarded later"],
-                                order = 4,
-                                disabled = function() return not self:GetGeneraldb().screenshotOnAward end,
-                                type = "toggle",
-                                width = "full",
-                            },
-                        },
-                    },
-                    restoreDefault = {
-                        name = _G.RESET_TO_DEFAULT,
-                        order = 1000,
-                        type = "execute",
-                        func = function() self:GeneralRestoreToDefault() end,
-                    },
                 },
             },
             gpTab = {

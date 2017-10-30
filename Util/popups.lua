@@ -34,6 +34,7 @@ LibDialog:Register("RCEPGP_SHOW_NOTIFICATION", {
 -- Dialog input is the same as RCLOOTCOUNCIL_CONFIRM_AWARD, plus "gp" and "resonseGP".
 LibDialog:Register("RCEPGP_CONFIRM_AWARD", {
 	text = "something_went_wrong",
+	icon = "",
 	on_show = function(self, data)
 		RCLootCouncilML.AwardPopupOnShow(self, data)
 		if data.gp then

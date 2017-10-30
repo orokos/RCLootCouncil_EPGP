@@ -42,8 +42,6 @@ local newestTestVersionDetected = RCEPGP.testVersion
 
 local currentAwardingGP = 0
 
-
-
 function RCEPGP:GetEPGPdb()
     if not addon:Getdb().epgp then
         addon:Getdb().epgp = {}
@@ -80,10 +78,6 @@ function RCEPGP:OnInitialize()
     self.generalDefaults = {
         sendEPGPSettings = true,
         biddingEnabled = false,
-        screenshotOnAward = false,
-        screenshotOnTestAward = false,
-        screenshotOnlyWithGP = false,
-        screenshotOnAwardLater = false,
     }
     self:SetdbDefaults(self:GetGeneraldb(), self.generalDefaults, false)
 
@@ -96,8 +90,6 @@ function RCEPGP:OnInitialize()
 
     self:RegisterEvent("PLAYER_LOGIN", "OnEvent")
     self:RegisterEvent("GROUP_JOINED", "OnEvent")
-    self:RegisterEvent("SCREENSHOT_SUCCEEDED", "OnEvent")
-    self:RegisterEvent("SCREENSHOT_FAILED", "OnEvent")
 
     if ExtraUtilities then
         self:SecureHook(ExtraUtilities, "SetupColumns", function() self:SetupColumns() end)
@@ -124,38 +116,22 @@ end
 -- MAKESURE statement are executed after the OnMessageReceived of RCLootCouncil if needed.
 function RCEPGP:OnMessageReceived(msg, ...)
     self:DebugPrint("ReceiveMessage", msg)
-    if msg == "RCCustomGPRuleChanged" then
-        self:DebugPrint("Refresh menu due to GP rule changed.")
-        self:UpdateGPEditbox()
-        self:RefreshMenu(level)
-    elseif msg == "RCMLAwardSuccess" then
+	if msg == "RCMLAwardSuccess" then
         local session, winner, status = unpack({...})
         if (not RCVotingFrame:GetLootTable()) or (not RCVotingFrame:GetLootTable()[session]) then
             return
         end
-        if self:GetGeneraldb().screenshotOnAward and ((not self:GetGeneraldb().screenshotOnlyWithGP) or (self:GetCurrentAwardingGP() and self:GetCurrentAwardingGP() > 0))then
-            if status == "normal" or (status == "test_mode" and self:GetGeneraldb().screenshotOnTestAward) then
-                RCVotingFrame:GetLootTable()[session].awarded = winner
-                RCVotingFrame:Update() -- Force to update the string thats shows the winner immediately. Should use a better way if RCLootCouncil changes API.
-                RCVotingFrame:GetLootTable()[session].gpAwarded = self:GetCurrentAwardingGP() -- duplicate, reason is the same as above. Should try to find a better way...
-                RCVF:UpdateGPAwardString()
-                Screenshot()
-            end
-        end
 
         if winner then
             local gp = self:GetCurrentAwardingGP()
-            local item = RCVotingFrame:GetLootTable() and RCVotingFrame:GetLootTable()[session] and RCVotingFrame:GetLootTable()[session].link
-            if item and gp and gp ~= 0 then
-                EPGP:IncGPBy(self:GetEPGPName(winner), item, gp) -- Fix GP not awarded for Russian name.
-                self:Debug("Awarded GP: ", self:GetEPGPName(winner), item, gp)
-            end
-            addon:SendCommand("group", "RCEPGP_awarded", {session=session, winner=winner, gpAwarded=gp})
-        end
-    elseif msg == "RCMLAwardFailed" then
-        local session, winner, status = unpack({...})
-        if status == "bagged" and self:GetGeneraldb().screenshotOnAward and self:GetGeneraldb().screenshotOnAwardLater then
-            Screenshot()
+			RCVotingFrame:GetLootTable()[session].gpAwarded = gp -- This line exists because of undo button in rightclick menu
+			addon:SendCommand("group", "RCEPGP_awarded", {session=session, winner=winner, gpAwarded=gp})
+
+			local item = RCVotingFrame:GetLootTable() and RCVotingFrame:GetLootTable()[session] and RCVotingFrame:GetLootTable()[session].link
+			if item and gp and gp ~= 0 then
+				EPGP:IncGPBy(RCEPGP:GetEPGPName(winner), item, gp) -- Fix GP not awarded for Russian name.
+				self:Debug("Awarded GP: ", self:GetEPGPName(winner), item, gp)
+			end
         end
     elseif msg == "RCUpdateDB" then
         self:GetEPGPdb().version = self.version
@@ -175,20 +151,7 @@ function RCEPGP:OnCommReceived(prefix, serializedMsg, distri, sender)
         if addon:HandleXRealmComms(RCVotingFrame, command, data, sender) then return end
 
         if test then
-            if command == "change_response" or command == "response" then
-                self:DebugPrint("ReceiveComm", command, unpack(data))
-                C_Timer.After(0, function() self:RefreshMenu(1) end) -- to ensure this is run after RCVotingFrame:OnCommReceived of "change_response"
-            elseif command == "RCEPGP_awarded" then
-                -- Dont award GP here.
-                self:DebugPrint("ReceiveComm", command, unpack(data))
-                local data = unpack(data)
-                local session, winner, gpAwarded = data.session, data.winner, data.gpAwarded
-                if (not RCVotingFrame:GetLootTable()) or (not RCVotingFrame:GetLootTable()[session]) then
-                    return
-                end
-                RCVotingFrame:GetLootTable()[session].gpAwarded = gpAwarded
-                self:UpdateGPAwardString()
-            elseif command == "RCEPGP_VersionBroadcast" or command == "RCEPGP_VersionReply" then
+            if command == "RCEPGP_VersionBroadcast" or command == "RCEPGP_VersionReply" then
                 local otherVersion, otherTestVersion = unpack(data)
 
                 -- Only report test version updates if a test version is installed.
@@ -217,14 +180,6 @@ function RCEPGP:OnEvent(event, ...)
         C_Timer.After(5, function() addon:SendCommand("guild", "RCEPGP_VersionBroadcast", self.version, self.testVersion) end)
     elseif event == "GROUP_JOINED" then
         C_Timer.After(2, function() addon:SendCommand("group", "RCEPGP_VersionBroadcast", self.version, self.testVersion) end)
-    elseif event == "SCREENSHOT_SUCCEEDED" then
-        if RCVotingFrame:GetFrame() and RCVotingFrame:GetFrame():IsShown() then
-            self:Print(_G.SCREENSHOT_SUCCESS)
-        end
-    elseif event == "SCREENSHOT_FAILED" then
-        if RCVotingFrame:GetFrame() and RCVotingFrame:GetFrame():IsShown() then
-            self:Print("|cffff0000".._G.SCREENSHOT_FAILURE.."|r")
-        end
     end
 end
 

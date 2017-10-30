@@ -14,14 +14,20 @@ local RCVF = RCEPGP:NewModule("RCEPGPVotingFrame", "AceComm-3.0", "AceConsole-3.
 local session = 1
 
 function RCVF:OnInitialize()
-	self:SecureHook(RCVotingFrame, "OnEnable", "AddWidgetsIntoVotingFrame")
+	self:SecureHook(RCVotingFrame, "OnEnable", "OnVotingFrameEnable")
+	-- I really want to use self:RegisterComm("RCLootCouncil") instead of posthook, if I can ensure RCVF:OnCommReceived is executed after RCVotingFrame:OnCommReceived
+	self:SecureHook(RCVotingFrame, "OnCommReceived", "OnCommReceived")
 	self:RegisterMessage("RCCustomGPRuleChanged", "OnMessageReceived")
 	self:RegisterMessage("RCSessionChangedPre", "OnMessageReceived")
-	EPGP.RegisterCallback(self, "StandingsChanged", self.UpdateVotingFrame)
+	EPGP.RegisterCallback(self, "StandingsChanged", "UpdateVotingFrame")
     self:SetupColumns()
 	RCEPGP:AddRightClickMenu(_G["RCLootCouncil_VotingFrame_RightclickMenu"], RCVotingFrame.rightClickEntries, self.rightClickEntries)
 	self:Add0GPSuffixToRCAwardButtons()
 	self.initialize = true
+end
+
+function RCVF:OnVotingFrameEnable()
+	self:AddWidgetsIntoVotingFrame()
 end
 
 function RCVF:OnMessageReceived(msg, ...)
@@ -37,11 +43,41 @@ function RCVF:OnMessageReceived(msg, ...)
 		self:UpdateGPAwardString()
 	end
 end
-function RCVF.UpdateVotingFrame()
+
+function RCVF:OnCommReceived(_, prefix, serializedMsg, distri, sender)
+	if prefix == "RCLootCouncil" then
+		local test, command, data = addon:Deserialize(serializedMsg)
+		if addon:HandleXRealmComms(self, command, data, sender) then return end
+
+		if command == "change_response" or command == "response" then
+            RCEPGP:DebugPrint("ReceiveComm", command, unpack(data))
+            RCEPGP:RefreshMenu(1)
+        elseif command == "RCEPGP_awarded" then
+            RCEPGP:DebugPrint("ReceiveComm", command, unpack(data))
+            local data = unpack(data)
+            local s, winner, gpAwarded = data.session, data.winner, data.gpAwarded
+            if (not RCVotingFrame:GetLootTable()) or (not RCVotingFrame:GetLootTable()[s]) then
+                return
+            end
+            RCVotingFrame:GetLootTable()[s].gpAwarded = gpAwarded
+            self:UpdateGPAwardString()
+
+
+		end
+	end
+end
+
+
+function RCVF:UpdateVotingFrame()
     -- Dont try to use RCVotingFrame:GetFrame() here, it causes lag on login.
 	if RCVotingFrame.frame and session and RCVotingFrame:GetLootTable()[session] then
     	RCVotingFrame:Update()
+		RCVF:UpdateGPAwardString()
+		RCVF:UpdateGPEditbox()
 	end
+end
+
+function RCVF:OnEvent(event)
 end
 
 function RCVF:UpdateGPEditbox()
