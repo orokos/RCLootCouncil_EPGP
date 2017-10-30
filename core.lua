@@ -42,7 +42,7 @@ local newestTestVersionDetected = RCEPGP.testVersion
 
 local currentAwardingGP = 0
 
-local session = 1
+
 
 function RCEPGP:GetEPGPdb()
     if not addon:Getdb().epgp then
@@ -138,7 +138,7 @@ function RCEPGP:OnMessageReceived(msg, ...)
                 RCVotingFrame:GetLootTable()[session].awarded = winner
                 RCVotingFrame:Update() -- Force to update the string thats shows the winner immediately. Should use a better way if RCLootCouncil changes API.
                 RCVotingFrame:GetLootTable()[session].gpAwarded = self:GetCurrentAwardingGP() -- duplicate, reason is the same as above. Should try to find a better way...
-                self:UpdateGPAwardString()
+                RCVF:UpdateGPAwardString()
                 Screenshot()
             end
         end

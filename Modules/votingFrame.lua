@@ -11,6 +11,8 @@ local ExtraUtilities = addon:GetModule("RCExtraUtilities", true) -- nil if Extra
 local RCVotingFrame = addon:GetModule("RCVotingFrame")
 local RCVF = RCEPGP:NewModule("RCEPGPVotingFrame", "AceComm-3.0", "AceConsole-3.0", "AceHook-3.0", "AceEvent-3.0", "AceTimer-3.0", "AceSerializer-3.0")
 
+local session = 1
+
 function RCVF:OnInitialize()
 	self:SecureHook(RCVotingFrame, "OnEnable", "AddWidgetsIntoVotingFrame")
 	self:RegisterMessage("RCCustomGPRuleChanged", "OnMessageReceived")
@@ -37,7 +39,7 @@ function RCVF:OnMessageReceived(msg, ...)
 end
 function RCVF.UpdateVotingFrame()
     -- Dont try to use RCVotingFrame:GetFrame() here, it causes lag on login.
-	if RCVotingFrame.frame then
+	if RCVotingFrame.frame and session and RCVotingFrame:GetLootTable()[session] then
     	RCVotingFrame:Update()
 	end
 end
