@@ -2,7 +2,7 @@
 -- http://code.google.com/p/epgp/wiki/GearPoints
 local addon = LibStub("AceAddon-3.0"):GetAddon("RCLootCouncil")
 local RCEPGP = addon:GetModule("RCEPGP")
-local RCCustomGP = RCEPGP:NewModule("RCCustomGP", "AceConsole-3.0", "AceEvent-3.0", "AceBucket-3.0")
+local RCCustomGP = RCEPGP:NewModule("RCCustomGP", "AceConsole-3.0", "AceEvent-3.0", "AceBucket-3.0", "AceTimer-3.0")
 local LEP = LibStub("AceLocale-3.0"):GetLocale("RCEPGP")
 
 local MAJOR_VERSION = "LibGearPoints-1.2"
@@ -19,6 +19,10 @@ local db
 
 function RCCustomGP:OnInitialize()
 	db = RCEPGP:GetEPGPdb()
+	local success = self:LocalizeItemStatusText()
+	if not success then
+		return self:ScheduleTimer("OnInitialize", 1)
+	end
 	self.itemInfoCache = {}
 	self.gpCache = {}
     self.GPVariables = {
@@ -269,7 +273,7 @@ function RCCustomGP:IsItemHasKeyword(item, keyword)
     return false
 end
 
-local sampleItems =
+local statusTextItems =
 {
     Heroic = "|cffa335ee|Hitem:147425::::::::2:71::5:3:3562:1497:3528:::|h[Cord of Pilfered Rosaries]|h|r",
     Mythic = "|cffa335ee|Hitem:147425::::::::2:71::6:3:3563:1512:3528:::|h[Cord of Pilfered Rosaries]|h|r",
@@ -278,8 +282,27 @@ local sampleItems =
     Titanforged = "|cffa335ee|Hitem:147424::::::::2:71::3:3:3561:1507:3337:::|h[Treads of Violent Intrusion]|h|r",
 }
 
-for _, item in pairs(sampleItems) do -- Load item infos into memory
-    GetItemInfo(item)
+-- store the item status text in the saved variable\
+-- @param return if success. Should call this function again if failed.
+function RCCustomGP:LocalizeItemStatusText()
+	if not addon.db.global.localizedItemStatus or addon.db.global.localizedItemStatus.locale ~= GetLocale() then
+		addon.db.global.localizedItemStatus = {}
+		addon.db.global.localizedItemStatus.locale = GetLocale()
+	end
+
+	local success = true
+	for key, item in pairs(statusTextItems) do
+		if not addon.db.global.localizedItemStatus[key] then
+			GetItemInfo(item)
+			addon.db.global.localizedItemStatus[key] = GetTextLeft2(item)
+			if addon.db.global.localizedItemStatus[key] == "" then
+				success = false
+				addon.db.global.localizedItemStatus[key] = nil
+			end
+		end
+	end
+
+	return success
 end
 
 function RCCustomGP:IsItemNormalDifficulty(item)
@@ -287,21 +310,21 @@ function RCCustomGP:IsItemNormalDifficulty(item)
 end
 
 function RCCustomGP:IsItemHeroicDifficulty(item)
-    return self:IsItemHasKeyword(item, GetTextLeft2(sampleItems.Heroic))
+    return self:IsItemHasKeyword(item, addon.db.global.localizedItemStatus.Heroic)
 end
 
 function RCCustomGP:IsItemMythicDifficulty(item)
-    return self:IsItemHasKeyword(item, GetTextLeft2(sampleItems.Mythic))
+    return self:IsItemHasKeyword(item, addon.db.global.localizedItemStatus.Mythic)
 end
 
 function RCCustomGP:IsItemLFRDifficulty(item)
-    return self:IsItemHasKeyword(item, GetTextLeft2(sampleItems.LFR))
+    return self:IsItemHasKeyword(item, addon.db.global.localizedItemStatus.LFR)
 end
 
 function RCCustomGP:IsItemWarforged(item)
-    return self:IsItemHasKeyword(item, GetTextLeft2(sampleItems.Warforged))
+    return self:IsItemHasKeyword(item, addon.db.global.localizedItemStatus.Warforged)
 end
 
 function RCCustomGP:IsItemTitanforged(item)
-    return self:IsItemHasKeyword(item, GetTextLeft2(sampleItems.Titanforged))
+    return self:IsItemHasKeyword(item, addon.db.global.localizedItemStatus.Titanforged)
 end
