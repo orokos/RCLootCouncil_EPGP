@@ -148,8 +148,8 @@ function lib:GetValue(item)
             local variableName = entry.name
             local variableValue = entry.value(itemLink)
             itemData[variableName] = variableValue
-            RCEPGP:DebugPrint("CustomGPVariable", variableName, variableValue)
         end
+		RCEPGP:DebugPrint("CustomGPItemInfoUpdate", itemLink)
         RCCustomGP.itemInfoCache[itemLink] = itemData
     end
 
