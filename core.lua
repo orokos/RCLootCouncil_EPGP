@@ -8,6 +8,8 @@ local EPGP = LibStub("AceAddon-3.0"):GetAddon("EPGP")
 local L = LibStub("AceLocale-3.0"):GetLocale("RCLootCouncil")
 local LEP = LibStub("AceLocale-3.0"):GetLocale("RCEPGP")
 local RCVotingFrame = addon:GetModule("RCVotingFrame")
+local RCLootCouncilML = addon:GetModule("RCLootCouncilML")
+local GP = LibStub("LibGearPoints-1.2")
 
 local currentAwardingGP = 0
 local db
@@ -79,6 +81,7 @@ function RCEPGP:OnInitialize()
 
     self:RegisterMessage("RCMLAwardSuccess", "OnMessageReceived")
     self:RegisterMessage("RCUpdateDB", "OnMessageReceived")
+	self:RegisterMessage("RCMLAddItem", "OnMessageReceived")
 
     self:RegisterComm("RCLootCouncil", "OnCommReceived")
 
@@ -129,6 +132,9 @@ function RCEPGP:OnMessageReceived(msg, ...)
         db.testVersion = self.testVersion
         db.testTocVersion = self.testTocVersion
         self:RCToEPGPDkpReloadedSetting()
+	elseif msg == "RCMLAddItem" then
+		local item, session = unpack({...})
+		RCLootCouncilML.lootTable[session].gp = GP:GetValue(RCLootCouncilML.lootTable[session].link)
     end
 end
 
