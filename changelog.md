@@ -1,3 +1,9 @@
+### v2.2
+---
+- Improve performance when you are using custom GP.
+###### Bugfixes
+- Fix an issue in custom GP that causes the item list in EPGP's UI show unintended items.
+
 ### v2.1.1
 ---
 ###### Bugfixes
