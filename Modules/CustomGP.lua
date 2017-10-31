@@ -289,7 +289,7 @@ function RCCustomGP:LocalizeItemStatusText()
 		addon.db.global.localizedItemStatus = {}
 	end
 	if addon.db.global.localizedItemStatus.created ~= GetLocale() then
-		addon.db.global.localizedItemStatus.created = false
+		addon.db.global.localizedItemStatus = {}
 	end
 
 	local success = true
