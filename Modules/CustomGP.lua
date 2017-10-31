@@ -295,7 +295,7 @@ function RCCustomGP:LocalizeItemStatusText()
 		if not addon.db.global.localizedItemStatus[key] then
 			GetItemInfo(item)
 			addon.db.global.localizedItemStatus[key] = GetTextLeft2(item)
-			if addon.db.global.localizedItemStatus[key] == "" then
+			if not addon.db.global.localizedItemStatus[key] or addon.db.global.localizedItemStatus[key] == "" then
 				success = false
 				addon.db.global.localizedItemStatus[key] = nil
 			end
