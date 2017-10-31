@@ -157,7 +157,7 @@ function lib:GetValue(item)
     return high, nil, level, rarity, equipLoc
 end
 
---------------------End of GP Calculation -------------------------------
+--------------------Get the information of item -------------------------------
 
 function RCCustomGP:GetTokenInfo(itemLink)
     local id = addon:GetItemIDFromLink(itemLink)
@@ -165,61 +165,6 @@ function RCCustomGP:GetTokenInfo(itemLink)
     local slot = RCTokenTable[id]
     return ilvl, slot
 end
-
-local links =
-{
-    Heroic = "|cffa335ee|Hitem:147425::::::::2:71::5:3:3562:1497:3528:::|h[Cord of Pilfered Rosaries]|h|r",
-    Mythic = "|cffa335ee|Hitem:147425::::::::2:71::6:3:3563:1512:3528:::|h[Cord of Pilfered Rosaries]|h|r",
-    LFR = "|cffa335ee|Hitem:147424::::::::2:71::4:3:3564:1467:3528:::|h[Treads of Violent Intrusion]|h|r",
-    Warforged = "|cffa335ee|Hitem:147425::::::::2:71::3:3:3561:1487:3336:::|h[Cord of Pilfered Rosaries]|h|r",
-    Titanforged = "|cffa335ee|Hitem:147424::::::::2:71::3:3:3561:1507:3337:::|h[Treads of Violent Intrusion]|h|r",
-}
-
-for _, item in pairs(links) do -- Load item infos into memory
-    GetItemInfo(item)
-end
-
-local tooltip = LibStub("LibItemUtils-1.0").tooltip
-
-local function GetTextLeft2(link)
-    tooltip:SetOwner(UIParent, "ANCHOR_NONE")
-    tooltip:SetHyperlink(link)
-    if tooltip:NumLines() > 1 then
-        local line = getglobal(tooltip:GetName()..'TextLeft2')
-        if line and line.GetText then
-            local text = line:GetText()
-            if text:find("|c") then
-                text = text:sub(11, - 3) -- remove color code
-            end
-            tooltip:Hide()
-            return text
-        end
-    end
-    tooltip:Hide()
-    return ""
-end
-
-function RCCustomGP:IsItemHasKeyword(item, keyword)
-    if (not keyword) or keyword == "" then return false end
-    tooltip:SetOwner(UIParent, "ANCHOR_NONE")
-    tooltip:SetHyperlink(item)
-    if tooltip:NumLines() > 1 then
-        for i = 2, 5 do -- Check 4 lines, just in case.
-            local line = getglobal(tooltip:GetName()..'TextLeft'..i)
-            if line and line.GetText then
-                local text = line:GetText()
-                if text and text:find(keyword)then
-                    tooltip:Hide()
-                    return true
-                end
-            end
-        end
-    end
-    tooltip:Hide()
-    return false
-end
-
-------------------------------------------------------------------------------
 
 function RCCustomGP:GetRarityIlvlSlot(itemLink)
     local _, itemLink, rarity, level, _, itemClass, itemSubClass, _, equipLoc = GetItemInfo(itemLink)
@@ -283,26 +228,80 @@ function RCCustomGP:IsItemToken(itemLink)
     return not not self:GetTokenInfo(itemLink)
 end
 
+----- Get the difficulty/forged status of item --------------------------------------
+local tooltip = LibStub("LibItemUtils-1.0").tooltip
+
+local function GetTextLeft2(link)
+    tooltip:SetOwner(UIParent, "ANCHOR_NONE")
+    tooltip:SetHyperlink(link)
+    if tooltip:NumLines() > 1 then
+        local line = getglobal(tooltip:GetName()..'TextLeft2')
+        if line and line.GetText then
+            local text = line:GetText()
+            if text:find("|c") then
+                text = text:sub(11, - 3) -- remove color code
+            end
+            tooltip:Hide()
+            return text
+        end
+    end
+    tooltip:Hide()
+    return ""
+end
+
+function RCCustomGP:IsItemHasKeyword(item, keyword)
+    if (not keyword) or keyword == "" then return false end
+    tooltip:SetOwner(UIParent, "ANCHOR_NONE")
+    tooltip:SetHyperlink(item)
+    if tooltip:NumLines() > 1 then
+        for i = 2, 5 do -- Check 4 lines, just in case.
+            local line = getglobal(tooltip:GetName()..'TextLeft'..i)
+            if line and line.GetText then
+                local text = line:GetText()
+                if text and text:find(keyword)then
+                    tooltip:Hide()
+                    return true
+                end
+            end
+        end
+    end
+    tooltip:Hide()
+    return false
+end
+
+local sampleItems =
+{
+    Heroic = "|cffa335ee|Hitem:147425::::::::2:71::5:3:3562:1497:3528:::|h[Cord of Pilfered Rosaries]|h|r",
+    Mythic = "|cffa335ee|Hitem:147425::::::::2:71::6:3:3563:1512:3528:::|h[Cord of Pilfered Rosaries]|h|r",
+    LFR = "|cffa335ee|Hitem:147424::::::::2:71::4:3:3564:1467:3528:::|h[Treads of Violent Intrusion]|h|r",
+    Warforged = "|cffa335ee|Hitem:147425::::::::2:71::3:3:3561:1487:3336:::|h[Cord of Pilfered Rosaries]|h|r",
+    Titanforged = "|cffa335ee|Hitem:147424::::::::2:71::3:3:3561:1507:3337:::|h[Treads of Violent Intrusion]|h|r",
+}
+
+for _, item in pairs(sampleItems) do -- Load item infos into memory
+    GetItemInfo(item)
+end
+
 function RCCustomGP:IsItemNormalDifficulty(item)
     return not (self:IsItemHeroicDifficulty(item) or self:IsItemMythicDifficulty(item) or self:IsItemLFRDifficulty(item) )
 end
 
 function RCCustomGP:IsItemHeroicDifficulty(item)
-    return self:IsItemHasKeyword(item, GetTextLeft2(links.Heroic))
+    return self:IsItemHasKeyword(item, GetTextLeft2(sampleItems.Heroic))
 end
 
 function RCCustomGP:IsItemMythicDifficulty(item)
-    return self:IsItemHasKeyword(item, GetTextLeft2(links.Mythic))
+    return self:IsItemHasKeyword(item, GetTextLeft2(sampleItems.Mythic))
 end
 
 function RCCustomGP:IsItemLFRDifficulty(item)
-    return self:IsItemHasKeyword(item, GetTextLeft2(links.LFR))
+    return self:IsItemHasKeyword(item, GetTextLeft2(sampleItems.LFR))
 end
 
 function RCCustomGP:IsItemWarforged(item)
-    return self:IsItemHasKeyword(item, GetTextLeft2(links.Warforged))
+    return self:IsItemHasKeyword(item, GetTextLeft2(sampleItems.Warforged))
 end
 
 function RCCustomGP:IsItemTitanforged(item)
-    return self:IsItemHasKeyword(item, GetTextLeft2(links.Titanforged))
+    return self:IsItemHasKeyword(item, GetTextLeft2(sampleItems.Titanforged))
 end
