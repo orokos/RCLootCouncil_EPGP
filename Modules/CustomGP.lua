@@ -2,7 +2,7 @@
 -- http://code.google.com/p/epgp/wiki/GearPoints
 local addon = LibStub("AceAddon-3.0"):GetAddon("RCLootCouncil")
 local RCEPGP = addon:GetModule("RCEPGP")
-local RCCustomGP = RCEPGP:NewModule("RCCustomGP", "AceConsole-3.0", "AceEvent-3.0")
+local RCCustomGP = RCEPGP:NewModule("RCCustomGP", "AceConsole-3.0", "AceEvent-3.0", "AceBucket-3.0")
 local LEP = LibStub("AceLocale-3.0"):GetLocale("RCEPGP")
 
 local MAJOR_VERSION = "LibGearPoints-1.2"
@@ -15,32 +15,12 @@ for funcName, func in pairs(oldLib) do
     functionOldLibGearPoints[funcName] = func
 end
 
-local itemInfoCache = {} -- Cache the info of items we have seen for better performance.
-local gpCache = {} -- Cache the GP of items for even better performance. The gpCache must be wiped whenever the GP formula or slotweights changes.
-RCCustomGP.itemInfoCache = itemInfoCache
-RCCustomGP.gpCache = gpCache
--- To be set in OnInitialize
-RCCustomGP.GPVariables = {}
-RCCustomGP.slotsWithWeight = {}
+local db
 
 function RCCustomGP:OnInitialize()
-    self.defaults = {
-        customGPEnabled = false,
-        RelicSlot     = "0.667",
-        TrinketSlot   = "1.25",
-        HeadSlot      = "1",
-        ChestSlot     = "1",
-        LegsSlot      = "1",
-        ShoulderSlot  = "0.75",
-        HandsSlot     = "0.75",
-        WaistSlot     = "0.75",
-        FeetSlot      = "0.75",
-        NeckSlot      = "0.56",
-        FingerSlot    = "0.56",
-        BackSlot      = "0.56",
-        WristSlot     = "0.56",
-        formula = "1000 * 2 ^ (-915/30) * 2 ^ (ilvl/30) * slotWeights + hasSpeed * 25 + numSocket * 200",
-    }
+	db = RCEPGP:GetEPGPdb()
+	self.itemInfoCache = {}
+	self.gpCache = {}
     self.GPVariables = {
         { name = "ilvl", help = LEP["gp_variable_ilvl_help"], value = function(itemLink) return select(2, self:GetRarityIlvlSlot(itemLink)) or 0 end, },
         { unCached = true, name = "slotWeights", help = LEP["gp_variable_slotWeights_help"], value = function(itemLink) return RCCustomGP:GetSlotWeights(itemLink) or 0 end, },
@@ -131,43 +111,22 @@ function RCCustomGP:OnInitialize()
         INVTYPE_RELIC           = "RelicSlot",
     }
     self:RegisterMessage("RCUpdateDB", "OnMessageReceived")
-    RCEPGP:SetdbDefaults(self:GetCustomGPdb(), self.defaults, false)
-    self:SendMessage("RCCustomGPRuleChanged")
+	self:RegisterBucketEvent("RCEPGPConfigTableChanged", 1, "OnMessageReceived")
     self.initialize = true
 end
 
 function RCCustomGP:OnMessageReceived(msg, ...)
-    RCEPGP:DebugPrint("RCCustomGP", "ReceiveMessage", msg)
-    if msg == "RCUpdateDB" then
-        RCEPGP:SetdbDefaults(self:GetCustomGPdb(), self.defaults, false)
-    end
+	if msg == "RCUpdateDB" then
+		db = RCEPGP:GetEPGPdb()
+	elseif msg == "RCEPGPConfigTableChanged" then
+		if "customGP" == select(1, ...) then
+			RCEPGP:DebugPrint("Wipe GP cache due to custom GP rule changed.")
+			wipe(self.gpCache)
+			self:SendMessage("RCCustomGPRuleChanged")
+		end
+	end
 end
 
-function RCCustomGP:GetCustomGPdb()
-    if not RCEPGP:GetEPGPdb().customGP then
-        RCEPGP:GetEPGPdb().customGP = {}
-    end
-    return RCEPGP:GetEPGPdb().customGP
-end
-
-function RCCustomGP.OptionGetter(info)
-    return RCCustomGP:GetCustomGPdb()[info[#info]]
-end
-
-function RCCustomGP.OptionSetter(info, value)
-    RCEPGP:DebugPrint("Wipe GP cache due to custom GP rule changed.")
-    wipe(RCCustomGP.gpCache)
-    RCCustomGP:SendMessage("RCCustomGPRuleChanged")
-    if value == "" or value == nil then
-        value = RCCustomGP.defaults[info[#info]]
-    end
-    RCCustomGP:GetCustomGPdb()[info[#info]] = value
-end
-
-function RCCustomGP:RestoreToDefault()
-    RCEPGP:SetdbDefaults(self:GetCustomGPdb(), self.defaults, true)
-    self:SendMessage("RCCustomGPRuleChanged")
-end
 --------------------Start of GP Calculation -------------------------------
 
 LibStub.minors[MAJOR_VERSION] = 10200
@@ -222,14 +181,14 @@ local function UpdateRecentLoot(itemLink)
 end
 
 function lib:GetNumRecentItems()
-    if not RCCustomGP:GetCustomGPdb().customGPEnabled then
+    if not db.customGP.customGPEnabled then
         return functionOldLibGearPoints["GetNumRecentItems"](oldLib)
     end
     return #recent_items_queue
 end
 
 function lib:GetRecentItemLink(i)
-    if not RCCustomGP:GetCustomGPdb().customGPEnabled then
+    if not db.customGP.customGPEnabled then
         return functionOldLibGearPoints["GetRecentItemLink"](oldLib, i)
     end
     return recent_items_queue[i]
@@ -237,7 +196,7 @@ end
 
 --- Return the currently set quality threshold.
 function lib:GetQualityThreshold()
-    if not RCCustomGP:GetCustomGPdb().customGPEnabled then
+    if not db.customGP.customGPEnabled then
         return functionOldLibGearPoints["GetQualityThreshold"](oldLib)
     end
     return quality_threshold
@@ -246,7 +205,7 @@ end
 --- Set the minimum quality threshold.
 -- @param itemQuality Lowest allowed item quality.
 function lib:SetQualityThreshold(itemQuality)
-    if not RCCustomGP:GetCustomGPdb().customGPEnabled then
+    if not db.customGP.customGPEnabled then
         return functionOldLibGearPoints["SetQualityThreshold"](oldLib, itemQuality)
     end
     itemQuality = itemQuality and tonumber(itemQuality)
@@ -270,7 +229,7 @@ local ITEM_BONUS_TYPE = {
 }
 
 function lib:GetValue(item)
-    if not RCCustomGP:GetCustomGPdb().customGPEnabled then
+    if not db.customGP.customGPEnabled then
         return functionOldLibGearPoints["GetValue"](oldLib, item)
     end
     if not item then return end
@@ -280,8 +239,8 @@ function lib:GetValue(item)
     if not itemLink then return end
     UpdateRecentLoot(itemLink)
 
-    if gpCache[itemLink] then -- Return GP directly if it is cached.
-        return gpCache[itemLink]
+    if RCCustomGP.gpCache[itemLink] then -- Return GP directly if it is cached.
+        return RCCustomGP.gpCache[itemLink]
     end
 
     local itemID = RCCustomGP:GetItemID(itemLink)
@@ -298,8 +257,8 @@ function lib:GetValue(item)
 
     local itemData = {}
 
-    if itemInfoCache[itemLink] then
-        itemData = itemInfoCache[itemLink]
+    if RCCustomGP.itemInfoCache[itemLink] then
+        itemData = RCCustomGP.itemInfoCache[itemLink]
         for _, entry in ipairs(RCCustomGP.GPVariables) do
             if entry.unCached then
                 local variableName = entry.name
@@ -314,7 +273,7 @@ function lib:GetValue(item)
             itemData[variableName] = variableValue
             RCEPGP:DebugPrint("CustomGPVariable", variableName, variableValue)
         end
-        itemInfoCache[itemLink] = itemData
+        RCCustomGP.itemInfoCache[itemLink] = itemData
     end
 
     local fenv = RCEPGP:GetFuncEnv(itemData)
@@ -339,7 +298,7 @@ function lib:GetValue(item)
     end
 
     RCEPGP:DebugPrint("ItemGPUpdate", itemLink, high)
-    gpCache[itemLink] = high
+    RCCustomGP.gpCache[itemLink] = high
     return high, nil, level, rarity, equipLoc
 end
 
@@ -353,17 +312,17 @@ function RCCustomGP:GetTokenInfo(itemLink)
 end
 
 function RCCustomGP:GetFormulaFunc()
-    local formula, err = loadstring("return "..self:GetCustomGPdb().formula)
+    local formula, err = loadstring("return "..db.customGP.formula)
     if not formula then
-        formula, err = loadstring(self:GetCustomGPdb().formula)
+        formula, err = loadstring(db.customGP.formula)
     end
     return formula, err
 end
 
 function RCCustomGP:GetDefaultFormulaFunc()
-    local formula, err = loadstring(self.defaults.formula)
+    local formula, err = loadstring(RCEPGP.defaults.customGP.formula)
     if not formula then
-        formula, err = loadstring("return "..self.defaults.formula)
+        formula, err = loadstring("return "..RCEPGP.defaults.customGP.formula)
     end
     return formula, err
 end
@@ -476,8 +435,8 @@ end
 
 function RCCustomGP:GetSlotWeights(itemLink)
     local slot = select(3, RCCustomGP:GetRarityIlvlSlot(itemLink))
-    if slot and RCCustomGP:GetCustomGPdb()[slot] then
-        return tonumber(RCCustomGP:GetCustomGPdb()[slot])
+    if slot and db.customGP[slot] then
+        return tonumber(db.customGP[slot])
     end
 end
 

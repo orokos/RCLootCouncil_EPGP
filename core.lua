@@ -1,72 +1,74 @@
 local DEBUG = false
 --@debug@
-DEBUG = false
+DEBUG = true
 --@end-debug@
-
 local addon = LibStub("AceAddon-3.0"):GetAddon("RCLootCouncil")
-local RCEPGP = addon:NewModule("RCEPGP", "AceComm-3.0", "AceConsole-3.0", "AceHook-3.0", "AceEvent-3.0", "AceTimer-3.0", "AceSerializer-3.0")
+local RCEPGP = addon:NewModule("RCEPGP", "AceComm-3.0", "AceConsole-3.0", "AceHook-3.0", "AceEvent-3.0", "AceTimer-3.0", "AceSerializer-3.0", "AceBucket-3.0")
 local EPGP = LibStub("AceAddon-3.0"):GetAddon("EPGP")
-local GS = LibStub("LibGuildStorage-1.2")
 local L = LibStub("AceLocale-3.0"):GetLocale("RCLootCouncil")
 local LEP = LibStub("AceLocale-3.0"):GetLocale("RCEPGP")
-local GP = LibStub("LibGearPoints-1.2")
-local LibDialog = LibStub("LibDialog-1.0")
-local RCLootCouncilML = addon:GetModule("RCLootCouncilML")
-
--- Set the addon name for self:Print()
-local RCEPGPMetaTable = getmetatable(RCEPGP)
-RCEPGPMetaTable.__tostring = function() return "RCLootCouncil-EPGP" end
-setmetatable(RCEPGP, RCEPGPMetaTable)
-
--- MAKESURE: Edit the following versions every update, and should also update the version in TOC file.
-RCEPGP.version = "2.1.1"
-RCEPGP.testVersion = "Release"
-							   -- format: Release/Beta/Alpha.num
-							   -- testVersion compares only by number. eg. "Alpha.2" > "Beta.1"
-RCEPGP.tocVersion = GetAddOnMetadata("RCLootCouncil_EPGP", "Version")
-RCEPGP.testTocVersion = GetAddOnMetadata("RCLootCouncil_EPGP", "X-TestVersion")
-
-RCEPGP.lastVersionNeedingRestart = "2.0.0"
-RCEPGP.lastVersionResetSetting = "2.0.0"
-RCEPGP.minRCVersion = "2.6.0"
-
-RCEPGP.isNewInstall = nil
-
-RCEPGP.debug = DEBUG
-
-local ExtraUtilities = addon:GetModule("RCExtraUtilities", true) -- nil if ExtraUtilites not enabled.
 local RCVotingFrame = addon:GetModule("RCVotingFrame")
 
-local newestVersionDetected = RCEPGP.version
-local newestTestVersionDetected = RCEPGP.testVersion
-
 local currentAwardingGP = 0
-
-function RCEPGP:GetEPGPdb()
-    if not addon:Getdb().epgp then
-        addon:Getdb().epgp = {}
-        if self.isNewInstall == nil then self.isNewInstall = true end
-    else
-        if self.isNewInstall == nil then self.isNewInstall = false end
-    end
-    return addon:Getdb().epgp
-end
+local db
 
 function RCEPGP:OnInitialize()
+	-- MAKESURE: Edit the following versions every update, and should also update the version in TOC file.
+	self.version = "2.1.1"
+	self.testVersion = "Release" -- format: Release/Beta/Alpha.num, testVersion compares only by number. eg. "Alpha.2" > "Beta.1"
+	self.tocVersion = GetAddOnMetadata("RCLootCouncil_EPGP", "Version")
+	self.testTocVersion = GetAddOnMetadata("RCLootCouncil_EPGP", "X-TestVersion")
+	self.lastVersionNeedingRestart = "2.0.0"
+	self.lastVersionResetSetting = "2.0.0"
+	self.minRCVersion = "2.6.0"
+
+	self.debug = DEBUG
+	self.newestVersionDetected = self.version
+	self.newestTestVersionDetected = self.testVersion
+	self.isNewInstall = (addon:Getdb().epgp == nil)
+	db = self:GetEPGPdb()
+	local meta = getmetatable(self) 	-- Set the addon name for self:Print()
+	meta.__tostring = function() return "RCLootCouncil-EPGP" end
+	setmetatable(self, meta)
+
+	self.defaults = {
+		sendEPGPSettings = true,
+		biddingEnabled = false,
+		customGP = {
+			customGPEnabled = false,
+			RelicSlot     = "0.667",
+			TrinketSlot   = "1.25",
+			HeadSlot      = "1",
+			ChestSlot     = "1",
+			LegsSlot      = "1",
+			ShoulderSlot  = "0.75",
+			HandsSlot     = "0.75",
+			WaistSlot     = "0.75",
+			FeetSlot      = "0.75",
+			NeckSlot      = "0.56",
+			FingerSlot    = "0.56",
+			BackSlot      = "0.56",
+			WristSlot     = "0.56",
+			formula = "1000 * 2 ^ (-915/30) * 2 ^ (ilvl/30) * slotWeights + hasSpeed * 25 + numSocket * 200",
+		},
+	}
+	addon.defaults.profile.epgp = self.defaults
+	addon.db:RegisterDefaults(addon.defaults)
+
     if addon:VersionCompare(addon.version, self.minRCVersion) then
 		self:ShowNotification(format(LEP["rc_version_below_min_notification"], self.minRCVersion, addon.version))
     end
     -- Added in v2.0
-    local lastVersion = self:GetEPGPdb().version
+    local lastVersion = db.version
     if not lastVersion then lastVersion = "1.9.2" end
     if (not self.isNewInstall) and addon:VersionCompare(self.tocVersion, self.lastVersionNeedingRestart) then
 		self:ShowNotification(format(LEP["need_restart_notification"], self.version.."-"..self.testVersion))
     end
 
-    self:GetEPGPdb().version = self.version
-    self:GetEPGPdb().tocVersion = self.tocVersion
-    self:GetEPGPdb().testVersion = self.testVersion
-    self:GetEPGPdb().testTocVersion = self.testTocVersion
+    db.version = self.version
+    db.tocVersion = self.tocVersion
+    db.testVersion = self.testVersion
+    db.testTocVersion = self.testTocVersion
 
     if (not self.isNewInstall) and addon:VersionCompare(lastVersion, "2.0.0") then
         self:UpdateAnnounceKeyword_v2_0_0()
@@ -75,15 +77,7 @@ function RCEPGP:OnInitialize()
 		self:ShowNotification(format(LEP["setting_reset_notification"], self.version.."-"..self.testVersion))
     end
 
-    self.generalDefaults = {
-        sendEPGPSettings = true,
-        biddingEnabled = false,
-    }
-    self:SetdbDefaults(self:GetGeneraldb(), self.generalDefaults, false)
-
     self:RegisterMessage("RCMLAwardSuccess", "OnMessageReceived")
-    self:RegisterMessage("RCMLAwardFailed", "OnMessageReceived")
-    self:RegisterMessage("RCSessionChangedPre", "OnMessageReceived")
     self:RegisterMessage("RCUpdateDB", "OnMessageReceived")
 
     self:RegisterComm("RCLootCouncil", "OnCommReceived")
@@ -91,23 +85,18 @@ function RCEPGP:OnInitialize()
     self:RegisterEvent("PLAYER_LOGIN", "OnEvent")
     self:RegisterEvent("GROUP_JOINED", "OnEvent")
 
-    if ExtraUtilities then
-        self:SecureHook(ExtraUtilities, "SetupColumns", function() self:SetupColumns() end)
-        self:SecureHook(ExtraUtilities, "UpdateColumn", function() self:SetupColumns() end)
-    end
-    self:DisableGPPopup()
-    self:EnableGPTooltip()
-    self:DisablezhCNProfanityFilter()
-
-    self:AddOptions()
-    self:RefreshOptionsTable()
-
     self:AddGPOptions()
+    self:AddOptions()
+
     self:AddSlashCmds()
     self:AddAnnouncement()
 
-
     self:EPGPDkpReloadedSettingToRC()
+
+	if GetLocale() == "zhCN" then
+		SetCVar("profanityFilter", "0")
+		self:DebugPrint("Diable profanity filter of zhCN client.")
+	end
     self.initialize = true
 end
 
@@ -115,7 +104,7 @@ end
 -- MAKESURE all empty settings reseted to default when RCUpdateDB
 -- MAKESURE statement are executed after the OnMessageReceived of RCLootCouncil if needed.
 function RCEPGP:OnMessageReceived(msg, ...)
-    self:DebugPrint("ReceiveMessage", msg)
+    self:DebugPrint("RCEPGP:OnMessageReceived", msg, ...)
 	if msg == "RCMLAwardSuccess" then
         local session, winner, status = unpack({...})
         if (not RCVotingFrame:GetLootTable()) or (not RCVotingFrame:GetLootTable()[session]) then
@@ -134,12 +123,12 @@ function RCEPGP:OnMessageReceived(msg, ...)
 			end
         end
     elseif msg == "RCUpdateDB" then
-        self:GetEPGPdb().version = self.version
-        self:GetEPGPdb().tocVersion = self.tocVersion
-        self:GetEPGPdb().testVersion = self.testVersion
-        self:GetEPGPdb().testTocVersion = self.testTocVersion
+		db = self:GetEPGPdb()
+        db.version = self.version
+        db.tocVersion = self.tocVersion
+        db.testVersion = self.testVersion
+        db.testTocVersion = self.testTocVersion
         self:RCToEPGPDkpReloadedSetting()
-        self:SetdbDefaults(self:GetGeneraldb(), self.generalDefaults, false) -- should after self:RCToEPGPDkpReloadedSetting()
     end
 end
 
@@ -148,7 +137,7 @@ function RCEPGP:OnCommReceived(prefix, serializedMsg, distri, sender)
     if prefix == "RCLootCouncil" then
         -- data is always a table to be unpacked
         local test, command, data = addon:Deserialize(serializedMsg)
-        if addon:HandleXRealmComms(RCVotingFrame, command, data, sender) then return end
+        if addon:HandleXRealmComms(self, command, data, sender) then return end
 
         if test then
             if command == "RCEPGP_VersionBroadcast" or command == "RCEPGP_VersionReply" then
@@ -156,16 +145,16 @@ function RCEPGP:OnCommReceived(prefix, serializedMsg, distri, sender)
 
                 -- Only report test version updates if a test version is installed.
                 if self:IsTestVersion(self.testVersion) or (not self:IsTestVersion(otherTestVersion)) then
-                    if addon:VersionCompare(newestVersionDetected, otherVersion) then
+                    if addon:VersionCompare(self.newestVersionDetected, otherVersion) then
                         self:Print(format(LEP["new_version_detected"], self.version.."-"..self.testVersion, otherVersion.."-"..otherTestVersion))
-                        newestVersionDetected = otherVersion
-                        newestTestVersionDetected = otherTestVersion
-                    elseif newestVersionDetected == otherVersion and self:TestVersionCompare(newestTestVersionDetected, otherTestVersion) then
+                        self.newestVersionDetected = otherVersion
+                        self.newestTestVersionDetected = otherTestVersion
+                    elseif self.newestVersionDetected == otherVersion and self:TestVersionCompare(self.newestTestVersionDetected, otherTestVersion) then
                         self:Print(format(LEP["new_version_detected"], self.version.."-"..self.testVersion, otherVersion.."-"..otherTestVersion))
-                        newestTestVersionDetected = otherTestVersion
+                        self.newestTestVersionDetected = otherTestVersion
                     end
                 end
-                self:DebugPrint("ReceiveComm", command, unpack(data))
+                self:DebugPrint("RCEPGP:OnCommReceived", command, unpack(data))
                 if command == "RCEPGP_VersionBroadcast" and (not UnitIsUnit("player", Ambiguate(sender, "short"))) then
                     addon:SendCommand(sender, "RCEPGP_VersionReply", self.version, self.testVersion)
                 end
@@ -175,12 +164,19 @@ function RCEPGP:OnCommReceived(prefix, serializedMsg, distri, sender)
 end
 
 function RCEPGP:OnEvent(event, ...)
-    self:DebugPrint("OnEvent", event, ...)
+    self:DebugPrint("RCEPGP:OnEvent", event, ...)
     if event == "PLAYER_LOGIN" then
-        C_Timer.After(5, function() addon:SendCommand("guild", "RCEPGP_VersionBroadcast", self.version, self.testVersion) end)
+        self:ScheduleTimer(function() addon:SendCommand("guild", "RCEPGP_VersionBroadcast", self.version, self.testVersion) end, 5)
     elseif event == "GROUP_JOINED" then
-        C_Timer.After(2, function() addon:SendCommand("group", "RCEPGP_VersionBroadcast", self.version, self.testVersion) end)
+        self:ScheduleTimer(function() addon:SendCommand("group", "RCEPGP_VersionBroadcast", self.version, self.testVersion) end, 2)
     end
+end
+
+function RCEPGP:GetEPGPdb()
+    if not addon:Getdb().epgp then
+        addon:Getdb().epgp = {}
+    end
+    return addon:Getdb().epgp
 end
 
 -- Return true if test version 1 is older than test version 2
@@ -201,64 +197,8 @@ function RCEPGP:IsTestVersion(v)
     return v and (v:lower():find("alpha") or v:lower():find("beta"))
 end
 
-function RCEPGP:DisablezhCNProfanityFilter()
-    if GetLocale() == "zhCN" then
-        SetCVar("profanityFilter", "0")
-        self:DebugPrint("Diable profanity filter of zhCN client.")
-    end
-end
-
--- We only want to disable GP popup of EPGP(dkp reloaded) when RCLootCouncil Voting Frame is opening.
--- Restore to previous setting of EPGP loot popup when Voting Frame closes.
-local isDisablingEPGPPopup = false
-local isEPGPPopupEnabled = false
-function RCEPGP:DisableGPPopup()
-    if EPGP and EPGP.GetModule then
-        local loot = EPGP:GetModule("loot")
-        if loot then
-            self:SecureHook(RCVotingFrame, "Show", function()
-                local loot = EPGP:GetModule("loot")
-                if not isDisablingEPGPPopup then
-                    isEPGPPopupEnabled = loot.db.profile.enabled
-                end
-                loot.db.profile.enabled = false
-                loot:Disable()
-                isDisablingEPGPPopup = true
-                self:DebugPrint("GP Popup of EPGP(dkp reloaded) disabled")
-            end)
-
-            self:SecureHook(RCVotingFrame, "Hide", function()
-                C_Timer.After(5, function() -- Delay it because loot event may be triggered slight after Session ends.
-                    local loot = EPGP:GetModule("loot")
-                    loot.db.profile.enabled = isEPGPPopupEnabled
-                    if isEPGPPopupEnabled then
-                        loot:Enable()
-                        self:DebugPrint("GP Popup of EPGP(dkp reloaded) enabled")
-                    else
-                        loot:Disable()
-                        self:DebugPrint("GP Popup of EPGP(dkp reloaded) disabled")
-                    end
-                    isDisablingEPGPPopup = false
-                end)
-            end)
-        end
-    end
-end
-
-function RCEPGP:EnableGPTooltip()
-    if EPGP and EPGP.GetModule then
-        local gptooltip = EPGP:GetModule("gptooltip")
-        if gptooltip and gptooltip.db then
-            gptooltip.db.profile.enabled = true
-        end
-        if gptooltip and gptooltip.Enable then
-            gptooltip:Enable()
-        end
-    end
-end
-
 ---------------------------------------------
--- Lib-st UI functions
+-- Name functions
 ---------------------------------------------
 
 -- Uppercase the first character of the string and lowercase the rest of characters.
@@ -306,6 +246,10 @@ function RCEPGP:GetEPGPName(inputName)
         return shortName.."-"..realmName
     end
 end
+
+---------------------------------------------
+-- GP functions
+---------------------------------------------
 
 -- "response" needs to be the response id(Number), or the button name(not response name)
 function RCEPGP:GetResponseGP(response, isTier, isRelic)
@@ -364,29 +308,6 @@ function RCEPGP:GetFinalGP(responseGP, itemGP)
     return gp
 end
 
-function RCEPGP:AddRightClickMenu(menu, RCEntries, myEntries)
-    menu.RCEPGPMenu = true
-    for level, entries in ipairs(myEntries) do
-        table.sort(entries, function(i, j) return i.pos < j.pos end)
-        for id=1, #entries do
-            local entry = entries[id]
-            table.insert(RCEntries[level], entry.pos, entry)
-        end
-    end
-end
-
--- Refresh the current menu if it is a RCEPGP menu.
-function RCEPGP:RefreshMenu(level)
-    local menu = Lib_UIDropDownMenu_GetCurrentDropDown()
-    if not menu then return end
-    if not menu.RCEPGPMenu then return end
-    if not Lib_DropDownList1:IsShown() then return end
-    if menu.initialize then
-        Lib_DropDownList1.numButtons = 0
-        menu.initialize(menu, level, menu.menuList)
-    end
-end
-
 function RCEPGP:GetGPAndResponseGPText(gp, responseGP)
     local text =  "("..gp.." GP)"
     if string.match(responseGP, "^%d+%%") then
@@ -401,53 +322,6 @@ end
 
 function RCEPGP:GetCurrentAwardingGP()
     return currentAwardingGP
-end
-
--- debug print and log
-function RCEPGP:Debug(msg, ...)
-    if self.debug then
-        self:DebugPrint(msg, ...)
-    end
-    addon:DebugLog("EPGP: ", msg, ...)
-end
-
-function RCEPGP:DebugPrint(msg, ...)
-	if self.debug then
-		if select("#", ...) > 0 then
-			print("|cffcb6700rcepgpdebug:|r "..tostring(msg).."|cffff6767", ...)
-		else
-			print("|cffcb6700rcepgpdebug:|r "..tostring(msg).."|r")
-		end
-	end
-end
-
-function RCEPGP:SetdbDefaults(db, defaults, restoreDefaults)
-    for info, value in pairs(defaults) do
-        if restoreDefaults or db[info] == nil or db[info] == "" then
-            db[info] = value
-        end
-    end
-end
-
-
-function RCEPGP:GetGeneraldb()
-    if not self:GetEPGPdb().general then
-        self:GetEPGPdb().general = {}
-    end
-    return self:GetEPGPdb().general
-end
-
-function RCEPGP.GeneralOptionGetter(info)
-    return RCEPGP:GetGeneraldb()[info[#info]]
-end
-
-function RCEPGP.GeneralOptionSetter(info, value)
-    RCEPGP:GetGeneraldb()[info[#info]] = value
-end
-
-function RCEPGP:GeneralRestoreToDefault()
-    self:SetdbDefaults(self:GetGeneraldb(), self.generalDefaults, true)
-    self:SendMessage("RCEPGPGeneralOptionRestoreToDefault")
 end
 
 -- Get the amount of last GP operations with given name and reason.
@@ -477,7 +351,31 @@ function RCEPGP:GetLastGPAmount(name, reason)
     return 0
 end
 
+---------------------------------------------
+-- Debug functions
+---------------------------------------------
 
+-- debug print and log
+function RCEPGP:Debug(msg, ...)
+    if self.debug then
+        self:DebugPrint(msg, ...)
+    end
+    addon:DebugLog("EPGP: ", msg, ...)
+end
+
+function RCEPGP:DebugPrint(msg, ...)
+	if self.debug then
+		if select("#", ...) > 0 then
+			print("|cffcb6700rcepgpdebug:|r "..tostring(msg).."|cffff6767", ...)
+		else
+			print("|cffcb6700rcepgpdebug:|r "..tostring(msg).."|r")
+		end
+	end
+end
+
+---------------------------------------------
+-- UI functions
+---------------------------------------------
 
 function RCEPGP:RemoveColumn(t, column)
     for i = 1, #t do
@@ -490,4 +388,42 @@ end
 function RCEPGP:ReinsertColumnAtTheEnd(t, column)
     self:RemoveColumn(t, column)
     table.insert(t, column)
+end
+
+function RCEPGP:AddRightClickMenu(menu, RCEntries, myEntries)
+    menu.RCEPGPMenu = true
+    for level, entries in ipairs(myEntries) do
+        table.sort(entries, function(i, j) return i.pos < j.pos end)
+        for id=1, #entries do
+            local entry = entries[id]
+            table.insert(RCEntries[level], entry.pos, entry)
+        end
+    end
+end
+
+-- Refresh the current menu if it is a RCEPGP menu.
+function RCEPGP:RefreshMenu(level)
+    local menu = Lib_UIDropDownMenu_GetCurrentDropDown()
+    if not menu then return end
+    if not menu.RCEPGPMenu then return end
+    if not Lib_DropDownList1:IsShown() then return end
+    if menu.initialize then
+        Lib_DropDownList1.numButtons = 0
+        menu.initialize(menu, level, menu.menuList)
+    end
+end
+
+function RCEPGP:DeepCopy(dest, src, cleanCopy)
+	if cleanCopy and type(dest) == "table" then
+		wipe(dest)
+	end
+	if type(src) ~= "table" then return end
+	if type(dest) ~= "table" then return end
+	for key, value in pairs(src) do
+		if type(value) == "table" and type(dest[key]) == "table" then
+			deepcopy(dest[key], src[key])
+		else
+			dest[key] = value
+		end
+	end
 end

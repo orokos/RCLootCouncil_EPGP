@@ -9,27 +9,15 @@ local RCCustomGP = RCEPGP:GetModule("RCCustomGP", true)
 local L = LibStub("AceLocale-3.0"):GetLocale("RCLootCouncil")
 local LEP = LibStub("AceLocale-3.0"):GetLocale("RCEPGP")
 
-local options =
-{
-    name = "RCLootCouncil - EPGP",
-    order = 1,
-    type = "group",
-    childGroups = "tab",
-    inline = false,
-}
-RCEPGP.epgpOptions = options
-
 function RCEPGP:AddGPOptions()
     local options = addon:OptionsTable()
 
-    addon.options = addon:OptionsTable()
-
     local button, picker, text, gp = {}, {}, {}, {}
     for i = 1, addon.db.profile.maxButtons do
-        addon.options.args.mlSettings.args.buttonsTab.args.buttonOptions.args["button" .. i].order = i * 4 + 1;
-        addon.options.args.mlSettings.args.buttonsTab.args.buttonOptions.args["picker" .. i].order = i * 4 + 2;
-        addon.options.args.mlSettings.args.buttonsTab.args.buttonOptions.args["picker" .. i].width = "half";
-        addon.options.args.mlSettings.args.buttonsTab.args.buttonOptions.args["text" .. i].order = i * 4 + 3;
+        options.args.mlSettings.args.buttonsTab.args.buttonOptions.args["button" .. i].order = i * 4 + 1;
+        options.args.mlSettings.args.buttonsTab.args.buttonOptions.args["picker" .. i].order = i * 4 + 2;
+        options.args.mlSettings.args.buttonsTab.args.buttonOptions.args["picker" .. i].width = "half";
+        options.args.mlSettings.args.buttonsTab.args.buttonOptions.args["text" .. i].order = i * 4 + 3;
         gp = {
             order = i * 4 + 4,
             name = "GP",
@@ -49,15 +37,15 @@ function RCEPGP:AddGPOptions()
         if not addon.db.profile.responses[i].gp then
             addon.db.profile.responses[i].gp = "100%"
         end
-        addon.options.args.mlSettings.args.buttonsTab.args.buttonOptions.args["gp" .. i] = gp;
+        options.args.mlSettings.args.buttonsTab.args.buttonOptions.args["gp" .. i] = gp;
     end
 
 
     for k, v in pairs(addon.db.profile.responses.tier) do
-        addon.options.args.mlSettings.args.buttonsTab.args.tierButtonsOptions.args["button" .. k].order = v.sort * 4 + 1
-        addon.options.args.mlSettings.args.buttonsTab.args.tierButtonsOptions.args["color" .. k].order = v.sort * 4 + 2
-        addon.options.args.mlSettings.args.buttonsTab.args.tierButtonsOptions.args["color" .. k].width = "half"
-        addon.options.args.mlSettings.args.buttonsTab.args.tierButtonsOptions.args["text" .. k].order = v.sort * 4 + 3
+        options.args.mlSettings.args.buttonsTab.args.tierButtonsOptions.args["button" .. k].order = v.sort * 4 + 1
+        options.args.mlSettings.args.buttonsTab.args.tierButtonsOptions.args["color" .. k].order = v.sort * 4 + 2
+        options.args.mlSettings.args.buttonsTab.args.tierButtonsOptions.args["color" .. k].width = "half"
+        options.args.mlSettings.args.buttonsTab.args.tierButtonsOptions.args["text" .. k].order = v.sort * 4 + 3
         gp = {
             order = v.sort * 4 + 4,
             name = "GP",
@@ -77,16 +65,16 @@ function RCEPGP:AddGPOptions()
         if not addon.db.profile.tierButtons[v.sort].gp then
             addon.db.profile.tierButtons[v.sort].gp = "100%"
         end
-        addon.options.args.mlSettings.args.buttonsTab.args.tierButtonsOptions.args["gp" .. k] = gp
+        options.args.mlSettings.args.buttonsTab.args.tierButtonsOptions.args["gp" .. k] = gp
     end
 
     -- Relic Buttons/Responses
     if addon.db.profile.responses.relic then
     	for k, v in pairs(addon.db.profile.responses.relic) do
-            addon.options.args.mlSettings.args.buttonsTab.args.relicButtonsOptions.args["button" .. k].order = v.sort * 4 + 1
-            addon.options.args.mlSettings.args.buttonsTab.args.relicButtonsOptions.args["color" .. k].order = v.sort * 4 + 2
-            addon.options.args.mlSettings.args.buttonsTab.args.relicButtonsOptions.args["color" .. k].width = "half"
-            addon.options.args.mlSettings.args.buttonsTab.args.relicButtonsOptions.args["text" .. k].order = v.sort * 4 + 3
+            options.args.mlSettings.args.buttonsTab.args.relicButtonsOptions.args["button" .. k].order = v.sort * 4 + 1
+            options.args.mlSettings.args.buttonsTab.args.relicButtonsOptions.args["color" .. k].order = v.sort * 4 + 2
+            options.args.mlSettings.args.buttonsTab.args.relicButtonsOptions.args["color" .. k].width = "half"
+            options.args.mlSettings.args.buttonsTab.args.relicButtonsOptions.args["text" .. k].order = v.sort * 4 + 3
             gp = {
                 order = v.sort * 4 + 4,
                 name = "GP",
@@ -106,26 +94,27 @@ function RCEPGP:AddGPOptions()
             if not addon.db.profile.relicButtons[v.sort].gp then
                 addon.db.profile.relicButtons[v.sort].gp = "100%"
             end
-            addon.options.args.mlSettings.args.buttonsTab.args.relicButtonsOptions.args["gp" .. k] = gp
+            options.args.mlSettings.args.buttonsTab.args.relicButtonsOptions.args["gp" .. k] = gp
     	end
     end
 
-    addon.options.args.settings.args.profiles = LibStub("AceDBOptions-3.0"):GetOptionsTable(addon.db)
-    LibStub("AceConfigRegistry-3.0"):RegisterOptionsTable("RCLootCouncil", addon.options)
+    --options.args.settings.args.profiles = LibStub("AceDBOptions-3.0"):GetOptionsTable(addon.db)
+    --LibStub("AceConfigRegistry-3.0"):RegisterOptionsTable("RCLootCouncil", options)
     LibStub("AceConfigRegistry-3.0"):NotifyChange("RCLootCouncil")
-    addon:ConfigTableChanged("buttons");
-    addon:ConfigTableChanged("tierButtons");
 end
 
-function RCEPGP:RefreshOptionsTable()
-    if (not RCCustomGP.initialize) -- or (not RCCustomEP.initialize) TODO
-    then
-        C_Timer.After(1, function() self:RefreshOptionsTable() end)
-        return
-    end
-
-    local options = self.epgpOptions
-    options.args = {
+function RCEPGP:OptionsTable()
+	local options =
+	{
+	    name = "RCLootCouncil-EPGP",
+	    order = 1,
+	    type = "group",
+	    childGroups = "tab",
+	    inline = false,
+		handler = self,
+		get = self:DBGetFunc(),
+		set = self:DBSetFunc(),
+		args = {
             version = {
                 name = function() return "|cFF87CEFAv"..self.version.."|r-"..self.testVersion end,
                 type = "description",
@@ -145,8 +134,6 @@ function RCEPGP:RefreshOptionsTable()
                 name = _G.GENERAL,
                 order = 5,
                 type = "group",
-                get = self.GeneralOptionGetter,
-                set = self.GeneralOptionSetter,
                 args = {
                     gpOptions = {
                         name = LEP["gpOptions"],
@@ -160,8 +147,8 @@ function RCEPGP:RefreshOptionsTable()
                                 width = "double",
                                 type = "execute",
                                 func = function()
-                                    InterfaceOptionsFrame_OpenToCategory(addon.optionsFrame.ml)
-                                    InterfaceOptionsFrame_OpenToCategory(addon.optionsFrame.ml) -- Twice due to blizz reasons
+                                    InterfaceOptionsFrame_OpenToCategory(optionsFrame.ml)
+                                    InterfaceOptionsFrame_OpenToCategory(optionsFrame.ml) -- Twice due to blizz reasons
                                     LibStub("AceConfigDialog-3.0"):SelectGroup("RCLootCouncil", "mlSettings", "buttonsTab")
                                 end,
                             },
@@ -194,7 +181,6 @@ function RCEPGP:RefreshOptionsTable()
                                 order = 1,
                                 type = "toggle",
                                 width = "full",
-                                set = function(info, value) self.GeneralOptionSetter(info, value); self:SetupColumns() end,
                             },
                         },
                     },
@@ -204,8 +190,9 @@ function RCEPGP:RefreshOptionsTable()
                 name = LEP["Custom GP"],
                 order = 6,
                 type = "group",
-                get = RCCustomGP.OptionGetter,
-                set = RCCustomGP.OptionSetter,
+                get = self:DBGetFunc("customGP"),
+                set = self:DBSetFunc("customGP"),
+				disabled = function() return (not self:GetEPGPdb().customGP.customGPEnabled) end,
                 args = {
                     customGPdesc = {
                         name = LEP["customGP_desc"],
@@ -218,13 +205,14 @@ function RCEPGP:RefreshOptionsTable()
                         order = 2,
                         type = "toggle",
                         width = "double",
+						disabled = false,
                     },
                     slotWeights = {
                         name = LEP["slot_weights"],
                         order = 3,
                         type = "group",
                         inline = true,
-                        disabled = function() return (not RCCustomGP:GetCustomGPdb().customGPEnabled) end,
+						validate = "VaildateNumber",
                         args = {
                             -- Fill in later
                         },
@@ -246,43 +234,17 @@ function RCEPGP:RefreshOptionsTable()
                         multiline = 1,
                         type = "input",
                         width = "full",
-                        disabled = function() return (not RCCustomGP:GetCustomGPdb().customGPEnabled) end,
-                        set = function(info, value)
-                            if value == "" then
-                                value = tostring(RCCustomGP.defaults[info[#info]])
-                            end
-                            RCCustomGP.OptionSetter(info, value)
-                            local func, err = RCCustomGP:GetFormulaFunc()
-                            if not func then
-                                self.epgpOptions.args.gpTab.args.errorMsg.name = LEP["gp_formula_syntax_error"]
-                                self.epgpOptions.args.gpTab.args.errorDetailedMsg.name = err
-                            else
-                                self.epgpOptions.args.gpTab.args.errorMsg.name = ""
-                                self.epgpOptions.args.gpTab.args.errorDetailedMsg.name = ""
-                            end
-                            LibStub("AceConfigRegistry-3.0"):NotifyChange("RCLootCouncil");
-                        end,
-                    },
-                    errorMsg = {
-                        name = "",
-                        order = 151,
-                        type = "description",
-                        width = "full",
-                    },
-                    errorDetailedMsg = {
-                        name = "",
-                        order = 152,
-                        type = "description",
-                        width = "full",
+						validate = "ValidateFormula",
                     },
                     restoreDefault = {
                         name = _G.RESET_TO_DEFAULT,
                         order = 1000,
                         type = "execute",
-                        func = function() RCCustomGP:RestoreToDefault() end,
+                        func = function() self:DeepCopy(self:GetEPGPdb().customGP, self.defaults.customGP, true) end,
                     },
                 },
             },
+		}
             --[[
             epTab = {
                 name = LEP["Custom EP"],
@@ -513,11 +475,11 @@ function RCEPGP:RefreshOptionsTable()
                     return true
                 end
                 if not tonumber(value) then
-                    self:Print(LEP["Input must be a number."])
                     return LEP["Input must be a number."]
                 end
                 return true
             end,
+			--usage = "Must be a number",
         }
     end
 
@@ -540,14 +502,82 @@ function RCEPGP:RefreshOptionsTable()
         }
     end
 
-
     return options
 end
 
+-- Create a get function for given category
+function RCEPGP:DBGetFunc(...)
+	local args = {...}
+	return function(info)
+		local t = self:GetEPGPdb()
+		for i=1,#args do
+			t = t[args[i]]
+		end
+		return t[info[#info]]
+	end
+end
+
+-- Create a set function for given category
+function RCEPGP:DBSetFunc(...)
+	local args = {...}
+	return function(info, value)
+		local t = self:GetEPGPdb()
+		local default = self.defaults
+		for i=1,#args do
+			t = t[args[i]]
+			default = default and default[args[i]]
+		end
+		if default and (value == nil or value == "") then -- Reset to default, if default exists
+			t[info[#info]] = default
+		else
+			t[info[#info]] = value
+		end
+		self:ConfigTableChanged(unpack(args), info[#info])
+	end
+end
+
+function RCEPGP:ValidateNumber(info, value)
+	if value == "" then
+		return true
+	end
+	if not tonumber(value) then
+		return LEP["Input must be a number."]
+	end
+	return true
+end
+
+function RCEPGP:ValidateFormula(info, value)
+	if value == "" then
+		return true
+	end
+	local func, err = loadstring(value)
+	if not func then
+		local func, err = loadstring("return "..value)
+		if not func then
+			return LEP["formula_syntax_error"].." "..err
+		end
+	end
+	return true
+end
+
+function RCEPGP:ConfigTableChanged(...)
+	self:SendMessage("RCEPGPConfigTableChanged", ...)
+end
+
 function RCEPGP:AddOptions()
-    LibStub("AceConfigRegistry-3.0"):RegisterOptionsTable("RCLootCouncil - EPGP", self.epgpOptions)
-    self.optionsFrame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions("RCLootCouncil - EPGP", "EPGP", "RCLootCouncil")
-    LibStub("AceConfigRegistry-3.0"):NotifyChange("RCLootCouncil - EPGP")
+	local initialize = true
+	for _, module in self:IterateModules() do
+		if not module.initialize then
+			initialize = false
+		end
+	end
+	if not initialize then
+		return self:ScheduleTimer("AddOptions", 0.5)
+	end
+	self.epgpOptions = self:OptionsTable()
+    LibStub("AceConfigRegistry-3.0"):RegisterOptionsTable("RCLootCouncil-EPGP", self.epgpOptions)
+    self.optionsFrame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions("RCLootCouncil-EPGP", "EPGP", "RCLootCouncil")
+    LibStub("AceConfigRegistry-3.0"):NotifyChange("RCLootCouncil-EPGP")
     return self.epgpOptions
 end
 

@@ -28,7 +28,7 @@ L["gp_formula_help"] = [=[Enter lua code that returns GP value in the editbox be
 If your input is a regular statement to be evaluated, e.g. 'a and b or c', you don't need a return statement.
 If you have any control blocks (e.g. if/then), you'll need return statements.
 The following are the variables usable in the code.]=]
-L["gp_formula_syntax_error"] = "Formula has syntax error. Default formula will be used instead."
+L["formula_syntax_error"] = "Formula has syntax error"
 L["gp_value_help"] = [=[Example:
 100%: use 100% of normal GP value
 50%: use 50% of normal GP value

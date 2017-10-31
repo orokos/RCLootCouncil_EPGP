@@ -6,17 +6,7 @@ local addon = LibStub("AceAddon-3.0"):GetAddon("RCLootCouncil")
 local RCEPGP = addon:GetModule("RCEPGP")
 local EPGP = LibStub("AceAddon-3.0"):GetAddon("EPGP")
 
-local function deepcopy(dest, src)
-	if type(src) ~= "table" then return end
-	if type(dest) ~= "table" then return end
-	for key, value in pairs(src) do
-		if type(value) == "table" and type(dest[key]) == "table" then
-			deepcopy(dest[key], src[key])
-		else
-			dest[key] = value
-		end
-	end
-end
+
 
 -- Link table in RCEPGP's saved variable with EPGP's saved variable together.
 -- Used to send EPGP(dkp reloaded) settings with RC sync
@@ -37,7 +27,7 @@ end
 
 -- Restore settings stored in RC to EPGP(dkp reloaded)
 function RCEPGP:RCToEPGPDkpReloadedSetting()
-	if not self:GetGeneraldb().sendEPGPSettings then return end
+	if not self:GetEPGPdb().sendEPGPSettings then return end
 
 	local syncHappened = false
 	if self:GetEPGPdb().EPGPDkpReloadedDB and self:GetEPGPdb().EPGPDkpReloadedDB.children then
@@ -51,7 +41,7 @@ function RCEPGP:RCToEPGPDkpReloadedSetting()
 
 				local mod = EPGP:GetModule(module)
 				-- Copy settings
-				deepcopy(EPGP.db.children[module].profile, self:GetEPGPdb().EPGPDkpReloadedDB.children[module].profile)
+				self:DeepCopy(EPGP.db.children[module].profile, self:GetEPGPdb().EPGPDkpReloadedDB.children[module].profile)
 
 				if mod then -- Enable module if needed
 					if self:GetEPGPdb().EPGPDkpReloadedDB.children[module].profile.enabled then

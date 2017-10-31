@@ -28,7 +28,7 @@ LibDialog:Register("RCEPGP_SHOW_NOTIFICATION", {
 		}
 	},
     show_while_dead = true,
-    hideOnEscape = true,
+    hide_on_escape = true,
 })
 
 -- Dialog input is the same as RCLOOTCOUNCIL_CONFIRM_AWARD, plus "gp" and "resonseGP".

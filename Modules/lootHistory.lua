@@ -15,6 +15,7 @@ function RCEPGPHistory:OnInitialize()
 	RCEPGP:AddRightClickMenu(_G["RCLootCouncil_LootHistory_RightclickMenu"], LootHistory.rightClickEntries, RCEPGPHistory.rightClickEntries)
 	self:RegisterMessage("RCHistory_NameEdit", "OnMessageReceived")
 	self:RegisterMessage("RCHistory_ResponseEdit", "OnMessageReceived")
+	self.initialize = true
 end
 
 function RCEPGPHistory:OnMessageReceived(msg, ...)

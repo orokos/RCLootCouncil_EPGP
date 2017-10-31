@@ -1,7 +1,6 @@
 local addon = LibStub("AceAddon-3.0"):GetAddon("RCLootCouncil")
 local RCEPGP = addon:GetModule("RCEPGP")
 local EPGP = LibStub("AceAddon-3.0"):GetAddon("EPGP")
-local GS = LibStub("LibGuildStorage-1.2")
 local L = LibStub("AceLocale-3.0"):GetLocale("RCLootCouncil")
 local LEP = LibStub("AceLocale-3.0"):GetLocale("RCEPGP")
 local GP = LibStub("LibGearPoints-1.2")
@@ -12,61 +11,104 @@ local RCVotingFrame = addon:GetModule("RCVotingFrame")
 local RCVF = RCEPGP:NewModule("RCEPGPVotingFrame", "AceComm-3.0", "AceConsole-3.0", "AceHook-3.0", "AceEvent-3.0", "AceTimer-3.0", "AceSerializer-3.0")
 
 local session = 1
+local db
 
 function RCVF:OnInitialize()
-	self:SecureHook(RCVotingFrame, "OnEnable", "OnVotingFrameEnable")
-	-- I really want to use self:RegisterComm("RCLootCouncil") instead of posthook, if I can ensure RCVF:OnCommReceived is executed after RCVotingFrame:OnCommReceived
-	self:SecureHook(RCVotingFrame, "OnCommReceived", "OnCommReceived")
+	db = RCEPGP:GetEPGPdb()
+	if not RCVotingFrame.scrollCols then -- RCVotingFrame hasn't been initialized.
+		return self:ScheduleTimer("OnInitialize", 0.5)
+	end
+	self:SecureHook(RCVotingFrame, "OnEnable", "AddWidgetsIntoVotingFrame")
+	EPGP.RegisterCallback(self, "StandingsChanged", "UpdateVotingFrame")
+
+	self:RegisterComm("RCLootCouncil", "OnCommReceived")
 	self:RegisterMessage("RCCustomGPRuleChanged", "OnMessageReceived")
 	self:RegisterMessage("RCSessionChangedPre", "OnMessageReceived")
-	EPGP.RegisterCallback(self, "StandingsChanged", "UpdateVotingFrame")
-    self:SetupColumns()
+    self:RegisterMessage("RCUpdateDB", "OnMessageReceived")
+
+    self:UpdateColumns()
+
 	RCEPGP:AddRightClickMenu(_G["RCLootCouncil_VotingFrame_RightclickMenu"], RCVotingFrame.rightClickEntries, self.rightClickEntries)
 	self:Add0GPSuffixToRCAwardButtons()
+	self:DisableGPPopupWhenNeeded()
+
+	if ExtraUtilities then
+		self:SecureHook(ExtraUtilities, "SetupColumns", function() self:UpdateColumns() end)
+		self:SecureHook(ExtraUtilities, "UpdateColumn", function() self:UpdateColumns() end)
+	end
+
 	self.initialize = true
 end
 
-function RCVF:OnVotingFrameEnable()
-	self:AddWidgetsIntoVotingFrame()
-end
-
 function RCVF:OnMessageReceived(msg, ...)
-    RCEPGP:DebugPrint("RCVF", "ReceiveMessage", msg)
-    if msg == "RCCustomGPRuleChanged" then
-        RCEPGP:DebugPrint("Refresh menu due to GP rule changed.")
-        self:UpdateGPEditbox()
-        RCEPGP:RefreshMenu(level)
-	elseif msg == "RCSessionChangedPre" then
+    RCEPGP:DebugPrint("RCVF:OnMessageReceived", msg, ...)
+	if msg == "RCSessionChangedPre" then
 		local s = unpack({...})
 		session = s
 		self:UpdateGPEditbox()
 		self:UpdateGPAwardString()
+	elseif msg == "RCUpdateDB" then
+		db = RCEPGP:GetEPGPdb()
 	end
 end
 
-function RCVF:OnCommReceived(_, prefix, serializedMsg, distri, sender)
+function RCVF:OnCommReceived(prefix, serializedMsg, distri, sender)
 	if prefix == "RCLootCouncil" then
 		local test, command, data = addon:Deserialize(serializedMsg)
 		if addon:HandleXRealmComms(self, command, data, sender) then return end
 
 		if command == "change_response" or command == "response" then
-            RCEPGP:DebugPrint("ReceiveComm", command, unpack(data))
-            RCEPGP:RefreshMenu(1)
+            RCEPGP:DebugPrint("RCVF:OnCommReceived", command, unpack(data))
+            self:ScheduleTimer(function() RCEPGP:RefreshMenu(1) end, 0) -- to ensure menu refreshes after RCVotingFrame:OnCommReceived()
         elseif command == "RCEPGP_awarded" then
-            RCEPGP:DebugPrint("ReceiveComm", command, unpack(data))
+            RCEPGP:DebugPrint("RCVF:OnCommReceived", command, unpack(data))
             local data = unpack(data)
             local s, winner, gpAwarded = data.session, data.winner, data.gpAwarded
-            if (not RCVotingFrame:GetLootTable()) or (not RCVotingFrame:GetLootTable()[s]) then
+            if (not RCVotingFrame:GetLootTable()) or (not RCVotingFrame:GetLootTable()[s]) then -- lootTable may not exist due to reload
                 return
             end
             RCVotingFrame:GetLootTable()[s].gpAwarded = gpAwarded
-            self:UpdateGPAwardString()
-
-
+            self:UpdateVotingFrame()
 		end
 	end
 end
 
+-- We only want to disable GP popup of EPGP(dkp reloaded) when RCLootCouncil Voting Frame is opening.
+-- Restore to previous setting of EPGP loot popup when Voting Frame closes.
+local isDisablingEPGPPopup = false
+local isEPGPPopupEnabled = false
+function RCVF:DisableGPPopupWhenNeeded()
+    if EPGP and EPGP.GetModule then
+        local loot = EPGP:GetModule("loot")
+        if loot then
+            self:SecureHook(RCVotingFrame, "Show", function()
+                local loot = EPGP:GetModule("loot")
+                if not isDisablingEPGPPopup then
+                    isEPGPPopupEnabled = loot.db.profile.enabled
+                end
+                loot.db.profile.enabled = false
+                loot:Disable()
+                isDisablingEPGPPopup = true
+                self:DebugPrint("GP Popup of EPGP(dkp reloaded) disabled")
+            end)
+
+            self:SecureHook(RCVotingFrame, "Hide", function()
+                C_Timer.After(5, function() -- Delay it because loot event may be triggered slight after Session ends.
+                    local loot = EPGP:GetModule("loot")
+                    loot.db.profile.enabled = isEPGPPopupEnabled
+                    if isEPGPPopupEnabled then
+                        loot:Enable()
+                        self:DebugPrint("GP Popup of EPGP(dkp reloaded) enabled")
+                    else
+                        loot:Disable()
+                        self:DebugPrint("GP Popup of EPGP(dkp reloaded) disabled")
+                    end
+                    isDisablingEPGPPopup = false
+                end)
+            end)
+        end
+    end
+end
 
 function RCVF:UpdateVotingFrame()
     -- Dont try to use RCVotingFrame:GetFrame() here, it causes lag on login.
@@ -74,10 +116,8 @@ function RCVF:UpdateVotingFrame()
     	RCVotingFrame:Update()
 		RCVF:UpdateGPAwardString()
 		RCVF:UpdateGPEditbox()
+		RCEPGP:RefreshMenu(1)
 	end
-end
-
-function RCVF:OnEvent(event)
 end
 
 function RCVF:UpdateGPEditbox()
@@ -121,7 +161,7 @@ function RCVF:GetScrollColIndexFromName(colName)
     end
 end
 
-function RCVF:SetupColumns()
+function RCVF:UpdateColumns()
     local ep =
     { name = "EP", DoCellUpdate = self.SetCellEP, colName = "ep", sortnext = self:GetScrollColIndexFromName("response"), width = 60, align = "CENTER", defaultsort = "dsc" }
     local gp =
@@ -136,7 +176,7 @@ function RCVF:SetupColumns()
     RCEPGP:ReinsertColumnAtTheEnd(RCVotingFrame.scrollCols, gp)
     RCEPGP:ReinsertColumnAtTheEnd(RCVotingFrame.scrollCols, pr)
 
-    if RCEPGP:GetGeneraldb().biddingEnabled then
+    if db.biddingEnabled then
         RCEPGP:ReinsertColumnAtTheEnd(RCVotingFrame.scrollCols, bid)
     else
         RCEPGP:RemoveColumn(RCVotingFrame.scrollCols, bid)
@@ -400,7 +440,7 @@ RCVF.rightClickEntries = {
     { -- Level 1
         { -- Button 1
             pos = 2,
-            hidden = function() return not RCEPGP:GetGeneraldb().biddingEnabled end,
+            hidden = function() return not db.biddingEnabled end,
             notCheckable = true,
             func = function(name)
                 local data, name, item, responseGP, gp, bid = GetGPInfo(name)
