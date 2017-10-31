@@ -507,7 +507,7 @@ function RCEPGP:DBSetFunc(...)
 			default = default and default[args[i]]
 		end
 		if default and (value == nil or value == "") then -- Reset to default, if default exists
-			t[info[#info]] = default
+			t[info[#info]] = default[info[#info]]
 		else
 			t[info[#info]] = value
 		end
