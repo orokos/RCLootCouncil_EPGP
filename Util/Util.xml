@@ -2,6 +2,6 @@
 	<Script file = "Announcement.lua" />
 	<Script file = "EPGPSettingSync.lua" />
 	<Script file = "popups.lua" />
-	<Script file = "SecureEnv.lua" />
+	<Script file = "SecureExec.lua" />
 	<Script file = "SlashCmds.lua" />
 </Ui>
