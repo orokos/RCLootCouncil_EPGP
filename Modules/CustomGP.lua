@@ -40,60 +40,6 @@ function RCCustomGP:OnInitialize()
         { name = "isTitanforged", help = LEP["gp_variable_isTitanforged_help"], value = function(itemLink) return self:IsItemTitanforged(itemLink) and 1 or 0 end, },
         { name = "link", help = LEP["gp_variable_link_help"], value = function(itemLink) return itemLink or 0 end, },
     }
-    self.slotsWithWeight = {
-        RelicSlot = {
-            name = _G.INVTYPE_RELIC,
-            order = 1,
-        },
-        TrinketSlot = {
-            name = _G.INVTYPE_TRINKET,
-            order = 2,
-        },
-        HeadSlot = {
-            name = _G.INVTYPE_HEAD,
-            order = 3,
-        },
-        ChestSlot = {
-            name = _G.INVTYPE_CHEST,
-            order = 4,
-        },
-        LegsSlot = {
-            name = _G.INVTYPE_LEGS,
-            order = 5,
-        },
-        ShoulderSlot = {
-            name = _G.INVTYPE_SHOULDER,
-            order = 6,
-        },
-        HandsSlot = {
-            name = _G.INVTYPE_HAND,
-            order = 7,
-        },
-        WaistSlot = {
-            name = _G.INVTYPE_WAIST,
-            order = 8,
-        },
-        FeetSlot = {
-            name = _G.INVTYPE_FEET,
-            order = 9,
-        },
-        NeckSlot = {
-            name = _G.INVTYPE_NECK,
-            order = 10,
-        },
-        FingerSlot = {
-            name = _G.INVTYPE_FINGER,
-            order = 11,
-        },
-        BackSlot = {
-            name = _G.INVTYPE_CLOAK,
-            order = 12,
-        },
-        WristSlot = {
-            name = _G.INVTYPE_WRIST,
-            order = 13,
-        },
-    }
     self.INVTYPESlots = {
 		INVTYPE_HEAD		    = "HeadSlot",
 		INVTYPE_NECK		    = "NeckSlot",

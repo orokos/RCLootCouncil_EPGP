@@ -12,12 +12,14 @@ local LEP = LibStub("AceLocale-3.0"):GetLocale("RCEPGP")
 function RCEPGP:AddGPOptions()
     local options = addon:OptionsTable()
 
+    addon.options = addon:OptionsTable()
+
     local button, picker, text, gp = {}, {}, {}, {}
     for i = 1, addon.db.profile.maxButtons do
-        options.args.mlSettings.args.buttonsTab.args.buttonOptions.args["button" .. i].order = i * 4 + 1;
-        options.args.mlSettings.args.buttonsTab.args.buttonOptions.args["picker" .. i].order = i * 4 + 2;
-        options.args.mlSettings.args.buttonsTab.args.buttonOptions.args["picker" .. i].width = "half";
-        options.args.mlSettings.args.buttonsTab.args.buttonOptions.args["text" .. i].order = i * 4 + 3;
+        addon.options.args.mlSettings.args.buttonsTab.args.buttonOptions.args["button" .. i].order = i * 4 + 1;
+        addon.options.args.mlSettings.args.buttonsTab.args.buttonOptions.args["picker" .. i].order = i * 4 + 2;
+        addon.options.args.mlSettings.args.buttonsTab.args.buttonOptions.args["picker" .. i].width = "half";
+        addon.options.args.mlSettings.args.buttonsTab.args.buttonOptions.args["text" .. i].order = i * 4 + 3;
         gp = {
             order = i * 4 + 4,
             name = "GP",
@@ -37,15 +39,15 @@ function RCEPGP:AddGPOptions()
         if not addon.db.profile.responses[i].gp then
             addon.db.profile.responses[i].gp = "100%"
         end
-        options.args.mlSettings.args.buttonsTab.args.buttonOptions.args["gp" .. i] = gp;
+        addon.options.args.mlSettings.args.buttonsTab.args.buttonOptions.args["gp" .. i] = gp;
     end
 
 
     for k, v in pairs(addon.db.profile.responses.tier) do
-        options.args.mlSettings.args.buttonsTab.args.tierButtonsOptions.args["button" .. k].order = v.sort * 4 + 1
-        options.args.mlSettings.args.buttonsTab.args.tierButtonsOptions.args["color" .. k].order = v.sort * 4 + 2
-        options.args.mlSettings.args.buttonsTab.args.tierButtonsOptions.args["color" .. k].width = "half"
-        options.args.mlSettings.args.buttonsTab.args.tierButtonsOptions.args["text" .. k].order = v.sort * 4 + 3
+        addon.options.args.mlSettings.args.buttonsTab.args.tierButtonsOptions.args["button" .. k].order = v.sort * 4 + 1
+        addon.options.args.mlSettings.args.buttonsTab.args.tierButtonsOptions.args["color" .. k].order = v.sort * 4 + 2
+        addon.options.args.mlSettings.args.buttonsTab.args.tierButtonsOptions.args["color" .. k].width = "half"
+        addon.options.args.mlSettings.args.buttonsTab.args.tierButtonsOptions.args["text" .. k].order = v.sort * 4 + 3
         gp = {
             order = v.sort * 4 + 4,
             name = "GP",
@@ -65,16 +67,16 @@ function RCEPGP:AddGPOptions()
         if not addon.db.profile.tierButtons[v.sort].gp then
             addon.db.profile.tierButtons[v.sort].gp = "100%"
         end
-        options.args.mlSettings.args.buttonsTab.args.tierButtonsOptions.args["gp" .. k] = gp
+        addon.options.args.mlSettings.args.buttonsTab.args.tierButtonsOptions.args["gp" .. k] = gp
     end
 
     -- Relic Buttons/Responses
     if addon.db.profile.responses.relic then
     	for k, v in pairs(addon.db.profile.responses.relic) do
-            options.args.mlSettings.args.buttonsTab.args.relicButtonsOptions.args["button" .. k].order = v.sort * 4 + 1
-            options.args.mlSettings.args.buttonsTab.args.relicButtonsOptions.args["color" .. k].order = v.sort * 4 + 2
-            options.args.mlSettings.args.buttonsTab.args.relicButtonsOptions.args["color" .. k].width = "half"
-            options.args.mlSettings.args.buttonsTab.args.relicButtonsOptions.args["text" .. k].order = v.sort * 4 + 3
+            addon.options.args.mlSettings.args.buttonsTab.args.relicButtonsOptions.args["button" .. k].order = v.sort * 4 + 1
+            addon.options.args.mlSettings.args.buttonsTab.args.relicButtonsOptions.args["color" .. k].order = v.sort * 4 + 2
+            addon.options.args.mlSettings.args.buttonsTab.args.relicButtonsOptions.args["color" .. k].width = "half"
+            addon.options.args.mlSettings.args.buttonsTab.args.relicButtonsOptions.args["text" .. k].order = v.sort * 4 + 3
             gp = {
                 order = v.sort * 4 + 4,
                 name = "GP",
@@ -94,12 +96,12 @@ function RCEPGP:AddGPOptions()
             if not addon.db.profile.relicButtons[v.sort].gp then
                 addon.db.profile.relicButtons[v.sort].gp = "100%"
             end
-            options.args.mlSettings.args.buttonsTab.args.relicButtonsOptions.args["gp" .. k] = gp
+            addon.options.args.mlSettings.args.buttonsTab.args.relicButtonsOptions.args["gp" .. k] = gp
     	end
     end
 
-    --options.args.settings.args.profiles = LibStub("AceDBOptions-3.0"):GetOptionsTable(addon.db)
-    --LibStub("AceConfigRegistry-3.0"):RegisterOptionsTable("RCLootCouncil", options)
+    addon.options.args.settings.args.profiles = LibStub("AceDBOptions-3.0"):GetOptionsTable(addon.db)
+    LibStub("AceConfigRegistry-3.0"):RegisterOptionsTable("RCLootCouncil", addon.options)
     LibStub("AceConfigRegistry-3.0"):NotifyChange("RCLootCouncil")
 end
 
@@ -107,7 +109,6 @@ function RCEPGP:OptionsTable()
 	local options =
 	{
 	    name = "RCLootCouncil-EPGP",
-	    order = 1,
 	    type = "group",
 	    childGroups = "tab",
 	    inline = false,
@@ -132,12 +133,12 @@ function RCEPGP:OptionsTable()
             },
             generalTab = {
                 name = _G.GENERAL,
-                order = 5,
+                order = 1,
                 type = "group",
                 args = {
                     gpOptions = {
                         name = LEP["gpOptions"],
-                        order = 3,
+                        order = 1,
                         type = "group",
                         inline = true,
                         args = {
@@ -147,8 +148,8 @@ function RCEPGP:OptionsTable()
                                 width = "double",
                                 type = "execute",
                                 func = function()
-                                    InterfaceOptionsFrame_OpenToCategory(optionsFrame.ml)
-                                    InterfaceOptionsFrame_OpenToCategory(optionsFrame.ml) -- Twice due to blizz reasons
+                                    InterfaceOptionsFrame_OpenToCategory(addon.optionsFrame.ml)
+                                    InterfaceOptionsFrame_OpenToCategory(addon.optionsFrame.ml) -- Twice due to blizz reasons
                                     LibStub("AceConfigDialog-3.0"):SelectGroup("RCLootCouncil", "mlSettings", "buttonsTab")
                                 end,
                             },
@@ -156,7 +157,7 @@ function RCEPGP:OptionsTable()
                     },
                     sync = {
                         name = LEP["Setting Sync"],
-                        order = 4,
+                        order = 2,
                         type = "group",
                         inline = true,
                         args = {
@@ -171,7 +172,7 @@ function RCEPGP:OptionsTable()
                     },
                     bidding = {
                         name = _G.BID,
-                        order = 5,
+                        order = 3,
                         type = "group",
                         inline = true,
                         args = {
@@ -188,11 +189,10 @@ function RCEPGP:OptionsTable()
             },
             gpTab = {
                 name = LEP["Custom GP"],
-                order = 6,
+                order = 2,
                 type = "group",
                 get = self:DBGetFunc("customGP"),
                 set = self:DBSetFunc("customGP"),
-				disabled = function() return (not self:GetEPGPdb().customGP.customGPEnabled) end,
                 args = {
                     customGPdesc = {
                         name = LEP["customGP_desc"],
@@ -205,14 +205,14 @@ function RCEPGP:OptionsTable()
                         order = 2,
                         type = "toggle",
                         width = "double",
-						disabled = false,
                     },
                     slotWeights = {
                         name = LEP["slot_weights"],
                         order = 3,
                         type = "group",
                         inline = true,
-						validate = "VaildateNumber",
+						validate = "ValidateNumber",
+						disabled = function() return (not self:GetEPGPdb().customGP.customGPEnabled) end,
                         args = {
                             -- Fill in later
                         },
@@ -235,6 +235,7 @@ function RCEPGP:OptionsTable()
                         type = "input",
                         width = "full",
 						validate = "ValidateFormula",
+						disabled = function() return (not self:GetEPGPdb().customGP.customGPEnabled) end,
                     },
                     restoreDefault = {
                         name = _G.RESET_TO_DEFAULT,
@@ -448,38 +449,16 @@ function RCEPGP:OptionsTable()
     --]] --TODO: feature not available in v2.0
 
     -- Add Options to set slot weights
-    local orderedSlots = {}
-    for slot, info in pairs(RCCustomGP.slotsWithWeight) do
-        table.insert(orderedSlots, {
-            name = info.name,
-            order = info.order,
-            slot = slot,
-        })
-    end
-    table.sort(orderedSlots, function(a, b)
-        if not a.order then return false end
-        if not b.order then return true end
-        return a.order < b.order
-    end)
-
-    for i = 1, #orderedSlots do
-        local slot = orderedSlots[i].slot
-        local name = orderedSlots[i].name
-        options.args.gpTab.args.slotWeights.args[slot] = {
-            name = name,
+	local invTypes = {
+		"INVTYPE_RELIC", "INVTYPE_TRINKET", "INVTYPE_HEAD", "INVTYPE_CHEST", "INVTYPE_LEGS", "INVTYPE_SHOULDER",
+		"INVTYPE_HAND", "INVTYPE_WAIST", "INVTYPE_FEET", "INVTYPE_CLOAK", "INVTYPE_WRIST", "INVTYPE_NECK", "INVTYPE_FINGER"}
+    for i = 1, #invTypes do
+		local type = invTypes[i]
+        options.args.gpTab.args.slotWeights.args[RCCustomGP.INVTYPESlots[type]] = {
+            name = _G[type],
             order = 10 + i,
             type = "input",
             width = "half",
-            validate = function(info, value)
-                if value == "" then
-                    return true
-                end
-                if not tonumber(value) then
-                    return LEP["Input must be a number."]
-                end
-                return true
-            end,
-			--usage = "Must be a number",
         }
     end
 
@@ -554,7 +533,7 @@ function RCEPGP:ValidateFormula(info, value)
 	if not func then
 		local func, err = loadstring("return "..value)
 		if not func then
-			return LEP["formula_syntax_error"].." "..err
+			return LEP["formula_syntax_error"].."\n"..err
 		end
 	end
 	return true
