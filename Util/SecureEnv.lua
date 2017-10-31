@@ -16,7 +16,7 @@ end
 
 -- Get a function environment
 -- 'overrides' contains the data you want to insert into the environment
-function RCEPGP:GetFuncEnv(overrides)
+function RCEPGP:GetSecureEnv(overrides)
 	local env_getglobal
 	local exec_env = setmetatable({}, { __index =
 		function(t, k)

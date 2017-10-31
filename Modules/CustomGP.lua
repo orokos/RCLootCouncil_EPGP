@@ -32,7 +32,7 @@ function RCCustomGP:OnInitialize()
         { name = "hasIndes", help = LEP["gp_variable_hasIndes_help"], value = function(itemLink) return self:GetBonusInfo(itemLink).hasIndes and 1 or 0 end, },
         { name = "numSocket", help = LEP["gp_variable_numSocket_help"], value = function(itemLink) return self:GetBonusInfo(itemLink).numSocket or 0 end, },
         { name = "rarity", help = LEP["gp_variable_rarity_help"], value = function(itemLink) return select(1, self:GetRarityIlvlSlot(itemLink)) or 0 end, },
-        { name = "itemID", help = LEP["gp_variable_itemID_help"], value = function(itemLink) return self:GetItemID(itemLink) or 0 end, },
+        { name = "itemID", help = LEP["gp_variable_itemID_help"], value = function(itemLink) return addon:GetItemIDFromLink(itemLink) or 0 end, },
         { name = "isNormal", help = LEP["gp_variable_isNormal_help"], value = function(itemLink) return self:IsItemNormalDifficulty(itemLink) and 1 or 0 end, },
         { name = "isHeroic", help = LEP["gp_variable_isHeroic_help"], value = function(itemLink) return self:IsItemHeroicDifficulty(itemLink) and 1 or 0 end, },
         { name = "isMythic", help = LEP["gp_variable_isMythic_help"], value = function(itemLink) return self:IsItemMythicDifficulty(itemLink) and 1 or 0 end, },
@@ -57,11 +57,12 @@ function RCCustomGP:OnInitialize()
         INVTYPE_RELIC           = "RelicSlot",
     }
     self:RegisterMessage("RCUpdateDB", "OnMessageReceived")
-	self:RegisterBucketEvent("RCEPGPConfigTableChanged", 1, "OnMessageReceived")
+	self:RegisterMessage("RCEPGPConfigTableChanged", "OnMessageReceived")
     self.initialize = true
 end
 
 function RCCustomGP:OnMessageReceived(msg, ...)
+	RCEPGP:DebugPrint("RCCustomGP:OnMessageReceived", msg, ...)
 	if msg == "RCUpdateDB" then
 		db = RCEPGP:GetEPGPdb()
 	elseif msg == "RCEPGPConfigTableChanged" then
@@ -78,49 +79,15 @@ end
 LibStub.minors[MAJOR_VERSION] = 10200
 local lib = LibStub:GetLibrary(MAJOR_VERSION)
 
-local ItemUtils = LibStub("LibItemUtils-1.0")
-
--- The default quality threshold:
--- 0 - Poor
--- 1 - Uncommon
--- 2 - Common
--- 3 - Rare
--- 4 - Epic
--- 5 - Legendary
--- 6 - Artifact
-local quality_threshold = 4
-
 local recent_items_queue = {}
 local recent_items_map = {}
-
-local relicSubClass
-local function GetRelicSubClassString()
-    if not relicSubClass then -- If not cached obtain
-        local _, itemLink, rarity, level, _, itemClass, itemSubClass, _, equipLoc = GetItemInfo(140819) -- ID of some relic
-        relicSubClass = itemSubClass
-    end
-
-    return relicSubClass
-end
-
-
--- Given a list of item bonuses, return the ilvl delta it represents
--- (15 for Heroic, 30 for Mythic)
-local function GetItemBonusLevelDelta(itemBonuses)
-    for _, value in pairs(itemBonuses) do
-        -- Item modifiers for heroic are 566 and 570; mythic are 567 and 569
-        if value == 566 or value == 570 then return 15 end
-        if value == 567 or value == 569 then return 30 end
-    end
-    return 0
-end
 
 local function UpdateRecentLoot(itemLink)
     if recent_items_map[itemLink] then return end
 
     table.insert(recent_items_queue, 1, itemLink)
     recent_items_map[itemLink] = true
-    if #recent_items_queue > 15 then
+    if #recent_items_queue > 30 then
         local itemLink = table.remove(recent_items_queue)
         recent_items_map[itemLink] = nil
     end
@@ -140,40 +107,6 @@ function lib:GetRecentItemLink(i)
     return recent_items_queue[i]
 end
 
---- Return the currently set quality threshold.
-function lib:GetQualityThreshold()
-    if not db.customGP.customGPEnabled then
-        return functionOldLibGearPoints["GetQualityThreshold"](oldLib)
-    end
-    return quality_threshold
-end
-
---- Set the minimum quality threshold.
--- @param itemQuality Lowest allowed item quality.
-function lib:SetQualityThreshold(itemQuality)
-    if not db.customGP.customGPEnabled then
-        return functionOldLibGearPoints["SetQualityThreshold"](oldLib, itemQuality)
-    end
-    itemQuality = itemQuality and tonumber(itemQuality)
-    if not itemQuality or itemQuality > 6 or itemQuality < 0 then
-        return error("Usage: SetQualityThreshold(itemQuality): 'itemQuality' - number [0,6].", 3)
-    end
-    quality_threshold = itemQuality
-end
-
-local ITEM_BONUS_TYPE = {
-    [40] = "AVOIDANCE", -- avoidance, no material value
-    [41] = "LEECH", -- leech, no material value
-    [42] = "SPEED", -- speed, arguably useful, so 25 gp
-    [43] = "INDESTRUCT", -- indestructible, no material value
-    [523] = "SOCKET", -- extra socket
-    [563] = "SOCKET", -- extra socket
-    [564] = "SOCKET", -- extra socket
-    [565] = "SOCKET", -- extra socket
-    [572] = "SOCKET", -- extra socket
-    [1808] = "SOCKET", -- extra socket
-}
-
 function lib:GetValue(item)
     if not db.customGP.customGPEnabled then
         return functionOldLibGearPoints["GetValue"](oldLib, item)
@@ -183,16 +116,18 @@ function lib:GetValue(item)
 
     local _, itemLink, rarity, level, _, itemClass, itemSubClass, _, equipLoc = GetItemInfo(item)
     if not itemLink then return end
+	if level < 463 and (not RCCustomGP:GetTokenInfo(itemLink)) then
+		return nil, nil, level, rarity, equipLoc
+	end
+
     UpdateRecentLoot(itemLink)
 
     if RCCustomGP.gpCache[itemLink] then -- Return GP directly if it is cached.
         return RCCustomGP.gpCache[itemLink]
     end
 
-    local itemID = RCCustomGP:GetItemID(itemLink)
-    if level < 463 and (not RCCustomGP:GetTokenInfo(itemLink)) then
-        return nil, nil, level, rarity, equipLoc
-    end
+    local itemID = addon:GetItemIDFromLink(itemLink)
+
 
     local formula, err = RCCustomGP:GetFormulaFunc()
     if not formula then
@@ -222,7 +157,7 @@ function lib:GetValue(item)
         RCCustomGP.itemInfoCache[itemLink] = itemData
     end
 
-    local fenv = RCEPGP:GetFuncEnv(itemData)
+    local fenv = RCEPGP:GetSecureEnv(itemData)
     formula = setfenv(formula, fenv)
 
     local status, value = pcall(formula)
@@ -251,7 +186,7 @@ end
 --------------------End of GP Calculation -------------------------------
 
 function RCCustomGP:GetTokenInfo(itemLink)
-    local id = self:GetItemID(itemLink)
+    local id = addon:GetItemIDFromLink(itemLink)
     local ilvl = RCTokenIlvl[id]
     local slot = RCTokenTable[id]
     return ilvl, slot
@@ -282,9 +217,6 @@ function RCCustomGP:AnnounceRuntimeError(errMsg)
     end
 end
 
-local ItemUtils = LibStub:GetLibrary("LibItemUtils-1.0")
-local tooltip = ItemUtils.tooltip
-
 local links =
 {
     Heroic = "|cffa335ee|Hitem:147425::::::::2:71::5:3:3562:1497:3528:::|h[Cord of Pilfered Rosaries]|h|r",
@@ -297,6 +229,8 @@ local links =
 for _, item in pairs(links) do -- Load item infos into memory
     GetItemInfo(item)
 end
+
+local tooltip = LibStub("LibItemUtils-1.0").tooltip
 
 local function GetTextLeft2(link)
     tooltip:SetOwner(UIParent, "ANCHOR_NONE")
@@ -318,12 +252,11 @@ end
 
 function RCCustomGP:IsItemHasKeyword(item, keyword)
     if (not keyword) or keyword == "" then return false end
-    local link = select(2, GetItemInfo(item))
     tooltip:SetOwner(UIParent, "ANCHOR_NONE")
-    tooltip:SetHyperlink(link)
+    tooltip:SetHyperlink(item)
     if tooltip:NumLines() > 1 then
         for i = 2, 5 do -- Check 4 lines, just in case.
-            local line = getglobal(tooltip:GetName()..'TextLeft' .. i)
+            local line = getglobal(tooltip:GetName()..'TextLeft'..i)
             if line and line.GetText then
                 local text = line:GetText()
                 if text and text:find(keyword)then
@@ -341,21 +274,32 @@ end
 
 function RCCustomGP:GetRarityIlvlSlot(itemLink)
     local _, itemLink, rarity, level, _, itemClass, itemSubClass, _, equipLoc = GetItemInfo(itemLink)
-    local itemBonuses = ItemUtils:BonusIDs(itemLink)
-    if equipLoc == "" and itemSubClass == GetRelicSubClassString() then
+    local itemBonuses = select(17, addon:DecodeItemLink(itemLink))
+    if addon.db.global.localizedSubTypes[itemSubClass] == "Artifact Relic" then
         equipLoc = "INVTYPE_RELIC"
     end
     local slot = self.INVTYPESlots[equipLoc]
-    local itemID = RCCustomGP:GetItemID(itemLink)
     if self:GetTokenInfo(itemLink) then
-        level, slot = self:GetTokenInfo(itemLink)
-        level = level + GetItemBonusLevelDelta(itemBonuses)
+        level = addon:GetTokenIlvl(itemLink)
     end
     return rarity, level, slot
 end
 
+local ITEM_BONUS_TYPE = {
+    [40] = "AVOIDANCE", -- avoidance, no material value
+    [41] = "LEECH", -- leech, no material value
+    [42] = "SPEED", -- speed, arguably useful, so 25 gp
+    [43] = "INDESTRUCT", -- indestructible, no material value
+    [523] = "SOCKET", -- extra socket
+    [563] = "SOCKET", -- extra socket
+    [564] = "SOCKET", -- extra socket
+    [565] = "SOCKET", -- extra socket
+    [572] = "SOCKET", -- extra socket
+    [1808] = "SOCKET", -- extra socket
+}
+
 function RCCustomGP:GetBonusInfo(itemLink)
-    local itemBonuses = ItemUtils:BonusIDs(itemLink)
+    local itemBonuses = select(17, addon:DecodeItemLink(itemLink))
     local hasAvoid = false
     local hasLeech = false
     local hasSpeed = false
@@ -388,10 +332,6 @@ end
 
 function RCCustomGP:IsItemToken(itemLink)
     return not not self:GetTokenInfo(itemLink)
-end
-
-function RCCustomGP:GetItemID(itemLink)
-    return tonumber(itemLink:match("item:(%d+)"))
 end
 
 function RCCustomGP:IsItemNormalDifficulty(item)
