@@ -89,7 +89,7 @@ function RCVF:DisableGPPopupWhenNeeded()
                 loot.db.profile.enabled = false
                 loot:Disable()
                 isDisablingEPGPPopup = true
-                self:DebugPrint("GP Popup of EPGP(dkp reloaded) disabled")
+                RCEPGP:DebugPrint("GP Popup of EPGP(dkp reloaded) disabled")
             end)
 
             self:SecureHook(RCVotingFrame, "Hide", function()
@@ -98,10 +98,10 @@ function RCVF:DisableGPPopupWhenNeeded()
                     loot.db.profile.enabled = isEPGPPopupEnabled
                     if isEPGPPopupEnabled then
                         loot:Enable()
-                        self:DebugPrint("GP Popup of EPGP(dkp reloaded) enabled")
+                        RCEPGP:DebugPrint("GP Popup of EPGP(dkp reloaded) enabled")
                     else
                         loot:Disable()
-                        self:DebugPrint("GP Popup of EPGP(dkp reloaded) disabled")
+                        RCEPGP:DebugPrint("GP Popup of EPGP(dkp reloaded) disabled")
                     end
                     isDisablingEPGPPopup = false
                 end)
