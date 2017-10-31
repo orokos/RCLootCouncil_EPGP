@@ -187,7 +187,7 @@ end
 
 function RCCustomGP:GetTokenInfo(itemLink)
     local id = addon:GetItemIDFromLink(itemLink)
-    local ilvl = RCTokenIlvl[id]
+    local ilvl = addon:GetTokenIlvl(itemLink)
     local slot = RCTokenTable[id]
     return ilvl, slot
 end
@@ -280,7 +280,7 @@ function RCCustomGP:GetRarityIlvlSlot(itemLink)
     end
     local slot = self.INVTYPESlots[equipLoc]
     if self:GetTokenInfo(itemLink) then
-        level = addon:GetTokenIlvl(itemLink)
+		level, slot = self:GetTokenInfo(itemLink)
     end
     return rarity, level, slot
 end
