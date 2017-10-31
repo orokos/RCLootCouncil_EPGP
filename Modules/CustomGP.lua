@@ -128,14 +128,6 @@ function lib:GetValue(item)
 
     local itemID = addon:GetItemIDFromLink(itemLink)
 
-
-    local formula, err = RCCustomGP:GetFormulaFunc()
-    if not formula then
-        formula, err = RCCustomGP:GetDefaultFormulaFunc()
-    end
-
-    local fenv
-
     local itemData = {}
 
     if RCCustomGP.itemInfoCache[itemLink] then
@@ -157,26 +149,8 @@ function lib:GetValue(item)
         RCCustomGP.itemInfoCache[itemLink] = itemData
     end
 
-    local fenv = RCEPGP:GetSecureEnv(itemData)
-    formula = setfenv(formula, fenv)
-
-    local status, value = pcall(formula)
-
-    local high
-    if status then -- No Error
-        high = tonumber(value)
-    else -- Error
-        formula = RCCustomGP:GetDefaultFormulaFunc()
-        formula = setfenv(formula, fenv)
-        high = tonumber(formula())
-        RCCustomGP:AnnounceRuntimeError(value)
-    end
-
-    if high then
-        high = math.floor(0.5 + high)
-    else
-        high = 0
-    end
+	local high = tonumber(RCEPGP:SecureExecString(db.customGP.formula, itemData)) or 0
+	high = math.floor(0.5 + high)
 
     RCEPGP:DebugPrint("ItemGPUpdate", itemLink, high)
     RCCustomGP.gpCache[itemLink] = high
@@ -190,31 +164,6 @@ function RCCustomGP:GetTokenInfo(itemLink)
     local ilvl = addon:GetTokenIlvl(itemLink)
     local slot = RCTokenTable[id]
     return ilvl, slot
-end
-
-function RCCustomGP:GetFormulaFunc()
-    local formula, err = loadstring("return "..db.customGP.formula)
-    if not formula then
-        formula, err = loadstring(db.customGP.formula)
-    end
-    return formula, err
-end
-
-function RCCustomGP:GetDefaultFormulaFunc()
-    local formula, err = loadstring(RCEPGP.defaults.customGP.formula)
-    if not formula then
-        formula, err = loadstring("return "..RCEPGP.defaults.customGP.formula)
-    end
-    return formula, err
-end
-
-local ANNOUNCE_INTERVAL = 2
-local lastErrorTime
-function RCCustomGP:AnnounceRuntimeError(errMsg)
-    if (not lastErrorTime) or GetTime() - lastErrorTime > ANNOUNCE_INTERVAL then
-        lastErrorTime = GetTime()
-        self:Print(LEP["announce_formula_runtime_error"].."\n"..errMsg)
-    end
 end
 
 local links =

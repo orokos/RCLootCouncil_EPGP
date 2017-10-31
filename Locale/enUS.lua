@@ -7,7 +7,8 @@ if not L then return end
 
 L["announce_awards_desc2"] = [=[
 RCLootCouncil-EPGP: #diffgp# for the amount of GP the player gains from the item. #ep# for the EP of player. #gp# for the GP of player before getting the item. #pr# for the PR of player before getting the item. #newgp# for the GP of player after getting the item. #newpr# for the PR of player after getting the item.]=]
-L["announce_formula_runtime_error"] = "Your GP formula has runtime error. Default formula is used when error occurs."
+L["%s_formula_runtime_error"] = "'%s' formula has runtime error."
+L["%s_formula_syntax_error"] = "'%s' formula has syntax error."
 L["Award GP (Default: %s)"] = "Award GP (Default: %s)"
 L["bidding_desc"] = "Player can send bid price to the loot master by sending a note that starts with integer in the RCLootCouncil popup."
 L["chat_commands"] = "- epgp      - Open the RCLootCouncil-EPGP options interface"

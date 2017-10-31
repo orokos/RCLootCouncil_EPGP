@@ -16,7 +16,7 @@ end
 
 -- Get a function environment
 -- 'overrides' contains the data you want to insert into the environment
-function RCEPGP:GetSecureEnv(overrides)
+local function GetSecureEnv(overrides)
 	local env_getglobal
 	local exec_env = setmetatable({}, { __index =
 		function(t, k)
@@ -38,6 +38,35 @@ function RCEPGP:GetSecureEnv(overrides)
 		return exec_env[k]
 	end
 	return exec_env
+end
+
+local lastRunTimeErrorTime = {}
+local ANNOUNCE_ERROR_INTERVAL = 3
+-- Execute the function in a secure environment and print error without spamming.
+-- @param funcString the func string used by "loadstring"
+-- @param overrides this contains the data you want to insert info the secure environment
+-- @return the return value of called function if the excution success. "error" if any error.
+function RCEPGP:SecureExecString(funcString, overrides)
+	local func, err = loadstring(funcString)
+	if not func then
+		func, err = loadstring("return "..funcString)
+		if not func then
+			self:Print(format(LEP["%s_formula_syntax_error"], funcString).." "..err)
+			return "error"
+		end
+	end
+
+	local env = GetSecureEnv(overrides)
+	setfenv(func, env)
+
+	local status, value = pcall(func)
+	if not status and ((not lastRunTimeErrorTime[funcString]) or
+		GetTime() - lastRunTimeErrorTime[funcString] > ANNOUNCE_ERROR_INTERVAL) then
+		lastRunTimeErrorTime[funcString] = GetTime()
+		self:Print(format(LEP["%s_formula_runtime_error"], funcString).."  "..value)
+		return "error"
+	end
+	return value
 end
 
 -- blocked lua functions
