@@ -1,5 +1,8 @@
 ### v2.2
 ---
+- Screenshot feature is removed.
+  - There are some issues with this feature that is difficult to solve as a plugin of RCLootCouncil.
+  - If this feature returns, this feature should be in RCLootCouncil instead of RCLootCouncil-EPGP.
 - Improve performance when you are using custom GP.
 ###### Bugfixes
 - Fix an issue in custom GP that causes the item list in EPGP's UI show unintended items.
