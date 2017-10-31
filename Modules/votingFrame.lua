@@ -125,7 +125,7 @@ function RCVF:UpdateGPEditbox()
     if lootTable then
         local t = lootTable[session]
         if t then
-            local gp = GP:GetValue(t.link) or 0
+            local gp = lootTable[session].gp or 0
             RCVotingFrame:GetFrame().gpEditbox:SetNumber(gp)
         end
     end
