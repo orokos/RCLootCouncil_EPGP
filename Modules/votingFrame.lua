@@ -258,7 +258,7 @@ end
 
 -- the bid value, limited by min and max bid/min new PR.
 -- TODO: mldb
-function RCVF:GetRealBid(session, name)
+function RCVF:GetBidInfo(session, name)
 	local bid = self:GetBidFromNote(session, name)
 	local defaultBid = tonumber(RCEPGP:GetEPGPdb().bid.defaultBid)
 	local minBid = tonumber(RCEPGP:GetEPGPdb().bid.minBid)
@@ -288,24 +288,37 @@ function RCVF:GetRealBid(session, name)
 	elseif bid > maxBid then
 		bid = maxBid
 	end
-	return bid
-end
-
--- Get the GP to be awarded according to the bid value and bid mode.
-function RCVF:GetBidGP(itemGP, bid)
-
+	return bid, minBid, maxBid
 end
 
 function RCVF.SetCellBid(rowFrame, frame, data, cols, row, realrow, column, fShow, table, ...)
-    local name = data[realrow].name
-    local bid = RCEPGP:GetBidFromNote(name)
-    if bid then
-        frame.text:SetText(tostring(bid))
-        data[realrow].cols[column].value = bid
-    else
-        data[realrow].cols[column].value = 0
-        frame.text:SetText("")
-    end
+	local name = data[realrow].name
+	local bidFromNote = RCVF:GetBidFromNote(session, name)
+	local realBid, minBid, maxBid = RCVF:GetBidInfo(session, name)
+
+	if realBid == bidFromNote then
+		if not realBid then
+			frame.text:SetText("?")
+		else
+			frame.text:SetText(format("%.1g", realBid))
+		end
+	else
+		if not realBid then -- shouldn't happen, keep this just in case
+			frame.text:SetText("?")
+		elseif not bidFromNote then
+			frame.text:SetText(format("%.1g", realBid).." (?)")
+		else
+			local color = ""
+			if realBid <= minBid + 0.0001 then
+				color = COLOR_GREY
+			elseif realBid >= maxBid - 0.0001 then
+				color = COLOR_RED
+			end
+			frame.text:SetText(color..format("%.1g", realBid).." ("..format("%.1g",bidFromNote)")")
+		end
+	end
+
+	data[realrow].cols[column].value = realBid or -1
 end
 
 function RCVF.PRSort(table, rowa, rowb, sortbycol)
@@ -466,7 +479,7 @@ local function GetGPInfo(name)
         local editboxGP = RCVotingFrame:GetFrame().gpEditbox:GetNumber()
         local gp = RCEPGP:GetFinalGP(responseGP, editboxGP)
         local item = lootTable[session].link
-        local bid = RCVF:GetRealBid(name)
+        local bid = RCVF:GetBidInfo(name)
         return data, name, item, responseGP, gp, bid
     else -- Error occurs
         return nil, "UNKNOWN", "UNKNOWN", "UNKNOWN", 0, 0 -- nil protection
