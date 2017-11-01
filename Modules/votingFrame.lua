@@ -176,7 +176,7 @@ function RCVF:UpdateColumns()
     RCEPGP:ReinsertColumnAtTheEnd(RCVotingFrame.scrollCols, gp)
     RCEPGP:ReinsertColumnAtTheEnd(RCVotingFrame.scrollCols, pr)
 
-    if db.biddingEnabled then
+    if db.bid.biddingEnabled then
         RCEPGP:ReinsertColumnAtTheEnd(RCVotingFrame.scrollCols, bid)
     else
         RCEPGP:RemoveColumn(RCVotingFrame.scrollCols, bid)
@@ -244,7 +244,8 @@ function RCVF.SetCellPR(rowFrame, frame, data, cols, row, realrow, column, fShow
     data[realrow].cols[column].value = pr or 0
 end
 
-function RCVF:GetBid(name)
+-- The origin bid by player, parsed from note.
+function RCVF:GetBidFromNote(session, name)
     local lootTable = RCVotingFrame:GetLootTable()
 
     -- nil protection
@@ -258,9 +259,49 @@ function RCVF:GetBid(name)
     end
 end
 
+-- the bid value, limited by min and max bid/min new PR.
+-- TODO: mldb
+function RCVF:GetRealBid(session, name)
+	local bid = self:GetBidFromNote(session, name)
+	local defaultBid = tonumber(RCEGPP:GetEPGPdb().bid.defaultBid)
+	local minBid = tonumber(RCEPGP:GetEPGPdb().bid.minBid)
+	local maxBid
+	local bidMode = RCEPGP:GetEPGPdb().bid.bidMode
+	if bidMode == "prRelative" then
+		maxBid = tonumber(RCEPGP:GetEPGPdb().bid.maxBid)
+	else
+		local minNewPR = tonumber(RCEPGP:GetEPGPdb().bid.minNewPR)
+		local ep, gp = EPGP:GetEPGP(RCEPGP:GetEPGPName(name))
+
+		if not ep then
+			maxBid = 0
+		else
+			local maxNewGP = ep/minNewPR
+			maxBid = maxNewGP - gp
+			if maxBid < 0 then
+				maxBid = 0
+			end
+		end
+	end
+
+	if not bid then
+		bid = default
+	elseif bid < minBid then
+		bid = minBid
+	elseif bid > maxBid then
+		bid = maxBid
+	end
+	return bid
+end
+
+-- Get the GP to be awarded according to the bid value and bid mode.
+function RCVF:GetBidGP(itemGP, bid)
+
+end
+
 function RCVF.SetCellBid(rowFrame, frame, data, cols, row, realrow, column, fShow, table, ...)
     local name = data[realrow].name
-    local bid = RCEPGP:GetBid(name)
+    local bid = RCEPGP:GetBidFromNote(name)
     if bid then
         frame.text:SetText(tostring(bid))
         data[realrow].cols[column].value = bid
@@ -429,7 +470,7 @@ local function GetGPInfo(name)
         local editboxGP = RCVotingFrame:GetFrame().gpEditbox:GetNumber()
         local gp = RCEPGP:GetFinalGP(responseGP, editboxGP)
         local item = lootTable[session].link
-        local bid = RCVF:GetBid(name)
+        local bid = RCVF:GetRealBid(name)
         return data, name, item, responseGP, gp, bid
     else -- Error occurs
         return nil, "UNKNOWN", "UNKNOWN", "UNKNOWN", 0, 0 -- nil protection

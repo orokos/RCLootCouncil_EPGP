@@ -170,19 +170,58 @@ function RCEPGP:OptionsTable()
                             },
                         },
                     },
-                    bidding = {
+                    bid = {
                         name = _G.BID,
                         order = 3,
                         type = "group",
                         inline = true,
+						get = self:DBGetFunc("bid"),
+						set = self:DBSetFunc("bid"),
                         args = {
-                            biddingEnabled = {
+                            bidEnabled = {
                                 name = _G.ENABLE,
                                 desc = LEP["bidding_desc"],
                                 order = 1,
                                 type = "toggle",
                                 width = "full",
                             },
+							bidMode = {
+								name = "Bid Mode",
+								values = {
+									prRelative="Highest PR*bid wins. Winner gets GP of (gp of item)*bid",
+									gpAbsolute="Highest bid wins. Winner gets GP of bid.",
+									gpRelative="Highest bid wins. Winner gets GP of (gp of item)*bid",
+								},
+								order = 2,
+								type = "select",
+								width = "full",
+							},
+							defaultBid = {
+								name = "Default Bid",
+								type = "input",
+								validate = "ValidateBidOption",
+								width = "half",
+							},
+							minBid = {
+								name = "Min Bid",
+								type = "input",
+								validate = "ValidateBidOption",
+								width = "half",
+							},
+							maxBid = {
+								name = "Max Bid",
+								type = "input",
+								validate = "ValidateBidOption",
+								width = "half",
+								hidden = function() return self:GetEPGPdb().bid.bidMode ~= "prRelative" end
+							},
+							minNewPR = {
+								name = "Min New PR",
+								type = "input",
+								validate = "ValidateBidOption",
+								width = "half",
+								hidden = function() return self:GetEPGPdb().bid.bidMode == "prRelative" end
+							},
                         },
                     },
                 },
@@ -511,7 +550,11 @@ function RCEPGP:DBSetFunc(...)
 		else
 			t[info[#info]] = value
 		end
-		self:ConfigTableChanged(unpack(args), info[#info])
+		if #args > 0 then
+			self:ConfigTableChanged(unpack(args), info[#info])
+		else
+			self:ConfigTableChanged(info[#info])
+		end
 	end
 end
 
@@ -521,6 +564,32 @@ function RCEPGP:ValidateNumber(info, value)
 	end
 	if not tonumber(value) then
 		return LEP["Input must be a number."]
+	end
+	return true
+end
+
+function RCEPGP:ValidateBidOption(info, value)
+	if value == "" then
+		return true
+	end
+	if not tonumber(value) or tonumber(value) < 0 then
+		return LEP["Input must be a non-negative number."]
+	end
+	if info[#info] == "maxBid" then
+		if tonumber(value) < tonumber(self:GetEPGPdb().bid.defaultBid) or
+			tonumber(value) < tonumber(self:GetEPGPdb().bid.minBid) then
+				return LEP["Invalid input"]
+		end
+	elseif info[#info] == "defaultBid" then
+		if tonumber(value) < tonumber(self:GetEPGPdb().bid.minBid) or
+		(self:GetEPGPdb().bid.bidMode == "prRelative" and tonumber(value) > tonumber(self:GetEPGPdb().bid.maxBid)) then
+			return LEP["Invalid input"]
+		end
+	elseif info[#info] == "minBid" then
+		if tonumber(value) > tonumber(self:GetEPGPdb().bid.defaultBid) or
+		(self:GetEPGPdb().bid.bidMode == "prRelative" and tonumber(value) > tonumber(self:GetEPGPdb().bid.maxBid)) then
+			return LEP["Invalid input"]
+		end
 	end
 	return true
 end

@@ -1,6 +1,6 @@
 local DEBUG = false
 --@debug@
-DEBUG = true
+DEBUG = false
 --@end-debug@
 local addon = LibStub("AceAddon-3.0"):GetAddon("RCLootCouncil")
 local RCEPGP = addon:NewModule("RCEPGP", "AceComm-3.0", "AceConsole-3.0", "AceHook-3.0", "AceEvent-3.0", "AceTimer-3.0", "AceSerializer-3.0", "AceBucket-3.0")
@@ -35,7 +35,14 @@ function RCEPGP:OnInitialize()
 
 	self.defaults = {
 		sendEPGPSettings = true,
-		biddingEnabled = false,
+		bid = {
+			bidEnabled = false,
+			bidMode = "prRelative",
+			defaultBid = "0",
+			minBid = "1",
+			maxBid = "10000",
+			minNewPR = "1",
+		},
 		customGP = {
 			customGPEnabled = false,
 			RelicSlot     = "0.667",
