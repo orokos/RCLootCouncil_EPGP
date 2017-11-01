@@ -170,65 +170,109 @@ function RCEPGP:OptionsTable()
                             },
                         },
                     },
-                    bid = {
-                        name = _G.BID,
-                        order = 3,
-                        type = "group",
-                        inline = true,
+					columns = {
+						name = "Columns",
+						desc = "Enable or disable some columns in the voting frame",
+						order = 3,
+						type = "group",
+						inline = true,
+						get = self:DBGetFunc("columns"),
+						set = self:DBSetFunc("columns"),
+						args = {
+							epColumnEnabled = {
+								name = "EP",
+								order = 1,
+								type = "toggle",
+								width = "half",
+							},
+							gpColumnEnabled = {
+								name = "GP",
+								order = 2,
+								type = "toggle",
+								width = "half",
+							},
+						}
+					},
+                },
+            },
+			mlTab = {
+				name = "Master Looter",
+				order = 2,
+				type = "group",
+				args = {
+					bid = {
+						name = _G.BID,
+						order = 1,
+						type = "group",
+						inline = true,
 						get = self:DBGetFunc("bid"),
 						set = self:DBSetFunc("bid"),
-                        args = {
-                            bidEnabled = {
-                                name = _G.ENABLE,
-                                desc = LEP["bidding_desc"],
-                                order = 1,
-                                type = "toggle",
-                                width = "full",
-                            },
+						args = {
+							bidEnabled = {
+								name = _G.ENABLE,
+								order = 1,
+								type = "toggle",
+								width = "full",
+							},
+							desc = {
+								name = LEP["bidding_desc"],
+								order = 2,
+								type = "description",
+								width = "full",
+							},
 							bidMode = {
 								name = "Bid Mode",
 								values = {
-									prRelative="Highest PR*bid wins. Winner gets GP of (gp of item)*bid",
-									gpAbsolute="Highest bid wins. Winner gets GP of bid.",
-									gpRelative="Highest bid wins. Winner gets GP of (gp of item)*bid",
+									prRelative="Highest PR*bid wins and gets GP of (gp of item)*bid",
+									gpAbsolute="Highest bid wins and gets GP of bid.",
+									gpRelative="Highest bid wins and gets GP of (gp of item)*bid",
 								},
-								order = 2,
+								order = 3,
 								type = "select",
+								width = "double",
+								hidden = function() return not self:GetEPGPdb().bid.bidEnabled end,
+							},
+							space = {
+								name = "",
+								order = 4,
+								type = "description",
 								width = "full",
 							},
 							defaultBid = {
 								name = "Default Bid",
+								order = 5,
 								type = "input",
 								validate = "ValidateBidOption",
-								width = "half",
+								hidden = function() return not self:GetEPGPdb().bid.bidEnabled end,
 							},
 							minBid = {
 								name = "Min Bid",
+								order = 6,
 								type = "input",
 								validate = "ValidateBidOption",
-								width = "half",
+								hidden = function() return not self:GetEPGPdb().bid.bidEnabled end,
 							},
 							maxBid = {
 								name = "Max Bid",
+								order = 7,
 								type = "input",
 								validate = "ValidateBidOption",
-								width = "half",
-								hidden = function() return self:GetEPGPdb().bid.bidMode ~= "prRelative" end
+								hidden = function() return not self:GetEPGPdb().bid.bidEnabled or self:GetEPGPdb().bid.bidMode ~= "prRelative" end
 							},
 							minNewPR = {
 								name = "Min New PR",
+								order = 8,
 								type = "input",
 								validate = "ValidateBidOption",
-								width = "half",
-								hidden = function() return self:GetEPGPdb().bid.bidMode == "prRelative" end
+								hidden = function() return not self:GetEPGPdb().bid.bidEnabled or self:GetEPGPdb().bid.bidMode == "prRelative" end
 							},
-                        },
-                    },
-                },
-            },
+						},
+					},
+				},
+			},
             gpTab = {
                 name = LEP["Custom GP"],
-                order = 2,
+                order = 3,
                 type = "group",
                 get = self:DBGetFunc("customGP"),
                 set = self:DBSetFunc("customGP"),

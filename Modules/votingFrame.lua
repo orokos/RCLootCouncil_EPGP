@@ -172,8 +172,12 @@ function RCVF:UpdateColumns()
     { name = "Bid", DoCellUpdate = self.SetCellBid, colName = "bid", sortnext = self:GetScrollColIndexFromName("response"), width = 50, align = "CENTER",
     defaultsort = "dsc" }
 
-    RCEPGP:ReinsertColumnAtTheEnd(RCVotingFrame.scrollCols, ep)
-    RCEPGP:ReinsertColumnAtTheEnd(RCVotingFrame.scrollCols, gp)
+	if db.columns.epColumnEnabled then
+    	RCEPGP:ReinsertColumnAtTheEnd(RCVotingFrame.scrollCols, ep)
+	end
+	if db.columns.gpColumnEnabled then
+    	RCEPGP:ReinsertColumnAtTheEnd(RCVotingFrame.scrollCols, gp)
+	end
     RCEPGP:ReinsertColumnAtTheEnd(RCVotingFrame.scrollCols, pr)
 
     if db.bid.biddingEnabled then
@@ -263,7 +267,7 @@ end
 -- TODO: mldb
 function RCVF:GetRealBid(session, name)
 	local bid = self:GetBidFromNote(session, name)
-	local defaultBid = tonumber(RCEGPP:GetEPGPdb().bid.defaultBid)
+	local defaultBid = tonumber(RCEPGP:GetEPGPdb().bid.defaultBid)
 	local minBid = tonumber(RCEPGP:GetEPGPdb().bid.minBid)
 	local maxBid
 	local bidMode = RCEPGP:GetEPGPdb().bid.bidMode

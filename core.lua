@@ -38,10 +38,14 @@ function RCEPGP:OnInitialize()
 		bid = {
 			bidEnabled = false,
 			bidMode = "prRelative",
-			defaultBid = "0",
-			minBid = "1",
+			defaultBid = "1",
+			minBid = "0",
 			maxBid = "10000",
 			minNewPR = "1",
+		},
+		columns = {
+			epColumnEnabled = true,
+			gpColumnEnabled = true,
 		},
 		customGP = {
 			customGPEnabled = false,

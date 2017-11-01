@@ -10,7 +10,7 @@ RCLootCouncil-EPGP: #diffgp# for the amount of GP the player gains from the item
 L["%s_formula_runtime_error"] = "'%s' formula has runtime error."
 L["%s_formula_syntax_error"] = "'%s' formula has syntax error."
 L["Award GP (Default: %s)"] = "Award GP (Default: %s)"
-L["bidding_desc"] = "Player can send bid price to the loot master by sending a note that starts with integer in the RCLootCouncil popup."
+L["bidding_desc"] = "This setting only applies to the loot master. Enable this will add a button in the rightclick menu of the voting frame to award GP to a player according to his bid. Several modes are available. Player can send bid price to the loot master by sending a note that starts with integer in the RCLootCouncil popup."
 L["chat_commands"] = "- epgp      - Open the RCLootCouncil-EPGP options interface"
 L["Credit GP to %s"] = "Credit GP to %s"
 L["Custom GP"] = "Custom GP"
