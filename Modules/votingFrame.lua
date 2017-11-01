@@ -173,7 +173,7 @@ function RCVF:UpdateColumns()
 	end
     RCEPGP:ReinsertColumnAtTheEnd(RCVotingFrame.scrollCols, pr)
 
-    if db.bid.biddingEnabled then
+    if db.bid.bidEnabled then
         RCEPGP:ReinsertColumnAtTheEnd(RCVotingFrame.scrollCols, bid)
     else
         RCEPGP:RemoveColumn(RCVotingFrame.scrollCols, bid)
@@ -245,9 +245,9 @@ end
 -- @return bidFromNote the original bid parsed from note
 -- @return minBid the min bid allowed for that candidate.
 -- @return maxBid the max bid allowed for that candidate.
--- @return bidGPAward the gp the candidate should get if he gets the item.
+-- @return bidGPAward the gp the candidate should get if he gets the item. If itemGP not specified, no return of this value.
 function RCVF:GetBidInfo(session, name, itemGP)
-	local bidfromNote
+	local bidFromNote
 
 	local lootTable = RCVotingFrame:GetLootTable()
 
@@ -256,7 +256,7 @@ function RCVF:GetBidInfo(session, name, itemGP)
 	and lootTable[session].candidates and lootTable[session].candidates[name] then
 		local note = lootTable[session].candidates[name].note
 		if note then
-			bidfromNote = tonumber(string.match(note, "[0-9]+"))
+			bidFromNote = tonumber(string.match(note, "[0-9]+"))
 		end
 	end
 
@@ -282,16 +282,18 @@ function RCVF:GetBidInfo(session, name, itemGP)
 	end
 
 	local realBid
-	if not bidfromNote then
-		realBid = default
-	elseif bidfromNote < minBid then
+	if not bidFromNote then
+		realBid = defaultBid
+	elseif bidFromNote < minBid then
 		realBid = minBid
-	elseif bidfromNote > maxBid then
+	elseif bidFromNote > maxBid then
 		realBid = maxBid
+	else
+		realBid = bidFromNote
 	end
 
 	local bidGPAward
-	if bidMode == "prRelative" or bidMode == "gpRelative" then
+	if itemGP and bidMode == "prRelative" or bidMode == "gpRelative" then
 		bidGPAward = itemGP * realBid
 	else
 		bidGPAward = realBid
@@ -302,7 +304,7 @@ end
 
 function RCVF.SetCellBid(rowFrame, frame, data, cols, row, realrow, column, fShow, table, ...)
 	local name = data[realrow].name
-	local realBid, bidFromNote, minBid, maxBid = RCVF:GetBidInfo(session, name)
+	local realBid, bidFromNote, minBid, maxBid = RCVF:GetBidInfo(session, name, RCVotingFrame:GetFrame().gpEditbox:GetNumber())
 
 	if realBid == bidFromNote then
 		if not realBid then
@@ -488,7 +490,7 @@ local function GetMenuInfo(name)
         local editboxGP = RCVotingFrame:GetFrame().gpEditbox:GetNumber()
         local gp = RCEPGP:GetFinalGP(responseGP, editboxGP)
         local item = lootTable[session].link
-        local realBid, bidFromNote, minBid, maxBid, bidGPAward = RCVF:GetBidInfo(name)
+        local realBid, bidFromNote, minBid, maxBid, bidGPAward = RCVF:GetBidInfo(name, editboxGP)
         return data, name, item, responseGP, gp, realBid, bidFromNote, minBid, maxBid, bidGPAward
     else -- Error occurs
         return nil, "UNKNOWN", "UNKNOWN", "UNKNOWN", 0, 0 -- nil protection
