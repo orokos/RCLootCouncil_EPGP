@@ -293,7 +293,7 @@ function RCVF:GetBidInfo(session, name, itemGP)
 	end
 
 	local bidGPAward
-	if itemGP and bidMode == "prRelative" or bidMode == "gpRelative" then
+	if itemGP and (bidMode == "prRelative" or bidMode == "gpRelative") then
 		bidGPAward = itemGP * realBid
 	else
 		bidGPAward = realBid
