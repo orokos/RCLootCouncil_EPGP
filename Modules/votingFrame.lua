@@ -208,7 +208,7 @@ function RCVF.SetCellEP(rowFrame, frame, data, cols, row, realrow, column, fShow
     else
         frame.text:SetText(COLOR_RED..ep)
     end
-    data[realrow].cols[column].value = ep or 0
+    data[realrow].cols[column].value = ep or -1
 end
 
 function RCVF.SetCellGP(rowFrame, frame, data, cols, row, realrow, column, fShow, table, ...)
@@ -220,7 +220,7 @@ function RCVF.SetCellGP(rowFrame, frame, data, cols, row, realrow, column, fShow
     else
         frame.text:SetText(COLOR_GREY..gp)
     end
-    data[realrow].cols[column].value = gp or 0
+    data[realrow].cols[column].value = gp or -1
 end
 
 function RCVF.SetCellPR(rowFrame, frame, data, cols, row, realrow, column, fShow, table, ...)
@@ -238,7 +238,7 @@ function RCVF.SetCellPR(rowFrame, frame, data, cols, row, realrow, column, fShow
         frame.text:SetText(format("%.4g", pr))
     end
 
-    data[realrow].cols[column].value = pr or 0
+    data[realrow].cols[column].value = pr or -1
 end
 
 -- The origin bid by player, parsed from note.
