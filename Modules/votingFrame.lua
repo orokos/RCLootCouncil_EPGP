@@ -245,7 +245,8 @@ end
 -- @return bidFromNote the original bid parsed from note
 -- @return minBid the min bid allowed for that candidate.
 -- @return maxBid the max bid allowed for that candidate.
-function RCVF:GetBidInfo(session, name)
+-- @return bidGPAward the gp the candidate should get if he gets the item.
+function RCVF:GetBidInfo(session, name, itemGP)
 	local bidfromNote
 
 	local lootTable = RCVotingFrame:GetLootTable()
@@ -288,7 +289,15 @@ function RCVF:GetBidInfo(session, name)
 	elseif bidfromNote > maxBid then
 		realBid = maxBid
 	end
-	return realBid, bidFromNote, minBid, maxBid
+
+	local bidGPAward
+	if bidMode == "prRelative" or bidMode == "gpRelative" then
+		bidGPAward = itemGP * realBid
+	else
+		bidGPAward = realBid
+	end
+
+	return realBid, bidFromNote, minBid, maxBid, bidGPAward
 end
 
 function RCVF.SetCellBid(rowFrame, frame, data, cols, row, realrow, column, fShow, table, ...)
@@ -469,7 +478,8 @@ function RCVF:AddWidgetsIntoVotingFrame()
 end
 
 -- v2.1.1: We don't use RCEPGP:GetEPGPName() here because we need to use RC name for fetch RC data
-local function GetGPInfo(name)
+-- Fetch the info used for right click menu
+local function GetMenuInfo(name)
     local lootTable = RCVotingFrame:GetLootTable()
     if lootTable and lootTable[session] and lootTable[session].candidates
     and name and lootTable[session].candidates[name] then
@@ -478,8 +488,8 @@ local function GetGPInfo(name)
         local editboxGP = RCVotingFrame:GetFrame().gpEditbox:GetNumber()
         local gp = RCEPGP:GetFinalGP(responseGP, editboxGP)
         local item = lootTable[session].link
-        local bid = RCVF:GetBidInfo(name)
-        return data, name, item, responseGP, gp, bid
+        local realBid, bidFromNote, minBid, maxBid, bidGPAward = RCVF:GetBidInfo(name)
+        return data, name, item, responseGP, gp, realBid, bidFromNote, minBid, maxBid, bidGPAward
     else -- Error occurs
         return nil, "UNKNOWN", "UNKNOWN", "UNKNOWN", 0, 0 -- nil protection
     end
@@ -489,23 +499,21 @@ RCVF.rightClickEntries = {
     { -- Level 1
         { -- Button 1
             pos = 2,
-            hidden = function() return not db.biddingEnabled end,
+            hidden = function() return not db.bid.bidEnabled end,
             notCheckable = true,
             func = function(name)
-                local data, name, item, responseGP, gp, bid = GetGPInfo(name)
+                local data, name, item, responseGP, gp, realBid, bidFromNote, minBid, maxBid, bidGPAward = GetMenuInfo(name)
                 if not data then return end
                 local args = RCVotingFrame:GetAwardPopupData(session, name, data)
-                args.gp = bid
-                args.responseGP = responseGP
+                args.gp = bidGPAward
                 LibDialog:Spawn("RCEPGP_CONFIRM_AWARD", args)
             end,
             text = function(name)
-                local data, name, item, responseGP, gp, bid = GetGPInfo(name)
-                if not bid then bid = "?" end
-                return L["Award"].." ("..bid.." "..LEP["GP Bid"]..")"
+                local data, name, item, responseGP, gp, realBid, bidFromNote, minBid, maxBid, bidGPAward = GetMenuInfo(name)
+                local text =  L["Award"].." ("..bidGPAward.." GP, ".._G.BID..": "..realBid..")"
             end,
             disabled = function(name)
-                local data, name, item, responseGP, gp, bid = GetGPInfo(name)
+                local data, name, item, responseGP, gp, bid = GetMenuInfo(name)
                 return (not bid) or ((not EPGP:CanIncGPBy(item, bid)) and bid and (bid ~= 0))
             end,
         },
@@ -513,7 +521,7 @@ RCVF.rightClickEntries = {
         pos = 3,
         notCheckable = true,
         func = function(name)
-            local data, name, item, responseGP, gp, bid = GetGPInfo(name)
+            local data, name, item, responseGP, gp, bid = GetMenuInfo(name)
             if not data then return end
             local args = RCVotingFrame:GetAwardPopupData(session, name, data)
             args.gp = gp
@@ -521,11 +529,11 @@ RCVF.rightClickEntries = {
             LibDialog:Spawn("RCEPGP_CONFIRM_AWARD", args)
         end,
         text = function(name)
-            local data, name, item, responseGP, gp, bid = GetGPInfo(name)
+            local data, name, item, responseGP, gp, bid = GetMenuInfo(name)
             return L["Award"].." "..RCEPGP:GetGPAndResponseGPText(gp, responseGP)
         end,
         disabled = function(name)
-            local data, name, item, responseGP, gp, bid = GetGPInfo(name)
+            local data, name, item, responseGP, gp, bid = GetMenuInfo(name)
             return (not EPGP:CanIncGPBy(item, gp)) and gp and (gp ~= 0)
         end,
         },
