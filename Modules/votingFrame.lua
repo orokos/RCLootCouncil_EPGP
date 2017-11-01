@@ -19,7 +19,7 @@ function RCVF:OnInitialize()
 		return self:ScheduleTimer("OnInitialize", 0.5)
 	end
 	self:SecureHook(RCVotingFrame, "OnEnable", "AddWidgetsIntoVotingFrame")
-	EPGP.RegisterCallback(self, "StandingsChanged", "UpdateVotingFrame")
+	EPGP.RegisterCallback(self, "StandingsChanged", "Update")
 
 	self:RegisterComm("RCLootCouncil", "OnCommReceived")
 	self:RegisterMessage("RCCustomGPRuleChanged", "OnMessageReceived")
@@ -45,8 +45,7 @@ function RCVF:OnMessageReceived(msg, ...)
 	if msg == "RCSessionChangedPre" then
 		local s = unpack({...})
 		session = s
-		self:UpdateGPEditbox()
-		self:UpdateGPAwardString()
+		self:Update()
 	elseif msg == "RCUpdateDB" then
 		db = RCEPGP:GetEPGPdb()
 	end
@@ -68,7 +67,7 @@ function RCVF:OnCommReceived(prefix, serializedMsg, distri, sender)
                 return
             end
             RCVotingFrame:GetLootTable()[s].gpAwarded = gpAwarded
-            self:UpdateVotingFrame()
+            self:Update()
 		end
 	end
 end
@@ -110,47 +109,41 @@ function RCVF:DisableGPPopupWhenNeeded()
     end
 end
 
-function RCVF:UpdateVotingFrame()
+function RCVF:Update()
     -- Dont try to use RCVotingFrame:GetFrame() here, it causes lag on login.
 	if RCVotingFrame.frame and session and RCVotingFrame:GetLootTable()[session] then
     	RCVotingFrame:Update()
-		RCVF:UpdateGPAwardString()
-		RCVF:UpdateGPEditbox()
 		RCEPGP:RefreshMenu(1)
+
+		if RCVotingFrame.frame and RCVotingFrame.frame.awdGPstr then
+			if (not RCVotingFrame:GetLootTable()) or (not RCVotingFrame:GetLootTable()[session]) then
+				return
+			end
+			local gpAwarded = RCVotingFrame:GetLootTable()[session].gpAwarded
+			if not gpAwarded then
+				RCVotingFrame.frame.awdGPstr:SetText("")
+				RCVotingFrame.frame.awdGPstr:Hide()
+			else
+				local text = ""
+				if gpAwarded >= 0 then
+					text = "GP   +"..gpAwarded
+				elseif gpAwarded < 0 then
+					text = "GP   "..gpAwarded
+				end
+				RCVotingFrame.frame.awdGPstr:SetText(text)
+				RCVotingFrame.frame.awdGPstr:Show()
+			end
+		end
+
+		local lootTable = RCVotingFrame:GetLootTable()
+		if lootTable then
+			local t = lootTable[session]
+			if t then
+				local gp = lootTable[session].gp or 0
+				RCVotingFrame:GetFrame().gpEditbox:SetNumber(gp)
+			end
+		end
 	end
-end
-
-function RCVF:UpdateGPEditbox()
-    local lootTable = RCVotingFrame:GetLootTable()
-    if lootTable then
-        local t = lootTable[session]
-        if t then
-            local gp = lootTable[session].gp or 0
-            RCVotingFrame:GetFrame().gpEditbox:SetNumber(gp)
-        end
-    end
-end
-
-function RCVF:UpdateGPAwardString()
-    if RCVotingFrame.frame and RCVotingFrame.frame.awdGPstr then
-        if (not RCVotingFrame:GetLootTable()) or (not RCVotingFrame:GetLootTable()[session]) then
-            return
-        end
-        local gpAwarded = RCVotingFrame:GetLootTable()[session].gpAwarded
-        if not gpAwarded then
-            RCVotingFrame.frame.awdGPstr:SetText("")
-            RCVotingFrame.frame.awdGPstr:Hide()
-        else
-            local text = ""
-            if gpAwarded >= 0 then
-                text = "GP   +"..gpAwarded
-            elseif gpAwarded < 0 then
-                text = "GP   "..gpAwarded
-            end
-            RCVotingFrame.frame.awdGPstr:SetText(text)
-            RCVotingFrame.frame.awdGPstr:Show()
-        end
-    end
 end
 
 function RCVF:GetScrollColIndexFromName(colName)
