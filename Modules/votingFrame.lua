@@ -425,7 +425,6 @@ function RCVF:AddWidgetsIntoVotingFrame()
         local loseFocusTime = 3
         editbox:SetScript("OnEditFocusGained", function(self, userInput) self.lastUsedTime = GetTime() end)
         editbox:SetScript("OnTextChanged", function(self, userInput)
-            RCVotingFrame:Update()
             self.lastUsedTime = GetTime()
             RCEPGP:RefreshMenu(1)
          end)
