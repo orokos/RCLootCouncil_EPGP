@@ -324,7 +324,7 @@ function RCVF.SetCellBid(rowFrame, frame, data, cols, row, realrow, column, fSho
 			elseif realBid >= maxBid - 0.0001 then
 				color = COLOR_RED
 			end
-			frame.text:SetText(color..format("%.1g", realBid).." ("..format("%.1g",bidFromNote)")")
+			frame.text:SetText(color..format("%.1g", realBid).." ("..format("%.1g",bidFromNote)..")")
 		end
 	end
 
@@ -513,6 +513,7 @@ RCVF.rightClickEntries = {
             text = function(name)
                 local data, name, item, responseGP, gp, realBid, bidFromNote, minBid, maxBid, bidGPAward = GetMenuInfo(name)
                 local text =  L["Award"].." ("..bidGPAward.." GP, ".._G.BID..": "..realBid..")"
+				return text
             end,
             disabled = function(name)
                 local data, name, item, responseGP, gp, bid = GetMenuInfo(name)

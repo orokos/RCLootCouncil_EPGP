@@ -327,7 +327,7 @@ end
 
 function RCEPGP:GetGPAndResponseGPText(gp, responseGP)
     local text =  "("..gp.." GP)"
-    if string.match(responseGP, "^%d+%%") then
+    if responseGP and string.match(responseGP, "^%d+%%") then
         text = "("..gp.." GP, "..responseGP..")"
     end
     return text
