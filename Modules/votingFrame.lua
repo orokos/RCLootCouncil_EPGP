@@ -241,25 +241,24 @@ function RCVF.SetCellPR(rowFrame, frame, data, cols, row, realrow, column, fShow
     data[realrow].cols[column].value = pr or -1
 end
 
--- The origin bid by player, parsed from note.
-function RCVF:GetBidFromNote(session, name)
-    local lootTable = RCVotingFrame:GetLootTable()
-
-    -- nil protection
-    if session and name and lootTable and lootTable[session]
-    and lootTable[session].candidates and lootTable[session].candidates[name] then
-        local note = lootTable[session].candidates[name].note
-        if note then
-            local bid = tonumber(string.match(note, "[0-9]+"))
-            return bid
-        end
-    end
-end
-
--- the bid value, limited by min and max bid/min new PR.
--- TODO: mldb
+-- @return realBid the bid limited by the upper and lower bound. if no bid, use the default bid.
+-- @return bidFromNote the original bid parsed from note
+-- @return minBid the min bid allowed for that candidate.
+-- @return maxBid the max bid allowed for that candidate.
 function RCVF:GetBidInfo(session, name)
-	local bid = self:GetBidFromNote(session, name)
+	local bidfromNote
+
+	local lootTable = RCVotingFrame:GetLootTable()
+
+	-- nil protection
+	if session and name and lootTable and lootTable[session]
+	and lootTable[session].candidates and lootTable[session].candidates[name] then
+		local note = lootTable[session].candidates[name].note
+		if note then
+			bidfromNote = tonumber(string.match(note, "[0-9]+"))
+		end
+	end
+
 	local defaultBid = tonumber(RCEPGP:GetEPGPdb().bid.defaultBid)
 	local minBid = tonumber(RCEPGP:GetEPGPdb().bid.minBid)
 	local maxBid
@@ -281,30 +280,30 @@ function RCVF:GetBidInfo(session, name)
 		end
 	end
 
-	if not bid then
-		bid = default
-	elseif bid < minBid then
-		bid = minBid
-	elseif bid > maxBid then
-		bid = maxBid
+	local realBid
+	if not bidfromNote then
+		realBid = default
+	elseif bidfromNote < minBid then
+		realBid = minBid
+	elseif bidfromNote > maxBid then
+		realBid = maxBid
 	end
-	return bid, minBid, maxBid
+	return realBid, bidFromNote, minBid, maxBid
 end
 
 function RCVF.SetCellBid(rowFrame, frame, data, cols, row, realrow, column, fShow, table, ...)
 	local name = data[realrow].name
-	local bidFromNote = RCVF:GetBidFromNote(session, name)
-	local realBid, minBid, maxBid = RCVF:GetBidInfo(session, name)
+	local realBid, bidFromNote, minBid, maxBid = RCVF:GetBidInfo(session, name)
 
 	if realBid == bidFromNote then
 		if not realBid then
-			frame.text:SetText("?")
+			frame.text:SetText("?")  -- shouldn't happen, keep this line just in case
 		else
 			frame.text:SetText(format("%.1g", realBid))
 		end
 	else
-		if not realBid then -- shouldn't happen, keep this just in case
-			frame.text:SetText("?")
+		if not realBid then
+			frame.text:SetText("?")  -- shouldn't happen, keep this line just in case
 		elseif not bidFromNote then
 			frame.text:SetText(format("%.1g", realBid).." (?)")
 		else
