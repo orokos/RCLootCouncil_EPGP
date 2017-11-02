@@ -511,7 +511,7 @@ RCVF.rightClickEntries = {
             notCheckable = true,
             func = function(name)
                 local data, name, item, responseGP, gp, realBid, bidFromNote, minBid, maxBid, bidGPAward = GetMenuInfo(name)
-                if not data then return end
+                if not data or not bidGPAward then return end
                 local args = RCVotingFrame:GetAwardPopupData(session, name, data)
                 args.gp = bidGPAward
                 LibDialog:Spawn("RCEPGP_CONFIRM_AWARD", args)
