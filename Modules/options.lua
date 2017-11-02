@@ -238,33 +238,33 @@ function RCEPGP:OptionsTable()
 								type = "description",
 								width = "full",
 							},
-							defaultBid = {
-								name = "Default Bid",
-								order = 5,
-								type = "input",
-								validate = "ValidateBidOption",
-								hidden = function() return not self:GetEPGPdb().bid.bidEnabled end,
-							},
 							minBid = {
 								name = "Min Bid",
-								order = 6,
+								order = 5,
 								type = "input",
 								validate = "ValidateBidOption",
 								hidden = function() return not self:GetEPGPdb().bid.bidEnabled end,
 							},
 							maxBid = {
 								name = "Max Bid",
-								order = 7,
+								order = 6,
 								type = "input",
 								validate = "ValidateBidOption",
 								hidden = function() return not self:GetEPGPdb().bid.bidEnabled or self:GetEPGPdb().bid.bidMode ~= "prRelative" end
 							},
 							minNewPR = {
 								name = "Min New PR",
-								order = 8,
+								order = 7,
 								type = "input",
 								validate = "ValidateBidOption",
 								hidden = function() return not self:GetEPGPdb().bid.bidEnabled or self:GetEPGPdb().bid.bidMode == "prRelative" end
+							},
+							defaultBid = {
+								name = "Default Bid",
+								order = 8,
+								type = "input",
+								validate = "ValidateBidOption",
+								hidden = function() return not self:GetEPGPdb().bid.bidEnabled end,
 							},
 						},
 					},
@@ -620,17 +620,17 @@ function RCEPGP:ValidateBidOption(info, value)
 		return LEP["Input must be a non-negative number."]
 	end
 	if info[#info] == "maxBid" then
-		if tonumber(value) < tonumber(self:GetEPGPdb().bid.defaultBid) or
+		if (self:GetEPGPdb().bid.defaultBid ~= "" and tonumber(value) < tonumber(self:GetEPGPdb().bid.defaultBid)) or
 			tonumber(value) < tonumber(self:GetEPGPdb().bid.minBid) then
 				return LEP["Invalid input"]
 		end
 	elseif info[#info] == "defaultBid" then
-		if tonumber(value) < tonumber(self:GetEPGPdb().bid.minBid) or
+		if value ~= "" and tonumber(value) < tonumber(self:GetEPGPdb().bid.minBid) or
 		(self:GetEPGPdb().bid.bidMode == "prRelative" and tonumber(value) > tonumber(self:GetEPGPdb().bid.maxBid)) then
 			return LEP["Invalid input"]
 		end
 	elseif info[#info] == "minBid" then
-		if tonumber(value) > tonumber(self:GetEPGPdb().bid.defaultBid) or
+		if (self:GetEPGPdb().bid.defaultBid ~= "" and tonumber(value) > tonumber(self:GetEPGPdb().bid.defaultBid)) or
 		(self:GetEPGPdb().bid.bidMode == "prRelative" and tonumber(value) > tonumber(self:GetEPGPdb().bid.maxBid)) then
 			return LEP["Invalid input"]
 		end

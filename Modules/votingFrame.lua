@@ -251,15 +251,6 @@ function RCVF:GetBidInfo(session, name, itemGP)
 
 	local lootTable = RCVotingFrame:GetLootTable()
 
-	-- nil protection
-	if session and name and lootTable and lootTable[session]
-	and lootTable[session].candidates and lootTable[session].candidates[name] then
-		local note = lootTable[session].candidates[name].note
-		if note then
-			bidFromNote = tonumber(string.match(note, "[0-9]+"))
-		end
-	end
-
 	local defaultBid = tonumber(RCEPGP:GetEPGPdb().bid.defaultBid)
 	local minBid = tonumber(RCEPGP:GetEPGPdb().bid.minBid)
 	local maxBid
@@ -281,6 +272,21 @@ function RCVF:GetBidInfo(session, name, itemGP)
 		end
 	end
 
+	local response = lootTable[session].candidates[name].response
+
+	if type(response) ~= "number" then -- The response is autopass, status response that user does not send response manually, so no bid in this case.
+		return nil, nil, minBid, maxBid, nil
+	end
+
+	-- nil protection
+	if session and name and lootTable and lootTable[session]
+	and lootTable[session].candidates and lootTable[session].candidates[name] then
+		local note = lootTable[session].candidates[name].note
+		if note then
+			bidFromNote = tonumber(string.match(note, "[0-9]+"))
+		end
+	end
+
 	local realBid
 	if not bidFromNote then
 		realBid = defaultBid
@@ -293,9 +299,9 @@ function RCVF:GetBidInfo(session, name, itemGP)
 	end
 
 	local bidGPAward
-	if itemGP and (bidMode == "prRelative" or bidMode == "gpRelative") then
+	if realBid and itemGP and (bidMode == "prRelative" or bidMode == "gpRelative") then
 		bidGPAward = itemGP * realBid
-	else
+	elseif realBid then
 		bidGPAward = realBid
 	end
 
@@ -308,13 +314,13 @@ function RCVF.SetCellBid(rowFrame, frame, data, cols, row, realrow, column, fSho
 
 	if realBid == bidFromNote then
 		if not realBid then
-			frame.text:SetText("?")  -- shouldn't happen, keep this line just in case
+			frame.text:SetText("")  -- could happen when no default bid is set.
 		else
 			frame.text:SetText(format("%.1g", realBid))
 		end
 	else
 		if not realBid then
-			frame.text:SetText("?")  -- shouldn't happen, keep this line just in case
+			frame.text:SetText("")
 		elseif not bidFromNote then
 			frame.text:SetText(format("%.1g", realBid).." (?)")
 		else
@@ -490,7 +496,7 @@ local function GetMenuInfo(name)
         local editboxGP = RCVotingFrame:GetFrame().gpEditbox:GetNumber()
         local gp = RCEPGP:GetFinalGP(responseGP, editboxGP)
         local item = lootTable[session].link
-        local realBid, bidFromNote, minBid, maxBid, bidGPAward = RCVF:GetBidInfo(name, editboxGP)
+        local realBid, bidFromNote, minBid, maxBid, bidGPAward = RCVF:GetBidInfo(session, name, editboxGP)
         return data, name, item, responseGP, gp, realBid, bidFromNote, minBid, maxBid, bidGPAward
     else -- Error occurs
         return nil, "UNKNOWN", "UNKNOWN", "UNKNOWN", 0, 0 -- nil protection
@@ -501,7 +507,7 @@ RCVF.rightClickEntries = {
     { -- Level 1
         { -- Button 1
             pos = 2,
-            hidden = function() return not db.bid.bidEnabled end,
+            hidden = function(name ) return not db.bid.bidEnabled or not (RCVF:GetBidInfo(session, name)) end,
             notCheckable = true,
             func = function(name)
                 local data, name, item, responseGP, gp, realBid, bidFromNote, minBid, maxBid, bidGPAward = GetMenuInfo(name)

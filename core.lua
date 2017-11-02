@@ -38,7 +38,7 @@ function RCEPGP:OnInitialize()
 		bid = {
 			bidEnabled = false,
 			bidMode = "prRelative",
-			defaultBid = "1",
+			defaultBid = "",
 			minBid = "0",
 			maxBid = "10000",
 			minNewPR = "1",
