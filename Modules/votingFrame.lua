@@ -316,13 +316,13 @@ function RCVF.SetCellBid(rowFrame, frame, data, cols, row, realrow, column, fSho
 		if not realBid then
 			frame.text:SetText("")  -- could happen when no default bid is set.
 		else
-			frame.text:SetText(format("%.1g", realBid))
+			frame.text:SetText(format("%.1f", realBid))
 		end
 	else
 		if not realBid then
 			frame.text:SetText("")
 		elseif not bidFromNote then
-			frame.text:SetText(format("%.1g", realBid).." (?)")
+			frame.text:SetText(format("%.1f", realBid).." (?)")
 		else
 			local color = ""
 			if realBid <= minBid + 0.0001 then
@@ -330,7 +330,7 @@ function RCVF.SetCellBid(rowFrame, frame, data, cols, row, realrow, column, fSho
 			elseif realBid >= maxBid - 0.0001 then
 				color = COLOR_RED
 			end
-			frame.text:SetText(color..format("%.1g", realBid).." ("..format("%.1g",bidFromNote)..")")
+			frame.text:SetText(color..format("%.1f", realBid).." ("..format("%.1f",bidFromNote)..")")
 		end
 	end
 
