@@ -162,7 +162,7 @@ function RCVF:UpdateColumns()
     local pr =
     { name = "PR", DoCellUpdate = self.SetCellPR, colName = "pr", width = 50, align = "CENTER", comparesort = self.PRSort, defaultsort = "dsc" }
     local bid =
-    { name = "Bid", DoCellUpdate = self.SetCellBid, colName = "bid", sortnext = self:GetScrollColIndexFromName("response"), width = 50, align = "CENTER",
+    { name = "Bid", DoCellUpdate = self.SetCellBid, colName = "bid", sortnext = self:GetScrollColIndexFromName("response"), width = 100, align = "CENTER",
     defaultsort = "dsc" }
 
 	if db.columns.epColumnEnabled then
