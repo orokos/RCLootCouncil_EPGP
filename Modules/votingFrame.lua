@@ -11,7 +11,7 @@ local RCVotingFrame = addon:GetModule("RCVotingFrame")
 local RCVF = RCEPGP:NewModule("RCEPGPVotingFrame", "AceComm-3.0", "AceConsole-3.0", "AceHook-3.0", "AceEvent-3.0", "AceTimer-3.0", "AceSerializer-3.0")
 
 local session = 1
-local db
+local db = {}  -- db shortcut, equivalent to addon:Getdb().epgp
 
 function RCVF:OnInitialize()
 	db = RCEPGP:GetEPGPdb()
@@ -54,13 +54,14 @@ end
 function RCVF:OnCommReceived(prefix, serializedMsg, distri, sender)
 	if prefix == "RCLootCouncil" then
 		local test, command, data = addon:Deserialize(serializedMsg)
+
 		if addon:HandleXRealmComms(self, command, data, sender) then return end
 
 		if command == "change_response" or command == "response" then
-            RCEPGP:DebugPrint("RCVF:OnCommReceived", command, unpack(data))
-            self:ScheduleTimer(function() RCEPGP:RefreshMenu(1) end, 0) -- to ensure menu refreshes after RCVotingFrame:OnCommReceived()
+			RCEPGP:DebugPrint("RCVF:OnCommReceived", command, unpack(data))
+            self:ScheduleTimer("Update", 0) -- to ensure menu refreshes after RCVotingFrame:OnCommReceived()
         elseif command == "RCEPGP_awarded" then
-            RCEPGP:DebugPrint("RCVF:OnCommReceived", command, unpack(data))
+			RCEPGP:DebugPrint("RCVF:OnCommReceived", command, unpack(data))
             local data = unpack(data)
             local s, winner, gpAwarded = data.session, data.winner, data.gpAwarded
             if (not RCVotingFrame:GetLootTable()) or (not RCVotingFrame:GetLootTable()[s]) then -- lootTable may not exist due to reload
@@ -68,6 +69,9 @@ function RCVF:OnCommReceived(prefix, serializedMsg, distri, sender)
             end
             RCVotingFrame:GetLootTable()[s].gpAwarded = gpAwarded
             self:Update()
+		elseif command == "MLdb" then
+			RCEPGP:DebugPrint("RCVF:OnCommReceived", command, unpack(data))
+			self:ScheduleTimer(function() self:UpdateColumns(); self:Update() end, 0) -- to ensure menu refreshes after RCVotingFrame:OnCommReceived()
 		end
 	end
 end
@@ -173,7 +177,7 @@ function RCVF:UpdateColumns()
 	end
     RCEPGP:ReinsertColumnAtTheEnd(RCVotingFrame.scrollCols, pr)
 
-    if db.bid.bidEnabled then
+    if RCEPGP:GetMLEPGPdb().bid and RCEPGP:GetMLEPGPdb().bid.bidEnabled then
         RCEPGP:ReinsertColumnAtTheEnd(RCVotingFrame.scrollCols, bid)
     else
         RCEPGP:RemoveColumn(RCVotingFrame.scrollCols, bid)
@@ -247,18 +251,22 @@ end
 -- @return maxBid the max bid allowed for that candidate.
 -- @return bidGPAward the gp the candidate should get if he gets the item. If itemGP not specified, no return of this value.
 function RCVF:GetBidInfo(session, name, itemGP)
+	if not RCEPGP:GetMLEPGPdb().bid then
+		return nil
+	end
+
 	local bidFromNote
 
 	local lootTable = RCVotingFrame:GetLootTable()
 
-	local defaultBid = tonumber(RCEPGP:GetEPGPdb().bid.defaultBid)
-	local minBid = tonumber(RCEPGP:GetEPGPdb().bid.minBid)
+	local defaultBid = tonumber(RCEPGP:GetMLEPGPdb().bid.defaultBid)
+	local minBid = tonumber(RCEPGP:GetMLEPGPdb().bid.minBid)
 	local maxBid
-	local bidMode = RCEPGP:GetEPGPdb().bid.bidMode
+	local bidMode = RCEPGP:GetMLEPGPdb().bid.bidMode
 	if bidMode == "prRelative" then
-		maxBid = tonumber(RCEPGP:GetEPGPdb().bid.maxBid)
+		maxBid = tonumber(RCEPGP:GetMLEPGPdb().bid.maxBid)
 	else
-		local minNewPR = tonumber(RCEPGP:GetEPGPdb().bid.minNewPR)
+		local minNewPR = tonumber(RCEPGP:GetMLEPGPdb().bid.minNewPR)
 		local ep, gp = EPGP:GetEPGP(RCEPGP:GetEPGPName(name))
 
 		if not ep then
@@ -507,7 +515,7 @@ RCVF.rightClickEntries = {
     { -- Level 1
         { -- Button 1
             pos = 2,
-            hidden = function(name ) return not db.bid.bidEnabled or not (RCVF:GetBidInfo(session, name)) end,
+            hidden = function(name) return not (RCEPGP:GetMLEPGPdb().bid and RCEPGP:GetMLEPGPdb().bid.bidEnabled) or not RCVF:GetBidInfo(session, name) end,
             notCheckable = true,
             func = function(name)
                 local data, name, item, responseGP, gp, realBid, bidFromNote, minBid, maxBid, bidGPAward = GetMenuInfo(name)

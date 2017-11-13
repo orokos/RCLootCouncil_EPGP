@@ -1,6 +1,6 @@
 local DEBUG = false
 --@debug@
-DEBUG = false
+DEBUG = true
 --@end-debug@
 local addon = LibStub("AceAddon-3.0"):GetAddon("RCLootCouncil")
 local RCEPGP = addon:NewModule("RCEPGP", "AceComm-3.0", "AceConsole-3.0", "AceHook-3.0", "AceEvent-3.0", "AceTimer-3.0", "AceSerializer-3.0", "AceBucket-3.0")
@@ -93,6 +93,8 @@ function RCEPGP:OnInitialize()
     self:RegisterMessage("RCMLAwardSuccess", "OnMessageReceived")
     self:RegisterMessage("RCUpdateDB", "OnMessageReceived")
 	self:RegisterMessage("RCMLAddItem", "OnMessageReceived")
+	self:RegisterMessage("RCMLBuildMLdb", "OnMessageReceived")
+	self:RegisterBucketMessage("RCEPGPConfigTableChanged", 2, "EPGPConfigTableChanged")
 
     self:RegisterComm("RCLootCouncil", "OnCommReceived")
 
@@ -146,6 +148,11 @@ function RCEPGP:OnMessageReceived(msg, ...)
 	elseif msg == "RCMLAddItem" then
 		local item, session = unpack({...})
 		RCLootCouncilML.lootTable[session].gp = GP:GetValue(RCLootCouncilML.lootTable[session].link)
+	elseif msg == "RCMLBuildMLdb" then
+		local MLdb = unpack({...})
+		self:BuildMLdb(MLdb)
+		local str = self:Serialize(MLdb)
+		print("MLdb size: ", str:len())
     end
 end
 
@@ -158,6 +165,7 @@ function RCEPGP:OnCommReceived(prefix, serializedMsg, distri, sender)
 
         if test then
             if command == "RCEPGP_VersionBroadcast" or command == "RCEPGP_VersionReply" then
+				self:DebugPrint("RCEPGP:OnCommReceived", command, unpack(data))
                 local otherVersion, otherTestVersion = unpack(data)
 
                 -- Only report test version updates if a test version is installed.
@@ -171,7 +179,7 @@ function RCEPGP:OnCommReceived(prefix, serializedMsg, distri, sender)
                         self.newestTestVersionDetected = otherTestVersion
                     end
                 end
-                self:DebugPrint("RCEPGP:OnCommReceived", command, unpack(data))
+
                 if command == "RCEPGP_VersionBroadcast" and (not UnitIsUnit("player", Ambiguate(sender, "short"))) then
                     addon:SendCommand(sender, "RCEPGP_VersionReply", self.version, self.testVersion)
                 end
@@ -442,5 +450,59 @@ function RCEPGP:DeepCopy(dest, src, cleanCopy)
 		else
 			dest[key] = value
 		end
+	end
+end
+
+---------------------------------------------
+-- MLdb (Master looter's db)
+---------------------------------------------
+
+function RCEPGP:GetMLEPGPOverrideSetting(...)
+	-- TODO
+end
+
+function RCEPGP:GetMLEPGPdb()
+	if not addon.mldb then
+		return {}
+	end
+	if not addon.mldb.epgp then
+		addon.mldb.epgp = {}
+	end
+	return addon.mldb.epgp
+end
+
+function RCEPGP:EPGPConfigTableChanged(val)
+	-- The db was changed, so check if we should make a new mldb
+	-- We can do this by checking if the changed value is a key in mldb
+	if not addon.mldb then return RCLootCouncilML:UpdateMLdb() end -- mldb isn't made, so just make it
+	for val in pairs(val) do
+		for key in pairs(addon.mldb.epgp) do
+			if key == val then return RCLootCouncilML:UpdateMLdb() end
+		end
+	end
+end
+
+function RCEPGP:BuildMLdb(MLdb)
+	local initialize = true
+	for _, module in self:IterateModules() do
+		if not module.initialize then
+			initialize = false
+		end
+	end
+	if not initialize then
+		self:DebugPrint("BuildMLdb when not all modules are initialized. Retry after 1s.")
+		return self:ScheduleTimer("BuildMLdb", 1, MLdb)
+	end
+
+	local customGP = self:GetModule("RCCustomGP")
+
+	MLdb.epgp = {}
+	MLdb.epgp.bid = {}
+	self:DeepCopy(MLdb.epgp.bid, self:GetEPGPdb().bid)
+	MLdb.epgp.customGP = {}
+	self:DeepCopy(MLdb.epgp.customGP, self:GetEPGPdb().customGP)
+	MLdb.epgp.customGP.keywords = {}
+	for keyword, _ in ipairs(customGP.GPVariables) do
+		tinsert(MLdb.epgp.customGP.keywords, keyword)
 	end
 end
