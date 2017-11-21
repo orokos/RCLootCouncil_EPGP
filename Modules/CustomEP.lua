@@ -253,7 +253,8 @@ function RCCustomEP:UPDATE_CALENDAR(nextIndex)
     local existEvents = {}
 
     for i=1, CalendarGetNumDayEvents(0, day) do
-        local title, hour, min, calendarType = CalendarGetDayEvent(0, day, i)
+		local event = C_Calendar.GetDayEvent(0, day, i);
+		local title, hour, min, calendarType = event.title, event.startTime.hour, event.startTime.minute, event.calendarType
         if title and (calendarType == "PLAYER" or calendarType == "GUILD_EVENT") then
             existEvents[title] = true
         end
@@ -267,7 +268,8 @@ function RCCustomEP:UPDATE_CALENDAR(nextIndex)
     end
 
     for i=nextIndex, CalendarGetNumDayEvents(0, day) do
-        local title, hour, min, calendarType = CalendarGetDayEvent(0, day, i)
+		local event = C_Calendar.GetDayEvent(0, day, i);
+		local title, hour, min, calendarType = event.title, event.startTime.hour, event.startTime.minute, event.calendarType
         if title and (calendarType == "PLAYER" or calendarType == "GUILD_EVENT") then
             CalendarOpenEvent(0, day, i) -- handles the rest in OPEN_CALENDAR
             return
