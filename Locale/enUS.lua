@@ -2,7 +2,7 @@
 -- http://wow.curseforge.com/addons/rclootcouncil-epgp/localization/
 
 -- Default english translation
-local L = LibStub("AceLocale-3.0"):NewLocale("RCEPGP", "enUS", true)
+local L = LibStub("AceLocale-3.0"):NewLocale("RCEPGP", "enUS", true, true)
 if not L then return end
 
 L["announce_awards_desc2"] = [=[
