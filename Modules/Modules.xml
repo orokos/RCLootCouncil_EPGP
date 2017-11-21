@@ -2,6 +2,7 @@
 	<Script file = "CustomEP.lua" />
 	<Script file = "CustomEPGUI.lua" />
 	<Script file = "CustomGP.lua" />
+	<Script file = "LootFrame.lua" />
 	<Script file = "lootHistory.lua" />
 	<Script file = "votingFrame.lua" />
 	<Script file = "options.lua" />
