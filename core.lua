@@ -1,6 +1,6 @@
 local DEBUG = false
 --@debug@
-DEBUG = true
+DEBUG = false
 --@end-debug@
 local addon = LibStub("AceAddon-3.0"):GetAddon("RCLootCouncil")
 local RCEPGP = addon:NewModule("RCEPGP", "AceComm-3.0", "AceConsole-3.0", "AceHook-3.0", "AceEvent-3.0", "AceTimer-3.0", "AceSerializer-3.0", "AceBucket-3.0")
@@ -22,7 +22,7 @@ function RCEPGP:OnInitialize()
 	self.testTocVersion = GetAddOnMetadata("RCLootCouncil_EPGP", "X-TestVersion")
 	self.lastVersionNeedingRestart = "2.0.0"
 	self.lastVersionResetSetting = "2.0.0"
-	self.minRCVersion = "2.6.0"
+	self.minRCVersion = "2.7.0"
 
 	self.debug = DEBUG
 	self.newestVersionDetected = self.version
@@ -122,7 +122,7 @@ end
 function RCEPGP:OnMessageReceived(msg, ...)
     self:DebugPrint("RCEPGP:OnMessageReceived", msg, ...)
 	if msg == "RCMLAwardSuccess" then
-        local session, winner, status = unpack({...})
+        local session, winner, status = ...
         if (not RCVotingFrame:GetLootTable()) or (not RCVotingFrame:GetLootTable()[session]) then
             return
         end
@@ -146,13 +146,12 @@ function RCEPGP:OnMessageReceived(msg, ...)
         db.testTocVersion = self.testTocVersion
         self:RCToEPGPDkpReloadedSetting()
 	elseif msg == "RCMLAddItem" then
-		local item, session = unpack({...})
-		RCLootCouncilML.lootTable[session].gp = GP:GetValue(RCLootCouncilML.lootTable[session].link)
+		local item, entry = ...
+		entry.gp = GP:GetValue(item)
 	elseif msg == "RCMLBuildMLdb" then
-		local MLdb = unpack({...})
+		local MLdb = ...
 		self:BuildMLdb(MLdb)
 		local str = self:Serialize(MLdb)
-		print("MLdb size: ", str:len())
     end
 end
 
