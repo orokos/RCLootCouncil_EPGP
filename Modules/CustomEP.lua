@@ -1,5 +1,3 @@
-if true then return end -- TODO: this feature is not available in v2.0
-
 local addon = LibStub("AceAddon-3.0"):GetAddon("RCLootCouncil")
 local RCEPGP = addon:GetModule("RCEPGP")
 local RCCustomEP = RCEPGP:NewModule("RCCustomEP", "AceConsole-3.0", "AceEvent-3.0", "AceHook-3.0", "AceComm-3.0")
@@ -155,7 +153,7 @@ function RCCustomEP:OnInitialize()
     self:RegisterEvent("CALENDAR_OPEN_EVENT", "OPEN_CALENDAR")
     self:RegisterEvent("CALENDAR_UPDATE_INVITE_LIST", "UPDATE_CALENDAR")
     self:RegisterEvent("PLAYER_LOGIN")
-    GuildRoster()
+    --[[GuildRoster()
     C_Timer.After(10, function() self:UPDATE_CALENDAR() end)
     LibSpec:Rescan()
     self.EPVariables = self:GetEPVariables()
@@ -166,7 +164,7 @@ function RCCustomEP:OnInitialize()
     self:SecureHook(RCLootCouncil, "UpdateDB", function()
         self:CancelAllScheduledEP()
     end)
-
+--]]
 end
 
 -- /rc massep  reason amount [formulaIndexOrName] [targetName] [ScheduleTime AfterSecond/HH:MM:SS/HH:MM, realm time, 24hour format]
