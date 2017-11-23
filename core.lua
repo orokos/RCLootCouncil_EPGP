@@ -10,17 +10,17 @@ local LEP = LibStub("AceLocale-3.0"):GetLocale("RCEPGP")
 local RCVotingFrame = addon:GetModule("RCVotingFrame")
 local RCLootCouncilML = addon:GetModule("RCLootCouncilML")
 local GP = LibStub("LibGearPoints-1.2")
+local GS = LibStub("LibGuildStorage-1.2")
 
 local currentAwardingGP = 0
-local db
 
 function RCEPGP:OnInitialize()
 	-- MAKESURE: Edit the following versions every update, and should also update the version in TOC file.
-	self.version = "2.1.1"
+	self.version = "2.2.0"
 	self.testVersion = "Release" -- format: Release/Beta/Alpha.num, testVersion compares only by number. eg. "Alpha.2" > "Beta.1"
 	self.tocVersion = GetAddOnMetadata("RCLootCouncil_EPGP", "Version")
 	self.testTocVersion = GetAddOnMetadata("RCLootCouncil_EPGP", "X-TestVersion")
-	self.lastVersionNeedingRestart = "2.0.0"
+	self.lastVersionNeedingRestart = "2.2.0"
 	self.lastVersionResetSetting = "2.0.0"
 	self.minRCVersion = "2.7.0"
 
@@ -28,7 +28,6 @@ function RCEPGP:OnInitialize()
 	self.newestVersionDetected = self.version
 	self.newestTestVersionDetected = self.testVersion
 	self.isNewInstall = (addon:Getdb().epgp == nil)
-	db = self:GetEPGPdb()
 	local meta = getmetatable(self) 	-- Set the addon name for self:Print()
 	meta.__tostring = function() return "RCLootCouncil-EPGP" end
 	setmetatable(self, meta)
@@ -96,16 +95,16 @@ function RCEPGP:OnInitialize()
 		self:ShowNotification(format(LEP["rc_version_below_min_notification"], self.minRCVersion, addon.version))
     end
     -- Added in v2.0
-    local lastVersion = db.version
+    local lastVersion = self:GetEPGPdb().version
     if not lastVersion then lastVersion = "1.9.2" end
     if (not self.isNewInstall) and addon:VersionCompare(self.tocVersion, self.lastVersionNeedingRestart) then
 		self:ShowNotification(format(LEP["need_restart_notification"], self.version.."-"..self.testVersion))
     end
 
-    db.version = self.version
-    db.tocVersion = self.tocVersion
-    db.testVersion = self.testVersion
-    db.testTocVersion = self.testTocVersion
+    self:GetEPGPdb().version = self.version
+    self:GetEPGPdb().tocVersion = self.tocVersion
+    self:GetEPGPdb().testVersion = self.testVersion
+    self:GetEPGPdb().testTocVersion = self.testTocVersion
 
     if (not self.isNewInstall) and addon:VersionCompare(lastVersion, "2.0.0") then
         self:UpdateAnnounceKeyword_v2_0_0()
@@ -145,29 +144,7 @@ end
 -- MAKESURE statement are executed after the OnMessageReceived of RCLootCouncil if needed.
 function RCEPGP:OnMessageReceived(msg, ...)
     self:DebugPrint("RCEPGP:OnMessageReceived", msg, ...)
-	if msg == "RCMLAwardSuccess" then
-        local session, winner, status = ...
-        if (not RCVotingFrame:GetLootTable()) or (not RCVotingFrame:GetLootTable()[session]) then
-            return
-        end
-
-        if winner then
-            local gp = self:GetCurrentAwardingGP()
-			RCVotingFrame:GetLootTable()[session].gpAwarded = gp -- This line exists because of undo button in rightclick menu
-			addon:SendCommand("group", "RCEPGP_awarded", {session=session, winner=winner, gpAwarded=gp})
-
-			local item = RCVotingFrame:GetLootTable() and RCVotingFrame:GetLootTable()[session] and RCVotingFrame:GetLootTable()[session].link
-			if item and gp and gp ~= 0 then
-				EPGP:IncGPBy(RCEPGP:GetEPGPName(winner), item, gp) -- Fix GP not awarded for Russian name.
-				self:Debug("Awarded GP: ", self:GetEPGPName(winner), item, gp)
-			end
-        end
-    elseif msg == "RCUpdateDB" then
-		db = self:GetEPGPdb()
-        db.version = self.version
-        db.tocVersion = self.tocVersion
-        db.testVersion = self.testVersion
-        db.testTocVersion = self.testTocVersion
+	if msg == "RCUpdateDB" then
         self:RCToEPGPDkpReloadedSetting()
 	elseif msg == "RCMLAddItem" then
 		local item, entry = ...
@@ -298,45 +275,57 @@ end
 ---------------------------------------------
 -- GP functions
 ---------------------------------------------
+function RCEPGP:GetCurrentAwardingGP()
+	return currentAwardingGP
+end
 
--- "response" needs to be the response id(Number), or the button name(not response name)
+function RCEPGP:SetCurrentAwardingGP(gp)
+	currentAwardingGP = gp
+end
+
+function RCEPGP:IncEPSecure(name, reason, amount)
+	name = self:GetEPGPName(name)
+	if not GS:IsCurrentState() then
+		self:Debug("IncEPSecure GS is not ready. Retry after 0.5s", name, reason, amount)
+		return self:ScheduleTimer("IncEPSecure", 0.5, name, reason, amount)
+	end
+	if not EPGP:CanIncEPBy(reason, amount) then
+		self:Debug("IncEPSecure fails CanIncEPBy", name, reason, amount)
+		return
+	end
+	EPGP:IncEPBy(name, reason, amount)
+end
+
+function RCEPGP:IncGPSecure(name, reason, amount)
+	name = self:GetEPGPName(name)
+	if not GS:IsCurrentState() then
+		self:Debug("IncGPSecure GS is not ready. Retry after 0.5s", name, reason, amount)
+		return self:ScheduleTimer("IncGPSecure", 0.5, name, reason, amount)
+	end
+	if not EPGP:CanIncGPBy(reason, amount) then
+		self:Debug("IncGPSecure fails CanIncGPBy", name, reason, amount)
+		return
+	end
+	EPGP:IncGPBy(name, reason, amount)
+end
+
+-- "response" needs to be the response id(Number)
+-- Only works for ML
 function RCEPGP:GetResponseGP(response, isTier, isRelic)
     if response == "PASS" or response == "AUTOPASS" then
         return "0%"
     end
-    local responseGP = "100%"
+    local responseGP
 
     if isRelic and addon.db.profile.relicButtons then
-        for k, v in pairs(addon.db.profile.relicButtons) do
-            if v.text == response then
-                responseGP = v.gp or responseGP
-                break
-            elseif k == response then
-                responseGP = v.gp or responseGP
-                break
-            end
-        end
+		responseGP = addon.db.profile.relicButtons[response] and addon.db.profile.relicButtons[response].gp
     elseif isTier then
-        for k, v in pairs(addon.db.profile.tierButtons) do
-            if v.text == response then
-                responseGP = v.gp or responseGP
-                break
-            elseif k == response then
-                responseGP = v.gp or responseGP
-                break
-            end
-        end
+		responseGP = addon.db.profile.tierButtons[response] and addon.db.profile.tierButtons[response].gp
     else
-        for k, v in pairs(addon.db.profile.responses) do
-            if v.text == response then
-                responseGP = v.gp or responseGP
-                break
-            elseif k == response then
-                responseGP = v.gp or responseGP
-                break
-            end
-        end
+		responseGP = addon.db.profile.responses[response] and addon.db.profile.responses[response].gp
     end
+
+	responseGP = responseGP or "100%"
     self:DebugPrint("RCEPGP:GetResponseGP returns ", responseGP, "arguments: ", response, isTier, isRelic)
     return responseGP
 end
@@ -362,14 +351,6 @@ function RCEPGP:GetGPAndResponseGPText(gp, responseGP)
         text = "("..gp.." GP, "..responseGP..")"
     end
     return text
-end
-
-function RCEPGP:SetCurrentAwardingGP(gp)
-	currentAwardingGP = gp
-end
-
-function RCEPGP:GetCurrentAwardingGP()
-    return currentAwardingGP
 end
 
 -- Get the amount of last GP operations with given name and reason.

@@ -45,9 +45,25 @@ LibDialog:Register("RCEPGP_CONFIRM_AWARD", {
 	buttons = {
 		{ text = _G.YES,
 			on_click = function(self, data)
-				RCEPGP:SetCurrentAwardingGP(data and data.gp or 0)
-				RCLootCouncilML.AwardPopupOnClickYes(self, data) -- GP Award is handled in RCEPGP:OnMessageReceived()
-				RCEPGP:SetCurrentAwardingGP(0)
+				RCLootCouncilML.AwardPopupOnClickYes(self, data, function(awarded)
+					if awarded then
+						local gp = data and data.gp or 0
+						local winner = RCEPGP:GetEPGPName(data.winner)
+						local lastgpAwardee = RCEPGP:GetEPGPName(RCLootCouncilML.lootTable[data.session].gpAwardee)
+						local lastgpAwarded = RCLootCouncilML.lootTable[data.session].gpAwarded
+						if lastgpAwardee then
+							RCEPGP:IncGPSecure(lastgpAwardee, data.link, -lastgpAwarded)
+						end
+						RCEPGP:SetCurrentAwardingGP(gp) -- For announcement
+						if gp ~= 0 then
+							RCEPGP:IncGPSecure(winner, data.link, gp) -- Fix GP not awarded for Russian name.
+							RCEPGP:Debug("Awarded GP: ", winner, data.link, gp)
+						end
+						RCLootCouncilML.lootTable[data.session].gpAwarded = gp
+						RCLootCouncilML.lootTable[data.session].gpAwardee = winner
+						RCEPGP:ScheduleTimer("SetCurrentAwardingGP", 0, 0) -- Reset after 1frame
+					end
+				end) -- GP Award is handled in RCEPGP:OnMessageReceived()
 			end,
 		},
 		{ text = _G.NO,
