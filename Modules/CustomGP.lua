@@ -15,10 +15,7 @@ for funcName, func in pairs(oldLib) do
     functionOldLibGearPoints[funcName] = func
 end
 
-local db
-
 function RCCustomGP:OnInitialize()
-	db = RCEPGP:GetEPGPdb()
 	local success = self:LocalizeItemStatusText()
 	if not success then
 		return self:ScheduleTimer("OnInitialize", 1)
@@ -68,7 +65,7 @@ end
 function RCCustomGP:OnMessageReceived(msg, ...)
 	RCEPGP:DebugPrint("RCCustomGP:OnMessageReceived", msg, ...)
 	if msg == "RCUpdateDB" then
-		db = RCEPGP:GetEPGPdb()
+		wipe(self.gpCache)
 	elseif msg == "RCEPGPConfigTableChanged" then
 		if "customGP" == select(1, ...) then
 			RCEPGP:DebugPrint("Wipe GP cache due to custom GP rule changed.")
@@ -98,21 +95,21 @@ local function UpdateRecentLoot(itemLink)
 end
 
 function lib:GetNumRecentItems()
-    if not db.customGP.customGPEnabled then
+    if not RCEPGP:GetEPGPdb().customGP.customGPEnabled then
         return functionOldLibGearPoints["GetNumRecentItems"](oldLib)
     end
     return #recent_items_queue
 end
 
 function lib:GetRecentItemLink(i)
-    if not db.customGP.customGPEnabled then
+    if not RCEPGP:GetEPGPdb().customGP.customGPEnabled then
         return functionOldLibGearPoints["GetRecentItemLink"](oldLib, i)
     end
     return recent_items_queue[i]
 end
 
 function lib:GetValue(item)
-    if not db.customGP.customGPEnabled then
+    if not RCEPGP:GetEPGPdb().customGP.customGPEnabled then
         return functionOldLibGearPoints["GetValue"](oldLib, item)
     end
     if not item then return end
@@ -153,7 +150,7 @@ function lib:GetValue(item)
         RCCustomGP.itemInfoCache[itemLink] = itemData
     end
 
-	local high = tonumber(RCEPGP:SecureExecString(db.customGP.formula, itemData)) or 0
+	local high = tonumber(RCEPGP:SecureExecString(RCEPGP:GetEPGPdb().customGP.formula, itemData)) or 0
 	high = math.floor(0.5 + high)
 
     RCEPGP:DebugPrint("ItemGPUpdate", itemLink, high)
@@ -223,8 +220,8 @@ end
 
 function RCCustomGP:GetSlotWeights(itemLink)
     local slot = select(3, RCCustomGP:GetRarityIlvlSlot(itemLink))
-    if slot and db.customGP[slot] then
-        return tonumber(db.customGP[slot])
+    if slot and RCEPGP:GetEPGPdb().customGP[slot] then
+        return tonumber(RCEPGP:GetEPGPdb().customGP[slot])
     end
 end
 
