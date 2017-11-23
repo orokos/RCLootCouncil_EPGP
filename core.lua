@@ -3,7 +3,7 @@ local DEBUG = false
 DEBUG = false
 --@end-debug@]===]
 local addon = LibStub("AceAddon-3.0"):GetAddon("RCLootCouncil")
-local RCEPGP = addon:NewModule("RCEPGP", "AceComm-3.0", "AceConsole-3.0", "AceHook-3.0", "AceEvent-3.0", "AceTimer-3.0", "AceSerializer-3.0", "AceBucket-3.0")
+_G.RCEPGP = addon:NewModule("RCEPGP", "AceComm-3.0", "AceConsole-3.0", "AceHook-3.0", "AceEvent-3.0", "AceTimer-3.0", "AceSerializer-3.0", "AceBucket-3.0")
 local EPGP = LibStub("AceAddon-3.0"):GetAddon("EPGP")
 local L = LibStub("AceLocale-3.0"):GetLocale("RCLootCouncil")
 local LEP = LibStub("AceLocale-3.0"):GetLocale("RCEPGP")
@@ -460,7 +460,38 @@ end
 ---------------------------------------------
 
 function RCEPGP:GetMLEPGPOverrideSetting(...)
-	-- TODO
+	if select(1, ...) == nil then
+		return nil
+	end
+	local mldbSetting = self:GetMLEPGPdb()
+	local i = 1
+	while select(i, ...) do
+		local key = select(i, ...)
+		if type(mldbSetting) == "table" and mldbSetting[key] then
+			mldbSetting = mldbSetting[key]
+		else
+			mldbSetting = nil
+			break
+		end
+		i = i + 1
+	end
+	if mldbSetting then
+		return mldbSetting
+	else
+		local epgpSetting = self:GetEPGPdb()
+		local i = 1
+		while select(i, ...) do
+			local key = select(i, ...)
+			if type(epgpSetting) == "table" and epgpSetting[key] then
+				epgpSetting = epgpSetting[key]
+			else
+				epgpSetting = nil
+				break
+			end
+			i = i + 1
+		end
+		return epgpSetting
+	end
 end
 
 function RCEPGP:GetMLEPGPdb()
@@ -503,8 +534,4 @@ function RCEPGP:BuildMLdb(MLdb)
 	self:DeepCopy(MLdb.epgp.bid, self:GetEPGPdb().bid)
 	MLdb.epgp.customGP = {}
 	self:DeepCopy(MLdb.epgp.customGP, self:GetEPGPdb().customGP)
-	MLdb.epgp.customGP.keywords = {}
-	for keyword, _ in ipairs(customGP.GPVariables) do
-		tinsert(MLdb.epgp.customGP.keywords, keyword)
-	end
 end
