@@ -171,11 +171,11 @@ function RCCustomGP:GetTokenInfo(itemLink)
 end
 
 function RCCustomGP:GetRarityIlvlSlot(itemLink)
-    local _, itemLink, rarity, level, _, itemClass, itemSubClass, _, equipLoc = GetItemInfo(itemLink)
+    local _, itemLink, rarity, level, _, itemClass, itemSubClass, _, equipLoc, _, _, itemClassID, itemSubClassID = GetItemInfo(itemLink)
     local itemBonuses = select(17, addon:DecodeItemLink(itemLink))
-    if addon.db.global.localizedSubTypes[itemSubClass] == "Artifact Relic" then
-        equipLoc = "INVTYPE_RELIC"
-    end
+    if itemClassID == LE_ITEM_CLASS_GEM and itemSubClassID == LE_ITEM_GEM_ARTIFACTRELIC then
+		equipLoc = "INVTYPE_RELIC"
+	end
     local slot = self.INVTYPESlots[equipLoc]
     if self:GetTokenInfo(itemLink) then
 		level, slot = self:GetTokenInfo(itemLink)
