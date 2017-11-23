@@ -11,10 +11,8 @@ local RCVotingFrame = addon:GetModule("RCVotingFrame")
 local RCVF = RCEPGP:NewModule("RCEPGPVotingFrame", "AceComm-3.0", "AceConsole-3.0", "AceHook-3.0", "AceEvent-3.0", "AceTimer-3.0", "AceSerializer-3.0")
 
 local session = 1
-local db = {}  -- db shortcut, equivalent to addon:Getdb().epgp
 
 function RCVF:OnInitialize()
-	db = RCEPGP:GetEPGPdb()
 	if not RCVotingFrame.scrollCols then -- RCVotingFrame hasn't been initialized.
 		return self:ScheduleTimer("OnInitialize", 0.5)
 	end
@@ -46,8 +44,6 @@ function RCVF:OnMessageReceived(msg, ...)
 		local s = unpack({...})
 		session = s
 		self:Update()
-	elseif msg == "RCUpdateDB" then
-		db = RCEPGP:GetEPGPdb()
 	end
 end
 
@@ -60,15 +56,6 @@ function RCVF:OnCommReceived(prefix, serializedMsg, distri, sender)
 		if command == "change_response" or command == "response" then
 			RCEPGP:DebugPrint("RCVF:OnCommReceived", command, unpack(data))
             self:ScheduleTimer("Update", 0) -- to ensure menu refreshes after RCVotingFrame:OnCommReceived()
-        elseif command == "RCEPGP_awarded" then
-			RCEPGP:DebugPrint("RCVF:OnCommReceived", command, unpack(data))
-            local data = unpack(data)
-            local s, winner, gpAwarded = data.session, data.winner, data.gpAwarded
-            if (not RCVotingFrame:GetLootTable()) or (not RCVotingFrame:GetLootTable()[s]) then -- lootTable may not exist due to reload
-                return
-            end
-            RCVotingFrame:GetLootTable()[s].gpAwarded = gpAwarded
-            self:Update()
 		elseif command == "MLdb" then
 			RCEPGP:DebugPrint("RCVF:OnCommReceived", command, unpack(data))
 			self:ScheduleTimer(function() self:UpdateColumns(); self:Update() end, 0) -- to ensure menu refreshes after RCVotingFrame:OnCommReceived()
@@ -119,26 +106,6 @@ function RCVF:Update()
     	RCVotingFrame:Update()
 		RCEPGP:RefreshMenu(1)
 
-		if RCVotingFrame.frame and RCVotingFrame.frame.awdGPstr then
-			if (not RCVotingFrame:GetLootTable()) or (not RCVotingFrame:GetLootTable()[session]) then
-				return
-			end
-			local gpAwarded = RCVotingFrame:GetLootTable()[session].gpAwarded
-			if not gpAwarded then
-				RCVotingFrame.frame.awdGPstr:SetText("")
-				RCVotingFrame.frame.awdGPstr:Hide()
-			else
-				local text = ""
-				if gpAwarded >= 0 then
-					text = "GP   +"..gpAwarded
-				elseif gpAwarded < 0 then
-					text = "GP   "..gpAwarded
-				end
-				RCVotingFrame.frame.awdGPstr:SetText(text)
-				RCVotingFrame.frame.awdGPstr:Show()
-			end
-		end
-
 		local lootTable = RCVotingFrame:GetLootTable()
 		if lootTable then
 			local t = lootTable[session]
@@ -169,10 +136,10 @@ function RCVF:UpdateColumns()
     { name = "Bid", DoCellUpdate = self.SetCellBid, colName = "bid", sortnext = self:GetScrollColIndexFromName("response"), width = 100, align = "CENTER",
     defaultsort = "dsc" }
 
-	if db.columns.epColumnEnabled then
+	if RCEPGP:GetEPGPdb().columns.epColumnEnabled then
     	RCEPGP:ReinsertColumnAtTheEnd(RCVotingFrame.scrollCols, ep)
 	end
-	if db.columns.gpColumnEnabled then
+	if RCEPGP:GetEPGPdb().columns.gpColumnEnabled then
     	RCEPGP:ReinsertColumnAtTheEnd(RCVotingFrame.scrollCols, gp)
 	end
     RCEPGP:ReinsertColumnAtTheEnd(RCVotingFrame.scrollCols, pr)
@@ -481,15 +448,6 @@ function RCVF:AddWidgetsIntoVotingFrame()
             end)
         end
         f.gpEditbox = editbox
-    end
-
-    if not f.awdGPstr then
-        local awdGPstr = f.content:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-        awdGPstr:SetPoint("BOTTOM", f.awardString, "TOP", 0, 1)
-        awdGPstr:SetText("GP   +1000")
-        awdGPstr:SetTextColor(1, 1, 0, 1) -- Yellow
-        awdGPstr:Hide()
-        f.awdGPstr = awdGPstr
     end
 end
 

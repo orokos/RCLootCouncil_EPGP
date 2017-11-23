@@ -532,6 +532,4 @@ function RCEPGP:BuildMLdb(MLdb)
 	MLdb.epgp = {}
 	MLdb.epgp.bid = {}
 	self:DeepCopy(MLdb.epgp.bid, self:GetEPGPdb().bid)
-	MLdb.epgp.customGP = {}
-	self:DeepCopy(MLdb.epgp.customGP, self:GetEPGPdb().customGP)
 end
