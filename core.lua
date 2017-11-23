@@ -283,17 +283,17 @@ function RCEPGP:SetCurrentAwardingGP(gp)
 	currentAwardingGP = gp
 end
 
-function RCEPGP:IncEPSecure(name, reason, amount)
+function RCEPGP:IncEPSecure(name, reason, amount, mass, undo)
 	name = self:GetEPGPName(name)
 	if not GS:IsCurrentState() then
-		self:Debug("IncEPSecure GS is not ready. Retry after 0.5s", name, reason, amount)
-		return self:ScheduleTimer("IncEPSecure", 0.5, name, reason, amount)
+		self:Debug("IncEPSecure GS is not ready. Retry after 0.5s", name, reason, amount, mass, undo)
+		return self:ScheduleTimer("IncEPSecure", 0.5, name, reason, amount, mass, undo)
 	end
 	if not EPGP:CanIncEPBy(reason, amount) then
-		self:Debug("IncEPSecure fails CanIncEPBy", name, reason, amount)
+		self:Debug("IncEPSecure fails CanIncEPBy", name, reason, amount, mass, undo)
 		return
 	end
-	EPGP:IncEPBy(name, reason, amount)
+	EPGP:IncEPBy(name, reason, amount, mass, undo)
 end
 
 function RCEPGP:IncGPSecure(name, reason, amount)
