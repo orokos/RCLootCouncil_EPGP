@@ -5,8 +5,13 @@
 local L = LibStub("AceLocale-3.0"):NewLocale("RCEPGP", "enUS", true, true)
 if not L then return end
 
-L["announce_awards_desc2"] = [=[
-RCLootCouncil-EPGP: #diffgp# for the amount of GP the player gains from the item. #ep# for the EP of player. #gp# for the GP of player before getting the item. #pr# for the PR of player before getting the item. #newgp# for the GP of player after getting the item. #newpr# for the PR of player after getting the item.]=]
+L["announce_#diffgp#_desc"] = "|cfffcd400 #diffgp#|r: The amount of GP the player gains from the item."
+L["announce_#ep#_desc"] = "|cfffcd400 #ep#|r: The EP of player."
+L["announce_#gp#_desc"] = "|cfffcd400 #gp#|r: The GP of player before getting the item."
+L["announce_#newgp#_desc"] = "|cfffcd400 #newgp#|r: The GP of player after getting the item."
+L["announce_#pr#_desc"] = "|cfffcd400 #pr#|r: The PR of player before getting the item."
+L["announce_#newpr#_desc"] = "|cfffcd400 #newpr#|r: The PR of player after getting the item."
+L["announce_#itemgp#_desc"] = "|cfffcd400 #itemgp#|r: The GP value of the item."
 L["%s_formula_runtime_error"] = "'%s' formula has runtime error."
 L["%s_formula_syntax_error"] = "'%s' formula has syntax error."
 L["Award GP (Default: %s)"] = "Award GP (Default: %s)"

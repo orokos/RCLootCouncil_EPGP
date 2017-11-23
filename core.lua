@@ -106,9 +106,6 @@ function RCEPGP:OnInitialize()
     self:GetEPGPdb().testVersion = self.testVersion
     self:GetEPGPdb().testTocVersion = self.testTocVersion
 
-    if (not self.isNewInstall) and addon:VersionCompare(lastVersion, "2.0.0") then
-        self:UpdateAnnounceKeyword_v2_0_0()
-    end
     if (not self.isNewInstall) and addon:VersionCompare(lastVersion, self.lastVersionResetSetting) then
 		self:ShowNotification(format(LEP["setting_reset_notification"], self.version.."-"..self.testVersion))
     end
@@ -128,7 +125,8 @@ function RCEPGP:OnInitialize()
     self:AddOptions()
 
     self:AddSlashCmds()
-    self:AddAnnouncement()
+    self:AddAwardAnnouncement()
+	self:AddConsiderationAnnouncement()
 
     self:EPGPDkpReloadedSettingToRC()
 
