@@ -282,6 +282,12 @@ function RCEPGP:OptionsTable()
                         type = "description",
                         width = "full",
                     },
+					customGPdesc2 = {
+						name = LEP["customGP_desc2"],
+						order = 1.5,
+						type = "description",
+						width = "full",
+					},
                     customGPEnabled = {
                         name = _G.ENABLE,
                         order = 2,

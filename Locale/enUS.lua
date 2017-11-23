@@ -25,6 +25,7 @@ Custom GP allows you to define a custom GP rule for every gear piece.
 You need to define a formula that calculates the GP value for the gear.
 You can choose to disable this feature, to calculated GP in the default way of EPGP(dkp reloaded).
 ]=]
+L["customGP_desc2"] = "When there is loot master, the configuration of the loot master will be used instead."
 L["disable_gp_popup"] = "GP popup is automatically disabled by RCLootCouncil - EPGP."
 L["EPGP_DKP_Reloaded_settings_received"] = "Received EPGP(dkp reloaded) settings through '/rc sync'."
 L["forbidden_function_used"] = "A forbidden function is used in a formula, but has been blocked from doing so. Please check if your formulas contain any malicious code!"
