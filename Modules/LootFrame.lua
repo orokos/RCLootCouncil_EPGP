@@ -10,6 +10,10 @@ local RCLF = RCEPGP:NewModule("RCEPGPLootFrame", "AceHook-3.0")
 
 local hookRunning = false
 
+function RCLF:OnInitialize()
+	self.initialize = true
+end
+
 function RCLF:OnEnable()
 	self:SecureHook(LootFrame.EntryManager, "GetEntry", "HookGetEntry")
 end

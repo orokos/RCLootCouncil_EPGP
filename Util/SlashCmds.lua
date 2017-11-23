@@ -95,3 +95,62 @@ function RCEPGP:UndoGP(name, reason)
 		return false
     end
 end
+
+--[[
+-- /rc massep  reason amount [formulaIndexOrName]
+function RCCustomEP:Massep(reason, amount, formulaIndexOrName, targetName, scheduleTime)
+    if reason == "help" then
+        RCEPGP:Print(LEP["slash_rc_massep_help_detailed"])
+        return
+    end
+    self:IncMassEPBy(reason, tonumber(amount), formulaIndexOrName, targetName, scheduleTime)
+end
+
+-- /rc recurep periodMin reason amount [formulaIndexOrName] [targetName] [ScheduleTime AfterSecond/HH:MM:SS/HH:MM, realm time, 24hour format]
+function RCCustomEP:Recurep(periodMin, reason, amount, formulaIndexOrName, targetName, scheduleTime)
+    if periodMin == "help" then
+        RCEPGP:Print(LEP["slash_rc_recurep_help_detailed"])
+        return
+    end
+    if tonumber(periodMin) and tonumber(periodMin) > 0 then
+        self:StartRecurringEP(reason, tonumber(amount), tonumber(periodMin), formulaIndexOrName, targetName, scheduleTime)
+    else
+        RCEPGP:Print(LEP["peroid_not_positive_error"])
+    end
+end
+-- TODO formulaIndex is 0
+-- /rc stoprecur
+-- TODO: schedule stoprecur
+function RCCustomEP:Stoprecur()
+    EPGP:StopRecurringEP()
+end
+
+-- /rc ep name reason amount
+function RCCustomEP:IncEPBy(name, reason, amount)
+    if name == "help" then
+        RCEPGP:Print(LEP["slash_rc_ep_help_detailed"])
+        return
+    end
+    if name == "%p" then
+        name = RCEPGP:GetEPGPName("player")
+    elseif name == "%t" then
+        if not UnitExists("target") then
+            RCEPGP:Print(L["You must select a target"])
+            return
+        end
+        name = RCEPGP:GetEPGPName("target")
+    end
+    -- TODO: more error checking?
+    EPGP:IncEPBy(name, reason, amount)
+end
+
+function RCCustomEP:AddChatCommand()
+    addon:CustomChatCmd(self, "IncEPBy", LEP["slash_rc_ep_help"], "ep")
+    addon:CustomChatCmd(self, "Massep", LEP["slash_rc_massep_help"], "massep")
+    addon:CustomChatCmd(self, "Recurep", LEP["slash_rc_recurep_help"], "recurep")
+    addon:CustomChatCmd(self, "Stoprecur", LEP["slash_rc_stoprecur_help"], "stoprecur")
+    addon:CustomChatCmd(self, "CancelAllScheduledEP", LEP["slash_rc_cancelallscheduledep_help"], "cancelallscheduledep")
+end
+
+
+--]]

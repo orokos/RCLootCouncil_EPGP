@@ -1,8 +1,7 @@
 local addon = LibStub("AceAddon-3.0"):GetAddon("RCLootCouncil")
 local RCEPGP = addon:GetModule("RCEPGP")
 local RCCustomGP = RCEPGP:GetModule("RCCustomGP", true)
---local RCCustomEP = RCEPGP:GetModule("RCCustomEP", true) -- TODO
---local RCCustomEPGUI = RCEPGP:GetModule("RCCustomEPGUI", true)
+local RCCustomEP = RCEPGP:GetModule("RCCustomEP", true)
 
 ------------------------------
 
@@ -328,11 +327,9 @@ function RCEPGP:OptionsTable()
                     },
                 },
             },
-		}
-            --[[
             epTab = {
                 name = LEP["Custom EP"],
-                order = 7,
+                order = 4,
                 type = "group",
                 args = {
                         desc = {
@@ -344,54 +341,52 @@ function RCEPGP:OptionsTable()
                             order = 2,
                             name = LEP["Add EP Formula"],
                             type = "execute",
-                            disabled = function() return #RCCustomEP:GetCustomEPdb().EPFormulas >= RCCustomEP.MaxFormulas end,
-                            func = function() table.insert(RCCustomEP:GetCustomEPdb().EPFormulas, {
+                            disabled = function() return self:GetEPGPdb().customEP.EPFormulas.count >= RCCustomEP.MaxFormulas end,
+                            func = function() table.insert(self:GetEPGPdb().customEP.EPFormulas, {
                                     name = RCCustomEP:EPFormulaGetUnrepeatedName("New"),
                                     desc = "",
                                     formula = "0",
                                 }) end,
                         },
-                        openEPGUI = {
-                            order = 3,
-                            name = LEP["Option EP GUI"],
-                            type = "execute",
-                            func = function() RCCustomEPGUI:ShowFrame() end,
-                        },
-                        restoreDefault = {
-                            name = _G.RESET_TO_DEFAULT,
-                            order = 4,
-                            type = "execute",
-                            func = function() RCCustomEP:RestoreToDefault() end,
-                        },
-
                     },
-            },
-           epVariablesTab = {
-               name = LEP["Custom EP Variables"],
-               order = 8,
-               type = "group",
-               args = {
-                   desc = {
-                           order = 1,
-                           name = LEP["customEPVariable_desc"],
-                           type = "description",
-                   },
-               },
-           }
-           --]] --TODO: feature not available in v2.0
+            	},
+			}
         }
 
-        --[[
-    -- Add EP Formulas
+	local function EPFormulaOptionEntry(name, order)
+		return {
+			name = name,
+			order = order,
+			type = "range",
+			min = 0,
+			max = 1,
+			isPercent = true,
+		}
+	end
+	local function EPFormulaRankEntry(rank)
+		return {
+			name = GuildControlGetRankName(rank+1) or "",
+			hidden = not GuildControlGetRankName(rank+1),
+			order = rank+1,
+			type = "range",
+			min = 0,
+			max = 1,
+			isPercent = true,
+		}
+	end
+
+
     for i=1,RCCustomEP.MaxFormulas do
         local formulaName = "Name"..i
         local description = "DESC1"..i
         local formula = "FORMULA"..i
         options.args.epTab.args["EPFormula"..i] = {
-            name = function() return i..". "..RCCustomEP.EPFormulaGetter(i, "name") end,
+            name = function() return i..". "..(self:GetEPGPdb().customEP.EPFormulas[i].name or "") end,
             type = "group",
             order = 100+i,
-            hidden = function() return i > #RCCustomEP:GetCustomEPdb().EPFormulas;  end,
+            hidden = function() return i > self:GetEPGPdb().customEP.EPFormulas.count  end,
+			get = self:DBGetFunc("customEP", "EPFormulas", i),
+			set = self:DBSetFunc("customEP", "EPFormulas", i),
             args = {
                 up = {
                     name = "Move up",
@@ -400,11 +395,11 @@ function RCEPGP:OptionsTable()
                     disabled = function() return i == 1 end,
                     func = function()
                         if i ~= 1 then
-                            local entry1 = RCCustomEP:GetCustomEPdb().EPFormulas[i-1]
-                            local entry2 = RCCustomEP:GetCustomEPdb().EPFormulas[i]
-                            RCCustomEP:GetCustomEPdb().EPFormulas[i-1] = entry2
-                            RCCustomEP:GetCustomEPdb().EPFormulas[i] = entry1
-                            LibStub("AceConfigDialog-3.0"):SelectGroup("RCLootCouncil - EPGP", "epTab", "EPFormula"..(i-1))
+                            local entry1 = self:GetEPGPdb().customEP.EPFormulas[i-1]
+                            local entry2 = self:GetEPGPdb().customEP.EPFormulas[i]
+                            self:GetEPGPdb().customEP.EPFormulas[i-1] = entry2
+                            self:GetEPGPdb().customEP.EPFormulas[i] = entry1
+                            LibStub("AceConfigDialog-3.0"):SelectGroup("RCLootCouncil-EPGP", "epTab", "EPFormula"..(i-1))
                         end
                     end,
                 },
@@ -418,14 +413,14 @@ function RCEPGP:OptionsTable()
                     name = "Move down",
                     type = "execute",
                     order = 3,
-                    disabled = function() return i == #RCCustomEP:GetCustomEPdb().EPFormulas end,
+                    --disabled = function() return i == #RCCustomEP:GetCustomEPdb().EPFormulas end,
                     func = function()
-                        if i ~= #RCCustomEP:GetCustomEPdb().EPFormulas then
-                            local entry1 = RCCustomEP:GetCustomEPdb().EPFormulas[i+1]
-                            local entry2 = RCCustomEP:GetCustomEPdb().EPFormulas[i]
-                            RCCustomEP:GetCustomEPdb().EPFormulas[i+1] = entry2
-                            RCCustomEP:GetCustomEPdb().EPFormulas[i] = entry1
-                            LibStub("AceConfigDialog-3.0"):SelectGroup("RCLootCouncil - EPGP", "epTab", "EPFormula"..(i+1))
+                        if i < self:GetEPGPdb().customEP.EPFormulas.count then
+							local entry1 = self:GetEPGPdb().customEP.EPFormulas[i+1]
+                            local entry2 = self:GetEPGPdb().customEP.EPFormulas[i]
+                            self:GetEPGPdb().customEP.EPFormulas[i+1] = entry2
+                            self:GetEPGPdb().customEP.EPFormulas[i] = entry1
+                            LibStub("AceConfigDialog-3.0"):SelectGroup("RCLootCouncil-EPGP", "epTab", "EPFormula"..(i+1))
                         end
                     end,
                 },
@@ -442,94 +437,51 @@ function RCEPGP:OptionsTable()
                     confirm = function() return format(LEP["ep_formula_delete_confirm"], i..". "..RCCustomEP.EPFormulaGetter(i, "name")) end,
                     func = function() table.remove(RCCustomEP:GetCustomEPdb().EPFormulas, i) end,
                 },
-                space3 = {
-                    name = "  ",
-                    type = "description",
-                    width = "full",
-                    order = 6,
-                },
-                name = {
-                    name = "Name",
-                    type = "input",
-                    desc = LEP["ep_formula_name_desc"],
-                    order = 7,
-                    get = function() return RCCustomEP.EPFormulaGetter(i, "name") end,
-                    set = function(_, value) RCCustomEP.EPFormulaSetter(i, "name", value) end,
-                },
-                space4 = {
-                    name = "  ",
-                    type = "description",
-                    width = "full",
-                    order = 8,
-                },
-                desc = {
-                    name = "Description",
-                    type = "input",
-                    width = "full",
-                    desc = LEP["ep_formula_desc_desc"],
-                    get = function() return RCCustomEP.EPFormulaGetter(i, "desc") end,
-                    set = function(_, value) RCCustomEP.EPFormulaSetter(i, "desc", value) end,
-                    order = 9,
-                },
-                formula = {
-                    name = "Formula",
-                    type = "input",
-                    width = "full",
-                    desc = LEP["ep_formula_formula_desc"],
-                    multiline = 7,
-                    get = function() return RCCustomEP.EPFormulaGetter(i, "formula") end,
-                    set = function(_, value)
-                        RCCustomEP.EPFormulaSetter(i, "formula", value)
-                        local func, err = RCCustomEP:GetEPFormulaFunc(i)
-                        if not func then
-                            self.epgpOptions.args.epTab.args["EPFormula"..i].args.errorMsg.name = LEP["formula_syntax_error"]
-                            self.epgpOptions.args.epTab.args["EPFormula"..i].args.errorDetailedMsg.name = err
-                        else
-                            self.epgpOptions.args.epTab.args["EPFormula"..i].args.errorMsg.name = ""
-                            self.epgpOptions.args.epTab.args["EPFormula"..i].args.errorDetailedMsg.name = ""
-                        end
-                    end,
-                    order = 10,
-                },
-                errorMsg = {
-                    name = "",
-                    order = 11,
-                    type = "description",
-                    width = "full",
-                },
-                errorDetailedMsg = {
-                    name = "",
-                    order = 12,
-                    type = "description",
-                    width = "full",
-                },
+				onlineStatus = {
+					name = "Online Status",
+					order = 6,
+					type = "group",
+					inline = true,
+					args = {
+						online = EPFormulaOptionEntry(_G.GUILD_ONLINE_LABEL, 1),
+						offline = EPFormulaOptionEntry(_G.PLAYER_OFFLINE, 2),
+					},
+				},
+				groupStatus = {
+					name = "Group Status",
+					order = 7,
+					type = "group",
+					inline = true,
+					args = {
+						inGroup = EPFormulaOptionEntry(LEP["In Group"], 1),
+						standby = EPFormulaOptionEntry(LEP["In standby"], 2),
+						calendarSignedUp = EPFormulaOptionEntry(LEP["signed up in calendar"], 3),
+						completelyNotInGroup = EPFormulaOptionEntry(LEP["None of the above"], 4),
+					},
+				},
+				ranks = {
+					name = _G.RANK,
+					order = 8,
+					type = "group",
+					inline = true,
+					args = {
+						isRank0 = EPFormulaRankEntry(0),
+						isRank1 = EPFormulaRankEntry(1),
+						isRank2 = EPFormulaRankEntry(2),
+						isRank3 = EPFormulaRankEntry(3),
+						isRank4 = EPFormulaRankEntry(4),
+						isRank5 = EPFormulaRankEntry(5),
+						isRank6 = EPFormulaRankEntry(6),
+						isRank7 = EPFormulaRankEntry(7),
+						isRank8 = EPFormulaRankEntry(8),
+						isRank9 = EPFormulaRankEntry(9),
+						notInGuild = EPFormulaOptionEntry(LEP["Not in your guild"], 11),
+					},
+				},
             }
         }
     end
 
-    -- Add descriptions for EP variables
-    local EPVariablesDisplayed = {}
-    for i = 1, #RCCustomEP.EPVariables do
-        local variableName = RCCustomEP.EPVariables[i].display_name or RCCustomEP.EPVariables[i].name
-        if not EPVariablesDisplayed[variableName] then
-            EPVariablesDisplayed[variableName] = true
-            options.args.epVariablesTab.args["variable"..variableName] = {
-                name = "|cFFFFFF00"..variableName.."|r",
-                order = 100 + i * 2,
-                fontSize = "medium",
-                type = "description",
-                width = "normal",
-            }
-            options.args.epVariablesTab.args["variable"..variableName.."help"] = {
-                name = RCCustomEP.EPVariables[i].help,
-                order = 101 + i * 2,
-                fontSize = "small",
-                type = "description",
-                width = "double",
-            }
-        end
-    end
-    --]] --TODO: feature not available in v2.0
 
     -- Add Options to set slot weights
 	local invTypes = {

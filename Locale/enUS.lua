@@ -23,6 +23,7 @@ You can choose to disable this feature, to calculated GP in the default way of E
 L["disable_gp_popup"] = "GP popup is automatically disabled by RCLootCouncil - EPGP."
 L["EPGP_DKP_Reloaded_settings_received"] = "Received EPGP(dkp reloaded) settings through '/rc sync'."
 L["forbidden_function_used"] = "A forbidden function is used in a formula, but has been blocked from doing so. Please check if your formulas contain any malicious code!"
+L["Formula 'formula' does not exist"] = "Formula %s does not exist"
 L["GP Bid"] = "GP Bid"
 L["gp_formula"] = "GP Formula"
 L["gp_formula_help"] = [=[Enter lua code that returns GP value in the editbox below.

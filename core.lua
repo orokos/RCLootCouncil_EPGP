@@ -64,6 +64,30 @@ function RCEPGP:OnInitialize()
 			WristSlot     = "0.56",
 			formula = "1000 * 2 ^ (-915/30) * 2 ^ (ilvl/30) * slotWeights + hasSpeed * 25 + numSocket * 200",
 		},
+		customEP = {
+			EPFormulas = {
+				count = 1,
+				['**'] = {
+					online = 1,
+					offline = 1,
+					inGroup = 1,
+					stadnby = 1,
+					calendarSignedUp = 0,
+					completelyNotInGroup = 0,
+					isRank0 = 1,
+					isRank1 = 1,
+					isRank2 = 1,
+					isRank3 = 1,
+					isRank4 = 1,
+					isRank5 = 1,
+					isRank6 = 1,
+					isRank7 = 1,
+					isRank8 = 1,
+					isRank9 = 1,
+					notInGuild = 1,
+				},
+			}
+		}
 	}
 	addon.defaults.profile.epgp = self.defaults
 	addon.db:RegisterDefaults(addon.defaults)
