@@ -33,7 +33,6 @@ function RCEPGP:OnInitialize()
 	setmetatable(self, meta)
 
 	self.defaults = {
-		sendEPGPSettings = true,
 		bid = {
 			bidEnabled = false,
 			bidMode = "prRelative",
@@ -41,10 +40,6 @@ function RCEPGP:OnInitialize()
 			minBid = "0",
 			maxBid = "10000",
 			minNewPR = "1",
-		},
-		columns = {
-			epColumnEnabled = true,
-			gpColumnEnabled = true,
 		},
 		customGP = {
 			customGPEnabled = false,
@@ -128,8 +123,6 @@ function RCEPGP:OnInitialize()
     self:AddAwardAnnouncement()
 	self:AddConsiderationAnnouncement()
 
-    self:EPGPDkpReloadedSettingToRC()
-
 	if GetLocale() == "zhCN" then
 		SetCVar("profanityFilter", "0")
 		self:DebugPrint("Diable profanity filter of zhCN client.")
@@ -143,7 +136,7 @@ end
 function RCEPGP:OnMessageReceived(msg, ...)
     self:DebugPrint("RCEPGP:OnMessageReceived", msg, ...)
 	if msg == "RCUpdateDB" then
-        self:RCToEPGPDkpReloadedSetting()
+		-- empty
 	elseif msg == "RCMLAddItem" then
 		local item, entry = ...
 		entry.gp = GP:GetValue(item)

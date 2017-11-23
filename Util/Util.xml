@@ -1,6 +1,5 @@
 <Ui xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://www.blizzard.com/wow/ui/">
 	<Script file = "Announcement.lua" />
-	<Script file = "EPGPSettingSync.lua" />
 	<Script file = "popups.lua" />
 	<Script file = "SecureExec.lua" />
 	<Script file = "SlashCmds.lua" />

@@ -136,12 +136,8 @@ function RCVF:UpdateColumns()
     { name = "Bid", DoCellUpdate = self.SetCellBid, colName = "bid", sortnext = self:GetScrollColIndexFromName("response"), width = 100, align = "CENTER",
     defaultsort = "dsc" }
 
-	if RCEPGP:GetEPGPdb().columns.epColumnEnabled then
-    	RCEPGP:ReinsertColumnAtTheEnd(RCVotingFrame.scrollCols, ep)
-	end
-	if RCEPGP:GetEPGPdb().columns.gpColumnEnabled then
-    	RCEPGP:ReinsertColumnAtTheEnd(RCVotingFrame.scrollCols, gp)
-	end
+    RCEPGP:ReinsertColumnAtTheEnd(RCVotingFrame.scrollCols, ep)
+    RCEPGP:ReinsertColumnAtTheEnd(RCVotingFrame.scrollCols, gp)
     RCEPGP:ReinsertColumnAtTheEnd(RCVotingFrame.scrollCols, pr)
 
     if RCEPGP:GetMLEPGPdb().bid and RCEPGP:GetMLEPGPdb().bid.bidEnabled then

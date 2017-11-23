@@ -130,75 +130,30 @@ function RCEPGP:OptionsTable()
                 type = "description",
                 order = 3,
             },
-            generalTab = {
-                name = _G.GENERAL,
-                order = 1,
-                type = "group",
-                args = {
-                    gpOptions = {
-                        name = LEP["gpOptions"],
-                        order = 1,
-                        type = "group",
-                        inline = true,
-                        args = {
-                            gpOptionsButton = {
-                                name = LEP["gpOptionsButton"],
-                                order = 1,
-                                width = "double",
-                                type = "execute",
-                                func = function()
-                                    InterfaceOptionsFrame_OpenToCategory(addon.optionsFrame.ml)
-                                    InterfaceOptionsFrame_OpenToCategory(addon.optionsFrame.ml) -- Twice due to blizz reasons
-                                    LibStub("AceConfigDialog-3.0"):SelectGroup("RCLootCouncil", "mlSettings", "buttonsTab")
-                                end,
-                            },
-                        },
-                    },
-                    sync = {
-                        name = LEP["Setting Sync"],
-                        order = 2,
-                        type = "group",
-                        inline = true,
-                        args = {
-                            sendEPGPSettings = {
-                                name = LEP["send_epgp_settings"],
-                                desc = LEP["send_epgp_setting_desc"],
-                                order = 1,
-                                type = "toggle",
-                                width = "full",
-                            },
-                        },
-                    },
-					columns = {
-						name = "Columns",
-						desc = "Enable or disable some columns in the voting frame",
-						order = 3,
-						type = "group",
-						inline = true,
-						get = self:DBGetFunc("columns"),
-						set = self:DBSetFunc("columns"),
-						args = {
-							epColumnEnabled = {
-								name = "EP",
-								order = 1,
-								type = "toggle",
-								width = "half",
-							},
-							gpColumnEnabled = {
-								name = "GP",
-								order = 2,
-								type = "toggle",
-								width = "half",
-							},
-						}
-					},
-                },
-            },
 			mlTab = {
-				name = "Master Looter",
+				name = L["Master Looter"],
 				order = 2,
 				type = "group",
 				args = {
+					gpOptions = {
+						name = LEP["gpOptions"],
+						order = 0.5,
+						type = "group",
+						inline = true,
+						args = {
+							gpOptionsButton = {
+								name = LEP["gpOptionsButton"],
+								order = 1,
+								width = "double",
+								type = "execute",
+								func = function()
+									InterfaceOptionsFrame_OpenToCategory(addon.optionsFrame.ml)
+									InterfaceOptionsFrame_OpenToCategory(addon.optionsFrame.ml) -- Twice due to blizz reasons
+									LibStub("AceConfigDialog-3.0"):SelectGroup("RCLootCouncil", "mlSettings", "buttonsTab")
+								end,
+							},
+						},
+					},
 					bid = {
 						name = _G.BID,
 						order = 1,
