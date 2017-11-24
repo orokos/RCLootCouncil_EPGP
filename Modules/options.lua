@@ -67,8 +67,6 @@ function RCEPGP:AddGPOptions()
     	end
     end
 
-    options.args.settings.args.profiles = LibStub("AceDBOptions-3.0"):GetOptionsTable(addon.db)
-    LibStub("AceConfigRegistry-3.0"):RegisterOptionsTable("RCLootCouncil", addon.options)
     LibStub("AceConfigRegistry-3.0"):NotifyChange("RCLootCouncil")
 end
 
@@ -84,7 +82,7 @@ function RCEPGP:OptionsTable()
 		set = self:DBSetFunc(),
 		args = {
             version = {
-                name = function() return "|cFF87CEFAv"..self.version.."|r-"..(self.tVersion and self.tVersion or "") end,
+                name = function() return "|cFF87CEFAv"..self.version.."|r"..(self.tVersion and ("-"..self.tVersion) or "") end,
                 type = "description",
                 order = 1,
             },
