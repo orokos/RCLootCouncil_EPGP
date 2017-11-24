@@ -97,7 +97,11 @@ function RCEPGP:OnInitialize()
 	addon.db:RegisterNamespace("EPGP", self.defaults)
 
 	self.db = addon.db:GetNamespace("EPGP").profile
+	addon.db:GetNamespace("EPGP").RegisterCallback(self, "OnProfileChanged", "RefreshConfig")
+	addon.db:GetNamespace("EPGP").RegisterCallback(self, "OnProfileCopied", "RefreshConfig")
+	addon.db:GetNamespace("EPGP").RegisterCallback(self, "OnProfileReset", "RefreshConfig")
 	self.globalDB = addon.db:GetNamespace("EPGP").global
+
 
     if addon:VersionCompare(addon.version, self.minRCVersion) then
 		self:ShowNotification(format(LEP["rc_version_below_min_notification"], self.minRCVersion, addon.version))
@@ -132,6 +136,11 @@ function RCEPGP:OnInitialize()
 		self:DebugPrint("Diable profanity filter of zhCN client.")
 	end
     self.initialize = true -- Set initialize to true, so option can be initialized correctly.
+end
+
+function RCEPGP:RefreshConfig(event, database, profile)
+	self:Debug("RefreshConfig", event, database, profile)
+	self.db = addon.db:GetNamespace("EPGP").profile
 end
 
 -- MAKESURE all messages are registered
