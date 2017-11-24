@@ -17,7 +17,7 @@ local currentAwardingGP = 0
 function RCEPGP:OnInitialize()
 	-- MAKESURE: Edit the following versions every update, and should also update the version in TOC file.
 	self.version = "2.1.0"
-	self.tVersion = "Release" -- format: Release/Beta/Alpha.num, testVersion compares only by number. eg. "Alpha.2" > "Beta.1"
+	self.tVersion = nil -- format: Release/Beta/Alpha.num, testVersion compares only by number. eg. "Alpha.2" > "Beta.1"
 	self.tocVersion = GetAddOnMetadata("RCLootCouncil_EPGP", "Version")
 	self.testTocVersion = GetAddOnMetadata("RCLootCouncil_EPGP", "X-TestVersion")
 	self.lastVersionNeedingRestart = "2.1.0"
@@ -25,8 +25,6 @@ function RCEPGP:OnInitialize()
 	self.minRCVersion = "2.7.0"
 
 	self.debug = DEBUG
-	self.newestVersionDetected = self.version
-	self.newestTestVersionDetected = self.tVersion
 	self.isNewInstall = (addon:Getdb().epgp == nil)
 	local meta = getmetatable(self) 	-- Set the addon name for self:Print()
 	meta.__tostring = function() return "RCLootCouncil-EPGP" end
@@ -93,28 +91,21 @@ function RCEPGP:OnInitialize()
     local lastVersion = self:GetEPGPdb().version
     if not lastVersion then lastVersion = "1.9.2" end
     if (not self.isNewInstall) and addon:VersionCompare(self.tocVersion, self.lastVersionNeedingRestart) then
-		self:ShowNotification(format(LEP["need_restart_notification"], self.version.."-"..self.tVersion))
+		self:ShowNotification(format(LEP["need_restart_notification"], self.version..(self.tVersion and ("-"..self.tVersion) or "")))
     end
 
     self:GetEPGPdb().version = self.version
     self:GetEPGPdb().tocVersion = self.tocVersion
-    self:GetEPGPdb().testVersion = self.tVersion
+    self:GetEPGPdb().tVersion = self.tVersion
     self:GetEPGPdb().testTocVersion = self.testTocVersion
 
     if (not self.isNewInstall) and addon:VersionCompare(lastVersion, self.lastVersionResetSetting) then
-		self:ShowNotification(format(LEP["setting_reset_notification"], self.version.."-"..self.tVersion))
+		self:ShowNotification(format(LEP["setting_reset_notification"], self.version..(self.tVersion and ("-"..self.tVersion) or "")))
     end
 
-    self:RegisterMessage("RCMLAwardSuccess", "OnMessageReceived")
-    self:RegisterMessage("RCUpdateDB", "OnMessageReceived")
 	self:RegisterMessage("RCMLAddItem", "OnMessageReceived")
 	self:RegisterMessage("RCMLBuildMLdb", "OnMessageReceived")
 	self:RegisterBucketMessage("RCEPGPConfigTableChanged", 2, "EPGPConfigTableChanged")
-
-    self:RegisterComm("RCLootCouncil", "OnCommReceived")
-
-    self:RegisterEvent("PLAYER_LOGIN", "OnEvent")
-    self:RegisterEvent("GROUP_JOINED", "OnEvent")
 
     self:AddGPOptions()
     self:AddOptions()
@@ -135,9 +126,7 @@ end
 -- MAKESURE statement are executed after the OnMessageReceived of RCLootCouncil if needed.
 function RCEPGP:OnMessageReceived(msg, ...)
     self:DebugPrint("RCEPGP:OnMessageReceived", msg, ...)
-	if msg == "RCUpdateDB" then
-		-- empty
-	elseif msg == "RCMLAddItem" then
+	if msg == "RCMLAddItem" then
 		local item, entry = ...
 		entry.gp = GP:GetValue(item)
 	elseif msg == "RCMLBuildMLdb" then
@@ -147,70 +136,11 @@ function RCEPGP:OnMessageReceived(msg, ...)
     end
 end
 
-function RCEPGP:OnCommReceived(prefix, serializedMsg, distri, sender)
-    local test, command, data = self:Deserialize(serializedMsg)
-    if prefix == "RCLootCouncil" then
-        -- data is always a table to be unpacked
-        local test, command, data = addon:Deserialize(serializedMsg)
-        if addon:HandleXRealmComms(self, command, data, sender) then return end
-
-        if test then
-            if command == "RCEPGP_VersionBroadcast" or command == "RCEPGP_VersionReply" then
-				self:DebugPrint("RCEPGP:OnCommReceived", command, unpack(data))
-                local otherVersion, otherTestVersion = unpack(data)
-
-                -- Only report test version updates if a test version is installed.
-                if self:IsTestVersion(self.tVersion) or (not self:IsTestVersion(otherTestVersion)) then
-                    if addon:VersionCompare(self.newestVersionDetected, otherVersion) then
-                        self:Print(format(LEP["new_version_detected"], self.version.."-"..self.tVersion, otherVersion.."-"..otherTestVersion))
-                        self.newestVersionDetected = otherVersion
-                        self.newestTestVersionDetected = otherTestVersion
-                    elseif self.newestVersionDetected == otherVersion and self:TestVersionCompare(self.newestTestVersionDetected, otherTestVersion) then
-                        self:Print(format(LEP["new_version_detected"], self.version.."-"..self.tVersion, otherVersion.."-"..otherTestVersion))
-                        self.newestTestVersionDetected = otherTestVersion
-                    end
-                end
-
-                if command == "RCEPGP_VersionBroadcast" and (not UnitIsUnit("player", Ambiguate(sender, "short"))) then
-                    addon:SendCommand(sender, "RCEPGP_VersionReply", self.version, self.tVersion)
-                end
-            end
-        end
-    end
-end
-
-function RCEPGP:OnEvent(event, ...)
-    self:DebugPrint("RCEPGP:OnEvent", event, ...)
-    if event == "PLAYER_LOGIN" then
-        self:ScheduleTimer(function() addon:SendCommand("guild", "RCEPGP_VersionBroadcast", self.version, self.tVersion) end, 5)
-    elseif event == "GROUP_JOINED" then
-        self:ScheduleTimer(function() addon:SendCommand("group", "RCEPGP_VersionBroadcast", self.version, self.tVersion) end, 2)
-    end
-end
-
 function RCEPGP:GetEPGPdb()
     if not addon:Getdb().epgp then
         addon:Getdb().epgp = {}
     end
     return addon:Getdb().epgp
-end
-
--- Return true if test version 1 is older than test version 2
--- testVersion looks like: Beta.1, and we only compare the number after the dot.
-function RCEPGP:TestVersionCompare(v1, v2)
-    if v1:lower():find("release") then
-        return false
-    end
-    if v2:lower():find("release") then
-        return true
-    end
-    local testName1, testVer1 = strsplit(".", v1)
-    local testName2, testVer2 = strsplit(".", v2)
-    return tonumber(testVer1) < tonumber(testVer2)
-end
-
-function RCEPGP:IsTestVersion(v)
-    return v and (v:lower():find("alpha") or v:lower():find("beta"))
 end
 
 ---------------------------------------------
