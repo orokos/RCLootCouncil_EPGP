@@ -258,11 +258,11 @@ function RCEPGP:OptionsTable()
                             name = LEP["Add EP Formula"],
                             type = "execute",
                             disabled = function() return self.db.customEP.EPFormulas.count >= RCCustomEP.MaxFormulas end,
-                            func = function() table.insert(self.db.customEP.EPFormulas, {
-                                    name = RCCustomEP:EPFormulaGetUnrepeatedName("New"),
-                                    desc = "",
-                                    formula = "0",
-                                }) end,
+                            func = function()
+								wipe(self.db.customEP.EPFormulas[self.db.customEP.EPFormulas.count+1])
+								self.db.customEP.EPFormulas[self.db.customEP.EPFormulas.count+1].name = RCCustomEP:EPFormulaGetUnrepeatedName("New")
+								self.db.customEP.EPFormulas.count = self.db.customEP.EPFormulas.count + 1
+							end,
                         },
                     },
             	},
@@ -272,6 +272,7 @@ function RCEPGP:OptionsTable()
 	local function EPFormulaOptionEntry(name, order)
 		return {
 			name = name,
+			step = 0.001,
 			order = order,
 			type = "range",
 			min = 0,
@@ -350,8 +351,16 @@ function RCEPGP:OptionsTable()
                     name = "Delete",
                     type = "execute",
                     order = 5,
-                    confirm = function() return format(LEP["ep_formula_delete_confirm"], i..". "..RCCustomEP.EPFormulaGetter(i, "name")) end,
-                    func = function() table.remove(RCCustomEP:GetCustomEPdb().EPFormulas, i) end,
+                    confirm = function() return format(LEP["formula_delete_confirm"], i..". "..self.db.customEP.EPFormulas[i].name) end,
+                    func = function()
+						table.remove(self.db.customEP.EPFormulas, i)
+						wipe(self.db.customEP.EPFormulas[self.db.customEP.EPFormulas.count])
+						self.db.customEP.EPFormulas[self.db.customEP.EPFormulas.count] = nil
+						if self.db.customEP.EPFormulas.count > 0 then
+							self.db.customEP.EPFormulas.count = self.db.customEP.EPFormulas.count-1
+						end
+						LibStub("AceConfigDialog-3.0"):SelectGroup("RCLootCouncil-EPGP", "epTab", "EPFormula"..i)
+					end,
                 },
 				onlineStatus = {
 					name = "Online Status",

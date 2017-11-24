@@ -306,7 +306,7 @@ RCCustomEP.recurTickFrame:SetScript("OnUpdate", function(self, elapsed)
 
 	local now = GetTime()
 	if now > vars.next_award and GS:IsCurrentState() then
-		RCCustomEP:IncMassEPBy(vars.next_award_reason, vars.next_award_amount, unpack(vars.next_formulas))
+		RCCustomEP:IncMassEPBy(vars.next_award_reason, vars.next_award_amount, unpack(vars.next_formulas or {}))
 		vars.next_award = vars.next_award + vars.recurring_ep_period_mins * 60
 	end
 	self.timeout = self.timeout + elapsed
@@ -496,7 +496,8 @@ end
 function RCCustomEP:EPFormulaGetUnrepeatedName(name, index)
 	name = string.gsub(name, " ", "_") -- We don't allow space in the name, so replace it by "_"
 	local function isRepeated(name)
-		for i, entry in pairs(self:GetCustomEPdb().EPFormulas) do
+		for i=1,RCEPGP.db.customEP.EPFormulas.count do
+			local entry = RCEPGP.db.customEP.EPFormulas[i]
 			if entry.name == name and i ~= index then
 				return true
 			end

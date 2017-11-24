@@ -70,11 +70,14 @@ function RCEPGP:OnInitialize()
 			customEP = {
 				EPFormulas = {
 					count = 1,
+					[1] = {
+						name = "Default",
+					},
 					['**'] = {
 						online = 1,
 						offline = 1,
 						inGroup = 1,
-						stadnby = 1,
+						standby = 1,
 						calendarSignedUp = 0,
 						completelyNotInGroup = 0,
 						isRank0 = 1,
