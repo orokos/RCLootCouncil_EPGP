@@ -16,17 +16,17 @@ local currentAwardingGP = 0
 
 function RCEPGP:OnInitialize()
 	-- MAKESURE: Edit the following versions every update, and should also update the version in TOC file.
-	self.version = "2.2.0"
-	self.testVersion = "Release" -- format: Release/Beta/Alpha.num, testVersion compares only by number. eg. "Alpha.2" > "Beta.1"
+	self.version = "2.1.0"
+	self.tVersion = "Release" -- format: Release/Beta/Alpha.num, testVersion compares only by number. eg. "Alpha.2" > "Beta.1"
 	self.tocVersion = GetAddOnMetadata("RCLootCouncil_EPGP", "Version")
 	self.testTocVersion = GetAddOnMetadata("RCLootCouncil_EPGP", "X-TestVersion")
-	self.lastVersionNeedingRestart = "2.2.0"
+	self.lastVersionNeedingRestart = "2.1.0"
 	self.lastVersionResetSetting = "2.0.0"
 	self.minRCVersion = "2.7.0"
 
 	self.debug = DEBUG
 	self.newestVersionDetected = self.version
-	self.newestTestVersionDetected = self.testVersion
+	self.newestTestVersionDetected = self.tVersion
 	self.isNewInstall = (addon:Getdb().epgp == nil)
 	local meta = getmetatable(self) 	-- Set the addon name for self:Print()
 	meta.__tostring = function() return "RCLootCouncil-EPGP" end
@@ -93,16 +93,16 @@ function RCEPGP:OnInitialize()
     local lastVersion = self:GetEPGPdb().version
     if not lastVersion then lastVersion = "1.9.2" end
     if (not self.isNewInstall) and addon:VersionCompare(self.tocVersion, self.lastVersionNeedingRestart) then
-		self:ShowNotification(format(LEP["need_restart_notification"], self.version.."-"..self.testVersion))
+		self:ShowNotification(format(LEP["need_restart_notification"], self.version.."-"..self.tVersion))
     end
 
     self:GetEPGPdb().version = self.version
     self:GetEPGPdb().tocVersion = self.tocVersion
-    self:GetEPGPdb().testVersion = self.testVersion
+    self:GetEPGPdb().testVersion = self.tVersion
     self:GetEPGPdb().testTocVersion = self.testTocVersion
 
     if (not self.isNewInstall) and addon:VersionCompare(lastVersion, self.lastVersionResetSetting) then
-		self:ShowNotification(format(LEP["setting_reset_notification"], self.version.."-"..self.testVersion))
+		self:ShowNotification(format(LEP["setting_reset_notification"], self.version.."-"..self.tVersion))
     end
 
     self:RegisterMessage("RCMLAwardSuccess", "OnMessageReceived")
@@ -160,19 +160,19 @@ function RCEPGP:OnCommReceived(prefix, serializedMsg, distri, sender)
                 local otherVersion, otherTestVersion = unpack(data)
 
                 -- Only report test version updates if a test version is installed.
-                if self:IsTestVersion(self.testVersion) or (not self:IsTestVersion(otherTestVersion)) then
+                if self:IsTestVersion(self.tVersion) or (not self:IsTestVersion(otherTestVersion)) then
                     if addon:VersionCompare(self.newestVersionDetected, otherVersion) then
-                        self:Print(format(LEP["new_version_detected"], self.version.."-"..self.testVersion, otherVersion.."-"..otherTestVersion))
+                        self:Print(format(LEP["new_version_detected"], self.version.."-"..self.tVersion, otherVersion.."-"..otherTestVersion))
                         self.newestVersionDetected = otherVersion
                         self.newestTestVersionDetected = otherTestVersion
                     elseif self.newestVersionDetected == otherVersion and self:TestVersionCompare(self.newestTestVersionDetected, otherTestVersion) then
-                        self:Print(format(LEP["new_version_detected"], self.version.."-"..self.testVersion, otherVersion.."-"..otherTestVersion))
+                        self:Print(format(LEP["new_version_detected"], self.version.."-"..self.tVersion, otherVersion.."-"..otherTestVersion))
                         self.newestTestVersionDetected = otherTestVersion
                     end
                 end
 
                 if command == "RCEPGP_VersionBroadcast" and (not UnitIsUnit("player", Ambiguate(sender, "short"))) then
-                    addon:SendCommand(sender, "RCEPGP_VersionReply", self.version, self.testVersion)
+                    addon:SendCommand(sender, "RCEPGP_VersionReply", self.version, self.tVersion)
                 end
             end
         end
@@ -182,9 +182,9 @@ end
 function RCEPGP:OnEvent(event, ...)
     self:DebugPrint("RCEPGP:OnEvent", event, ...)
     if event == "PLAYER_LOGIN" then
-        self:ScheduleTimer(function() addon:SendCommand("guild", "RCEPGP_VersionBroadcast", self.version, self.testVersion) end, 5)
+        self:ScheduleTimer(function() addon:SendCommand("guild", "RCEPGP_VersionBroadcast", self.version, self.tVersion) end, 5)
     elseif event == "GROUP_JOINED" then
-        self:ScheduleTimer(function() addon:SendCommand("group", "RCEPGP_VersionBroadcast", self.version, self.testVersion) end, 2)
+        self:ScheduleTimer(function() addon:SendCommand("group", "RCEPGP_VersionBroadcast", self.version, self.tVersion) end, 2)
     end
 end
 
