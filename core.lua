@@ -93,7 +93,13 @@ function RCEPGP:OnInitialize()
 			}
 		}
 	}
+
+	-- Clean garbage in SV
 	addon.db.profile.epgp = nil -- No longer used
+	for _, v in pairs(addon.db.profile.relicButtons) do v.gp = nil end
+	for _, v in pairs(addon.db.profile.tierButtons) do v.gp = nil end
+    for _, v in pairs(addon.db.profile.responses) do v.gp = nil end
+
 	addon.db:RegisterNamespace("EPGP", self.defaults)
 
 	self.db = addon.db:GetNamespace("EPGP").profile
