@@ -122,6 +122,7 @@ function RCEPGP:OnInitialize()
 
 	self:RegisterMessage("RCMLAddItem", "OnMessageReceived")
 	self:RegisterMessage("RCMLBuildMLdb", "OnMessageReceived")
+	self:RegisterMessage("RCSyncComplete", "OnMessageReceived")
 	self:RegisterBucketMessage("RCEPGPConfigTableChanged", 2, "EPGPConfigTableChanged")
 
     self:AddGPOptions()
@@ -155,6 +156,8 @@ function RCEPGP:OnMessageReceived(msg, ...)
 		local MLdb = ...
 		self:BuildMLdb(MLdb)
 		local str = self:Serialize(MLdb)
+	elseif msg == "RCSyncComplete" and select(1, ...) == "EPGP" then
+		addon.db:GetNamespace("EPGP"):RegisterDefaults(self.defaults)
     end
 end
 
