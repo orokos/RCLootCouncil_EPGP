@@ -12,8 +12,12 @@ function RCEPGP:AddSlashCmds()
 	-- helpDetailed: the help message of command. Printed by '/rc command help'
 	self.SlashCmds = {
 		["epgp"] = {func = RCEPGP.OpenOptions, help = LEP["chat_commands"], helpDetailed = nil, permission = false},
+		["ep"] = {func = RCEPGP.IncEPBy, help = LEP["slash_rc_ep_help"], helpDetailed = LEP["slash_rc_ep_help_detailed"], permission = true},
 		["gp"] = {func = RCEPGP.IncGPBy, help = LEP["slash_rc_gp_help"], helpDetailed = LEP["slash_rc_gp_help_detailed"], permission = true},
 		["undogp"] = {func = RCEPGP.UndoGP, help = LEP["slash_rc_undogp_help"], helpDetailed = LEP["slash_rc_undogp_help_detailed"], permission = true},
+		["massep"] = {func = RCEPGP.MassEP, help = LEP["slash_rc_massep_help"], helpDetailed = LEP["slash_rc_massep_help_detailed"], permission = true},
+		["recurep"] = {func = RCEPGP.RecurEP, help = LEP["slash_rc_recurep_help"], helpDetailed = LEP["slash_rc_recurep_help_detailed"], permission = true},
+		["stoprecur"] = {func = RCEPGP.RecurEP, help = LEP["slash_rc_stoprecur_help"], helpDetailed = LEP["slash_rc_stoprecur_help_detailed"], permission = true},
 	}
 	local i = 1
 	for command, v in pairs(self.SlashCmds) do
@@ -32,8 +36,8 @@ end
 -- If the command function returns EXACTLY false, print command fails message.
 function RCEPGP:ExecuteSlashCmd(command, ...)
 	if self.SlashCmds[command] and self.SlashCmds[command].func then
-		if self.SlashCmds[command].help and select(1, ...) and string.lower(tostring(select(1, ...))) == "help" then
-			self:Print(self.SlashCmds[command].help)
+		if self.SlashCmds[command].helpDetailed and (not select(1, ...) or string.lower(tostring(select(1, ...))) == "help") then
+			self:Print(self.SlashCmds[command].helpDetailed)
 			return
 		end
 		if self.SlashCmds[command].permission and not CanEditOfficerNote() then
@@ -66,7 +70,6 @@ function RCEPGP:IncGPBy(name, reason, amount)
 	if not name then
 		return
 	end
-
 	amount = amount and tonumber(amount) or GP:GetValue(reason)
 
     if EPGP:CanIncGPBy(reason, amount) then
@@ -86,7 +89,6 @@ function RCEPGP:UndoGP(name, reason)
 		return
 	end
 
-    -- TODO: More error checking?
     local amount, reason2  = self:GetLastGPAmount(name, reason)
     if EPGP:CanIncGPBy(reason, amount) then
         EPGP:IncGPBy(name, reason2, -amount)
@@ -96,61 +98,38 @@ function RCEPGP:UndoGP(name, reason)
     end
 end
 
---[[
--- /rc massep  reason amount [formulaIndexOrName]
-function RCCustomEP:Massep(reason, amount, formulaIndexOrName, targetName, scheduleTime)
-    if reason == "help" then
-        RCEPGP:Print(LEP["slash_rc_massep_help_detailed"])
-        return
-    end
-    self:IncMassEPBy(reason, tonumber(amount), formulaIndexOrName, targetName, scheduleTime)
+
+-- /rc massep [reason] [amount] [formulaIndexOrName1] [formulaIndexOrName2], ...
+function RCEPGP:MassEP(reason, amount, ...)
+    self:GetModule("RCCustomEP"):IncMassEPBy(reason, tonumber(amount), ...)
 end
 
--- /rc recurep periodMin reason amount [formulaIndexOrName] [targetName] [ScheduleTime AfterSecond/HH:MM:SS/HH:MM, realm time, 24hour format]
-function RCCustomEP:Recurep(periodMin, reason, amount, formulaIndexOrName, targetName, scheduleTime)
-    if periodMin == "help" then
-        RCEPGP:Print(LEP["slash_rc_recurep_help_detailed"])
-        return
-    end
-    if tonumber(periodMin) and tonumber(periodMin) > 0 then
-        self:StartRecurringEP(reason, tonumber(amount), tonumber(periodMin), formulaIndexOrName, targetName, scheduleTime)
-    else
-        RCEPGP:Print(LEP["peroid_not_positive_error"])
-    end
+-- /rc recurep periodMin reason amount [formulaIndexOrName1] [formulaIndexOrName2], ...
+function RCEPGP:RecurEP(periodMin, reason, amount, ...)
+	self:GetModule("RCCustomEP"):StartRecurringEP(reason, tonumber(amount), tonumber(periodMin), ...)
 end
--- TODO formulaIndex is 0
--- /rc stoprecur
--- TODO: schedule stoprecur
-function RCCustomEP:Stoprecur()
+
+function RCEPGP:StopRecur()
     EPGP:StopRecurringEP()
 end
 
 -- /rc ep name reason amount
-function RCCustomEP:IncEPBy(name, reason, amount)
-    if name == "help" then
-        RCEPGP:Print(LEP["slash_rc_ep_help_detailed"])
-        return
-    end
+function RCEPGP:IncEPBy(name, reason, amount)
     if name == "%p" then
-        name = RCEPGP:GetEPGPName("player")
+        name = self:GetEPGPName("player")
     elseif name == "%t" then
         if not UnitExists("target") then
-            RCEPGP:Print(L["You must select a target"])
+            self:Print(L["You must select a target"])
             return
         end
-        name = RCEPGP:GetEPGPName("target")
+        name = self:GetEPGPName("target")
     end
-    -- TODO: more error checking?
-    EPGP:IncEPBy(name, reason, amount)
+
+	amount = tonumber(amount)
+	if EPGP:CanIncEPBy(reason, amount) then
+    	EPGP:IncEPBy(name, reason, amount)
+		return true
+	else
+		return false
+	end
 end
-
-function RCCustomEP:AddChatCommand()
-    addon:CustomChatCmd(self, "IncEPBy", LEP["slash_rc_ep_help"], "ep")
-    addon:CustomChatCmd(self, "Massep", LEP["slash_rc_massep_help"], "massep")
-    addon:CustomChatCmd(self, "Recurep", LEP["slash_rc_recurep_help"], "recurep")
-    addon:CustomChatCmd(self, "Stoprecur", LEP["slash_rc_stoprecur_help"], "stoprecur")
-    addon:CustomChatCmd(self, "CancelAllScheduledEP", LEP["slash_rc_cancelallscheduledep_help"], "cancelallscheduledep")
-end
-
-
---]]

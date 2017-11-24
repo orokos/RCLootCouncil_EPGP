@@ -322,6 +322,15 @@ RCCustomEP.recurTickFrame:Hide()
 
 --@param ... formulas
 function RCCustomEP:StartRecurringEP(reason, amount, periodMin, ...)
+	if not tonumber(periodMin) and tonumber(periodMin) <= 0 then
+		RCEPGP:Print(LEP["period_not_positive_error"])
+		return false
+	end
+	amount = tonumber(amount)
+	if not amount then
+		RCEPGP:Print(LEP["amount_must_be_number"])
+		return false
+	end
 	if type(reason) ~= "string" or type(amount) ~= "number" or #reason == 0 then
 		return false
 	end

@@ -68,13 +68,14 @@ L["Invalid input"] = true
 L["need_restart_notification"] = "RCLootCouncil-EPGP v%s update requires full restart of the client. Some features of the addon don't work until client restarts."
 L["new_version_detected"] = "Your version %s is outdated. Newer Version %s detected. You can update the addon from [https://mods.curse.com/addons/wow/269161-rclootcouncil-epgp]"
 L["no_permission_to_edit_officer_note"] = "You don't have permission to edit officer note."
+L["period_not_positive_error"] = "Period must be positive number"
 L["rc_version_below_min_notification"] = "This version of RCLootCouncil-EPGP requires RCLootCouncil v%s+. Your RCLootCouncil is v%s. Please update your RCLootCouncil."
 L["RCEPGP_desc"] = "A RCLootCouncil plugin that adds EPGP support and customization. Author: Safetee"
 L["send_epgp_setting_desc"] = "If checked, '/rc sync' also sync EPGP(dkp reloaded) settings"
 L["send_epgp_settings"] = "'/rc sync' also sends EPGP(dkp reloaded) settings"
 L["Setting Sync"] = "Setting Sync"
 L["setting_reset_notification"] = "RCLootCouncil-EPGP v%s resets all settings. Please reconfig your settings if needed."
-L["slash_rc_command_failed"] = "Command fails. Please check if the inputs are correct."
+L["slash_rc_command_failed"] = "Command fails. Please check if the inputs are correct. Make sure guild frame is not open."
 L["slash_rc_gp_help"] = "- gp name reason [amount]      - Award GP to a character. See the detailed usage by '/rc gp help'"
 L["slash_rc_gp_help_detailed"] = [=[
 

@@ -306,8 +306,9 @@ function RCEPGP:OptionsTable()
 			set = self:DBSetFunc("customEP", "EPFormulas", i),
             args = {
                 up = {
-                    name = "Move up",
+                    name = "up",
                     type = "execute",
+					width = "half",
                     order = 1,
                     disabled = function() return i == 1 end,
                     func = function()
@@ -320,17 +321,12 @@ function RCEPGP:OptionsTable()
                         end
                     end,
                 },
-                space1 = {
-                    name = "  ",
-                    type = "description",
-                    width = "double",
-                    order = 2,
-                },
                 down = {
-                    name = "Move down",
+                    name = "down",
                     type = "execute",
+					width = "half",
                     order = 3,
-                    --disabled = function() return i == #RCCustomEP:GetCustomEPdb().EPFormulas end,
+                    disabled = function() return i >= self.db.customEP.EPFormulas.count end,
                     func = function()
                         if i < self.db.customEP.EPFormulas.count then
 							local entry1 = self.db.customEP.EPFormulas[i+1]
@@ -341,15 +337,10 @@ function RCEPGP:OptionsTable()
                         end
                     end,
                 },
-                space2 = {
-                    name = "  ",
-                    type = "description",
-                    width = "double",
-                    order = 4,
-                },
                 delete = {
-                    name = "Delete",
+                    name = _G.DELETE,
                     type = "execute",
+					width = "half",
                     order = 5,
                     confirm = function() return format(LEP["formula_delete_confirm"], i..". "..self.db.customEP.EPFormulas[i].name) end,
                     func = function()
