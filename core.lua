@@ -17,7 +17,7 @@ local currentAwardingGP = 0
 function RCEPGP:OnInitialize()
 	-- MAKESURE: Edit the following versions every update, and should also update the version in TOC file.
 	self.version = "2.1.0"
-	self.tVersion = nil -- format: Release/Beta/Alpha.num, testVersion compares only by number. eg. "Alpha.2" > "Beta.1"
+	self.tVersion = nil -- format: nil/Beta/Alpha.num, testVersion compares only by number. eg. "Alpha.2" > "Beta.1"
 	self.tocVersion = GetAddOnMetadata("RCLootCouncil_EPGP", "Version")
 	self.testTocVersion = GetAddOnMetadata("RCLootCouncil_EPGP", "X-TestVersion")
 	self.lastVersionNeedingRestart = "2.1.0"
@@ -25,81 +25,94 @@ function RCEPGP:OnInitialize()
 	self.minRCVersion = "2.7.0"
 
 	self.debug = DEBUG
-	self.isNewInstall = (addon:Getdb().epgp == nil)
 	local meta = getmetatable(self) 	-- Set the addon name for self:Print()
 	meta.__tostring = function() return "RCLootCouncil-EPGP" end
 	setmetatable(self, meta)
 
 	self.defaults = {
-		bid = {
-			bidEnabled = false,
-			bidMode = "prRelative",
-			defaultBid = "",
-			minBid = "0",
-			maxBid = "10000",
-			minNewPR = "1",
-		},
-		customGP = {
-			customGPEnabled = false,
-			RelicSlot     = "0.667",
-			TrinketSlot   = "1.25",
-			HeadSlot      = "1",
-			ChestSlot     = "1",
-			LegsSlot      = "1",
-			ShoulderSlot  = "0.75",
-			HandsSlot     = "0.75",
-			WaistSlot     = "0.75",
-			FeetSlot      = "0.75",
-			NeckSlot      = "0.56",
-			FingerSlot    = "0.56",
-			BackSlot      = "0.56",
-			WristSlot     = "0.56",
-			formula = "1000 * 2 ^ (-915/30) * 2 ^ (ilvl/30) * slotWeights + hasSpeed * 25 + numSocket * 200",
-		},
-		customEP = {
-			EPFormulas = {
-				count = 1,
-				['**'] = {
-					online = 1,
-					offline = 1,
-					inGroup = 1,
-					stadnby = 1,
-					calendarSignedUp = 0,
-					completelyNotInGroup = 0,
-					isRank0 = 1,
-					isRank1 = 1,
-					isRank2 = 1,
-					isRank3 = 1,
-					isRank4 = 1,
-					isRank5 = 1,
-					isRank6 = 1,
-					isRank7 = 1,
-					isRank8 = 1,
-					isRank9 = 1,
-					notInGuild = 1,
+		profile = {
+			gp = {
+				responses = {
+					['*'] = "100%",
 				},
+				tierButtons = {
+					['*'] = "100%",
+				},
+				relicButtons = {
+					['*'] = "100%",
+				}
+			},
+			bid = {
+				bidEnabled = false,
+				bidMode = "prRelative",
+				defaultBid = "",
+				minBid = "0",
+				maxBid = "10000",
+				minNewPR = "1",
+			},
+			customGP = {
+				customGPEnabled = false,
+				RelicSlot     = "0.667",
+				TrinketSlot   = "1.25",
+				HeadSlot      = "1",
+				ChestSlot     = "1",
+				LegsSlot      = "1",
+				ShoulderSlot  = "0.75",
+				HandsSlot     = "0.75",
+				WaistSlot     = "0.75",
+				FeetSlot      = "0.75",
+				NeckSlot      = "0.56",
+				FingerSlot    = "0.56",
+				BackSlot      = "0.56",
+				WristSlot     = "0.56",
+				formula = "1000 * 2 ^ (-915/30) * 2 ^ (ilvl/30) * slotWeights + hasSpeed * 25 + numSocket * 200",
+			},
+			customEP = {
+				EPFormulas = {
+					count = 1,
+					['**'] = {
+						online = 1,
+						offline = 1,
+						inGroup = 1,
+						stadnby = 1,
+						calendarSignedUp = 0,
+						completelyNotInGroup = 0,
+						isRank0 = 1,
+						isRank1 = 1,
+						isRank2 = 1,
+						isRank3 = 1,
+						isRank4 = 1,
+						isRank5 = 1,
+						isRank6 = 1,
+						isRank7 = 1,
+						isRank8 = 1,
+						isRank9 = 1,
+						notInGuild = 1,
+					},
+				}
 			}
 		}
 	}
-	addon.defaults.profile.epgp = self.defaults
-	addon.db:RegisterDefaults(addon.defaults)
+	addon.db.profile.epgp = nil -- No longer used
+	addon.db:RegisterNamespace("EPGP", self.defaults)
+
+	self.db = addon.db:GetNamespace("EPGP").profile
+	self.globalDB = addon.db:GetNamespace("EPGP").global
 
     if addon:VersionCompare(addon.version, self.minRCVersion) then
 		self:ShowNotification(format(LEP["rc_version_below_min_notification"], self.minRCVersion, addon.version))
     end
-    -- Added in v2.0
-    local lastVersion = self:GetEPGPdb().version
-    if not lastVersion then lastVersion = "1.9.2" end
-    if (not self.isNewInstall) and addon:VersionCompare(self.tocVersion, self.lastVersionNeedingRestart) then
+    if addon:VersionCompare(self.tocVersion, self.lastVersionNeedingRestart) then
 		self:ShowNotification(format(LEP["need_restart_notification"], self.version..(self.tVersion and ("-"..self.tVersion) or "")))
     end
 
-    self:GetEPGPdb().version = self.version
-    self:GetEPGPdb().tocVersion = self.tocVersion
-    self:GetEPGPdb().tVersion = self.tVersion
-    self:GetEPGPdb().testTocVersion = self.testTocVersion
+    local lastVersion = self.globalDB.lastVersion
+    self.globalDB.version = self.version
+    self.globalDB.tocVersion = self.tocVersion
+    self.globalDB.tVersion = self.tVersion
+    self.globalDB.testTocVersion = self.testTocVersion
 
-    if (not self.isNewInstall) and addon:VersionCompare(lastVersion, self.lastVersionResetSetting) then
+    if lastVersion and addon:VersionCompare(lastVersion, self.lastVersionResetSetting) then
 		self:ShowNotification(format(LEP["setting_reset_notification"], self.version..(self.tVersion and ("-"..self.tVersion) or "")))
     end
 
@@ -118,7 +131,7 @@ function RCEPGP:OnInitialize()
 		SetCVar("profanityFilter", "0")
 		self:DebugPrint("Diable profanity filter of zhCN client.")
 	end
-    self.initialize = true
+    self.initialize = true -- Set initialize to true, so option can be initialized correctly.
 end
 
 -- MAKESURE all messages are registered
@@ -134,13 +147,6 @@ function RCEPGP:OnMessageReceived(msg, ...)
 		self:BuildMLdb(MLdb)
 		local str = self:Serialize(MLdb)
     end
-end
-
-function RCEPGP:GetEPGPdb()
-    if not addon:Getdb().epgp then
-        addon:Getdb().epgp = {}
-    end
-    return addon:Getdb().epgp
 end
 
 ---------------------------------------------
@@ -237,16 +243,13 @@ function RCEPGP:GetResponseGP(response, isTier, isRelic)
         return "0%"
     end
     local responseGP
-
     if isRelic and addon.db.profile.relicButtons then
-		responseGP = addon.db.profile.relicButtons[response] and addon.db.profile.relicButtons[response].gp
+		responseGP = self.db.gp.relicButtons[response]
     elseif isTier then
-		responseGP = addon.db.profile.tierButtons[response] and addon.db.profile.tierButtons[response].gp
+		responseGP = self.db.gp.tierButtons[response]
     else
-		responseGP = addon.db.profile.responses[response] and addon.db.profile.responses[response].gp
+		responseGP = self.db.gp.responses[response]
     end
-
-	responseGP = responseGP or "100%"
     self:DebugPrint("RCEPGP:GetResponseGP returns ", responseGP, "arguments: ", response, isTier, isRelic)
     return responseGP
 end
@@ -401,7 +404,7 @@ function RCEPGP:GetMLEPGPOverrideSetting(...)
 	if mldbSetting then
 		return mldbSetting
 	else
-		local epgpSetting = self:GetEPGPdb()
+		local epgpSetting = self.db
 		local i = 1
 		while select(i, ...) do
 			local key = select(i, ...)
@@ -454,5 +457,5 @@ function RCEPGP:BuildMLdb(MLdb)
 
 	MLdb.epgp = {}
 	MLdb.epgp.bid = {}
-	self:DeepCopy(MLdb.epgp.bid, self:GetEPGPdb().bid)
+	self:DeepCopy(MLdb.epgp.bid, self.db.bid)
 end

@@ -440,22 +440,23 @@ function RCCustomEP:IncMassEPBy(reason, amount, ...)
 
 	-- Use the maximum amount among all characters
 	local awarded_mains_amount = {} -- [mainname] = {amount, name}
-	for name, value in pairs(awarded_amount) do
+	for name, amount in pairs(awarded_amount) do
 		name = RCEPGP:GetEPGPName(name)
 		local ep, _, main = EPGP:GetEPGP(name)
 		main = main or name
 		if ep then
 			if not awarded_mains_amount[main] then
-				awarded_mains_amount[main] = {value, name}
-			elseif awarded_mains_amount[main][1] < value then
-				awarded_mains_amount[main] = {value, name}
+				awarded_mains_amount[main] = {amount=amount, name=name}
+			elseif awarded_mains_amount[main].amount < amount then
+				awarded_mains_amount[main] = {amount=amount, name=name}
 			end
 		end
 	end
 
 	-- sort award_list by ep and awarded_list[ep] by alphabet
-	local sorted_list = {} -- [amount] = {[]}
-	for ep, list in pairs(awarded_list) do
+	local sorted_list = {} -- {amount=amount, list={name1, name2}}
+	for main, entry in pairs(awarded_mains_amount) do
+		local amount
 		table.sort(list, function(a, b) return a < b end)
 		table.insert(sorted_list, {ep=ep, list=list})
 	end

@@ -9,97 +9,65 @@ local L = LibStub("AceLocale-3.0"):GetLocale("RCLootCouncil")
 local LEP = LibStub("AceLocale-3.0"):GetLocale("RCEPGP")
 
 function RCEPGP:AddGPOptions()
-    local options = addon:OptionsTable()
-
-    addon.options = addon:OptionsTable()
-
+    local options = addon.options
     local button, picker, text, gp = {}, {}, {}, {}
     for i = 1, addon.db.profile.maxButtons do
-        addon.options.args.mlSettings.args.buttonsTab.args.buttonOptions.args["button" .. i].order = i * 4 + 1;
-        addon.options.args.mlSettings.args.buttonsTab.args.buttonOptions.args["picker" .. i].order = i * 4 + 2;
-        addon.options.args.mlSettings.args.buttonsTab.args.buttonOptions.args["picker" .. i].width = "half";
-        addon.options.args.mlSettings.args.buttonsTab.args.buttonOptions.args["text" .. i].order = i * 4 + 3;
-        gp = {
+        options.args.mlSettings.args.buttonsTab.args.buttonOptions.args["button" .. i].order = i * 4 + 1
+        options.args.mlSettings.args.buttonsTab.args.buttonOptions.args["picker" .. i].order = i * 4 + 2
+        options.args.mlSettings.args.buttonsTab.args.buttonOptions.args["picker" .. i].width = "half"
+        options.args.mlSettings.args.buttonsTab.args.buttonOptions.args["text" .. i].order = i * 4 + 3
+        options.args.mlSettings.args.buttonsTab.args.buttonOptions.args["gp" .. i] = {
             order = i * 4 + 4,
             name = "GP",
             desc = LEP["gp_value_help"],
             type = "input",
             width = "half",
-            get = function() return addon.db.profile.responses[i].gp or "100%" end,
-            set = function(info, value)
-                if not value then value = "100%" end
-                value = tostring(value)
-                if string.match(value, "^%d+%%$") or string.match(value, "^%d+$") then
-                    addon.db.profile.responses[i].gp = tostring(value)
-                end
-            end,
+			pattern = "^%d+%%?$",
+            get = function() return self.db.gp.responses[i] end,
+            set = function(info, value) self.db.gp.responses[i] = value end,
             hidden = function() return addon.db.profile.numButtons < i end,
         }
-        if not addon.db.profile.responses[i].gp then
-            addon.db.profile.responses[i].gp = "100%"
-        end
-        addon.options.args.mlSettings.args.buttonsTab.args.buttonOptions.args["gp" .. i] = gp;
     end
-
-
     for k, v in pairs(addon.db.profile.responses.tier) do
-        addon.options.args.mlSettings.args.buttonsTab.args.tierButtonsOptions.args["button" .. k].order = v.sort * 4 + 1
-        addon.options.args.mlSettings.args.buttonsTab.args.tierButtonsOptions.args["color" .. k].order = v.sort * 4 + 2
-        addon.options.args.mlSettings.args.buttonsTab.args.tierButtonsOptions.args["color" .. k].width = "half"
-        addon.options.args.mlSettings.args.buttonsTab.args.tierButtonsOptions.args["text" .. k].order = v.sort * 4 + 3
-        gp = {
+        options.args.mlSettings.args.buttonsTab.args.tierButtonsOptions.args["button" .. k].order = v.sort * 4 + 1
+        options.args.mlSettings.args.buttonsTab.args.tierButtonsOptions.args["color" .. k].order = v.sort * 4 + 2
+        options.args.mlSettings.args.buttonsTab.args.tierButtonsOptions.args["color" .. k].width = "half"
+        options.args.mlSettings.args.buttonsTab.args.tierButtonsOptions.args["text" .. k].order = v.sort * 4 + 3
+        options.args.mlSettings.args.buttonsTab.args.tierButtonsOptions.args["gp" .. k] = {
             order = v.sort * 4 + 4,
             name = "GP",
             desc = LEP["gp_value_help"],
             type = "input",
             width = "half",
-            get = function() return addon.db.profile.tierButtons[v.sort].gp or "100%" end,
-            set = function(info, value)
-                if not value then value = "100%" end
-                value = tostring(value)
-                if string.match(value, "^%d+%%$") or string.match(value, "^%d+$") then
-                    addon:ConfigTableChanged("responses");addon.db.profile.tierButtons[v.sort].gp = tostring(value)
-                end
-            end,
+			pattern = "^%d+%%?$",
+            get = function() return self.db.gp.tierButtons[v.sort] end,
+            set = function(info, value) self.db.gp.tierButtons[v.sort] = value end,
             hidden = function() return not addon.db.profile.tierButtonsEnabled or addon.db.profile.tierNumButtons < v.sort end,
         }
-        if not addon.db.profile.tierButtons[v.sort].gp then
-            addon.db.profile.tierButtons[v.sort].gp = "100%"
-        end
-        addon.options.args.mlSettings.args.buttonsTab.args.tierButtonsOptions.args["gp" .. k] = gp
     end
 
     -- Relic Buttons/Responses
     if addon.db.profile.responses.relic then
     	for k, v in pairs(addon.db.profile.responses.relic) do
-            addon.options.args.mlSettings.args.buttonsTab.args.relicButtonsOptions.args["button" .. k].order = v.sort * 4 + 1
-            addon.options.args.mlSettings.args.buttonsTab.args.relicButtonsOptions.args["color" .. k].order = v.sort * 4 + 2
-            addon.options.args.mlSettings.args.buttonsTab.args.relicButtonsOptions.args["color" .. k].width = "half"
-            addon.options.args.mlSettings.args.buttonsTab.args.relicButtonsOptions.args["text" .. k].order = v.sort * 4 + 3
-            gp = {
+            options.args.mlSettings.args.buttonsTab.args.relicButtonsOptions.args["button" .. k].order = v.sort * 4 + 1
+            options.args.mlSettings.args.buttonsTab.args.relicButtonsOptions.args["color" .. k].order = v.sort * 4 + 2
+            options.args.mlSettings.args.buttonsTab.args.relicButtonsOptions.args["color" .. k].width = "half"
+            options.args.mlSettings.args.buttonsTab.args.relicButtonsOptions.args["text" .. k].order = v.sort * 4 + 3
+            options.args.mlSettings.args.buttonsTab.args.relicButtonsOptions.args["gp" .. k] = {
                 order = v.sort * 4 + 4,
                 name = "GP",
                 desc = LEP["gp_value_help"],
                 type = "input",
                 width = "half",
-                get = function() return addon.db.profile.relicButtons[v.sort].gp or "100%" end,
-                set = function(info, value)
-                    if not value then value = "100%" end
-                    value = tostring(value)
-                    if string.match(value, "^%d+%%$") or string.match(value, "^%d+$") then
-                        addon:ConfigTableChanged("responses");addon.db.profile.relicButtons[v.sort].gp = tostring(value)
-                    end
-                end,
+				pattern = "^%d+%%?$",
+                get = function() return self.db.gp.relicButtons[v.sort] end,
+                set = function(info, value) self.db.gp.relicButtons[v.sort] = value end,
                 hidden = function() return not addon.db.profile.relicButtonsEnabled or addon.db.profile.relicNumButtons < v.sort end,
             }
-            if not addon.db.profile.relicButtons[v.sort].gp then
-                addon.db.profile.relicButtons[v.sort].gp = "100%"
-            end
-            addon.options.args.mlSettings.args.buttonsTab.args.relicButtonsOptions.args["gp" .. k] = gp
     	end
     end
 
-    addon.options.args.settings.args.profiles = LibStub("AceDBOptions-3.0"):GetOptionsTable(addon.db)
+    options.args.settings.args.profiles = LibStub("AceDBOptions-3.0"):GetOptionsTable(addon.db)
     LibStub("AceConfigRegistry-3.0"):RegisterOptionsTable("RCLootCouncil", addon.options)
     LibStub("AceConfigRegistry-3.0"):NotifyChange("RCLootCouncil")
 end
@@ -184,7 +152,7 @@ function RCEPGP:OptionsTable()
 								order = 3,
 								type = "select",
 								width = "double",
-								hidden = function() return not self:GetEPGPdb().bid.bidEnabled end,
+								hidden = function() return not self.db.bid.bidEnabled end,
 							},
 							space = {
 								name = "",
@@ -197,28 +165,28 @@ function RCEPGP:OptionsTable()
 								order = 5,
 								type = "input",
 								validate = "ValidateBidOption",
-								hidden = function() return not self:GetEPGPdb().bid.bidEnabled end,
+								hidden = function() return not self.db.bid.bidEnabled end,
 							},
 							maxBid = {
 								name = "Max Bid",
 								order = 6,
 								type = "input",
 								validate = "ValidateBidOption",
-								hidden = function() return not self:GetEPGPdb().bid.bidEnabled or self:GetEPGPdb().bid.bidMode ~= "prRelative" end
+								hidden = function() return not self.db.bid.bidEnabled or self.db.bid.bidMode ~= "prRelative" end
 							},
 							minNewPR = {
 								name = "Min New PR",
 								order = 7,
 								type = "input",
 								validate = "ValidateBidOption",
-								hidden = function() return not self:GetEPGPdb().bid.bidEnabled or self:GetEPGPdb().bid.bidMode == "prRelative" end
+								hidden = function() return not self.db.bid.bidEnabled or self.db.bid.bidMode == "prRelative" end
 							},
 							defaultBid = {
 								name = "Default Bid",
 								order = 8,
 								type = "input",
 								validate = "ValidateBidOption",
-								hidden = function() return not self:GetEPGPdb().bid.bidEnabled end,
+								hidden = function() return not self.db.bid.bidEnabled end,
 							},
 						},
 					},
@@ -255,7 +223,7 @@ function RCEPGP:OptionsTable()
                         type = "group",
                         inline = true,
 						validate = "ValidateNumber",
-						disabled = function() return (not self:GetEPGPdb().customGP.customGPEnabled) end,
+						disabled = function() return (not self.db.customGP.customGPEnabled) end,
                         args = {
                             -- Fill in later
                         },
@@ -278,13 +246,13 @@ function RCEPGP:OptionsTable()
                         type = "input",
                         width = "full",
 						validate = "ValidateFormula",
-						disabled = function() return (not self:GetEPGPdb().customGP.customGPEnabled) end,
+						disabled = function() return (not self.db.customGP.customGPEnabled) end,
                     },
                     restoreDefault = {
                         name = _G.RESET_TO_DEFAULT,
                         order = 1000,
                         type = "execute",
-                        func = function() self:DeepCopy(self:GetEPGPdb().customGP, self.defaults.customGP, true) end,
+                        func = function() self:DeepCopy(self.db.customGP, self.defaults.customGP, true) end,
                     },
                 },
             },
@@ -302,8 +270,8 @@ function RCEPGP:OptionsTable()
                             order = 2,
                             name = LEP["Add EP Formula"],
                             type = "execute",
-                            disabled = function() return self:GetEPGPdb().customEP.EPFormulas.count >= RCCustomEP.MaxFormulas end,
-                            func = function() table.insert(self:GetEPGPdb().customEP.EPFormulas, {
+                            disabled = function() return self.db.customEP.EPFormulas.count >= RCCustomEP.MaxFormulas end,
+                            func = function() table.insert(self.db.customEP.EPFormulas, {
                                     name = RCCustomEP:EPFormulaGetUnrepeatedName("New"),
                                     desc = "",
                                     formula = "0",
@@ -342,10 +310,10 @@ function RCEPGP:OptionsTable()
         local description = "DESC1"..i
         local formula = "FORMULA"..i
         options.args.epTab.args["EPFormula"..i] = {
-            name = function() return i..". "..(self:GetEPGPdb().customEP.EPFormulas[i].name or "") end,
+            name = function() return i..". "..(self.db.customEP.EPFormulas[i].name or "") end,
             type = "group",
             order = 100+i,
-            hidden = function() return i > self:GetEPGPdb().customEP.EPFormulas.count  end,
+            hidden = function() return i > self.db.customEP.EPFormulas.count  end,
 			get = self:DBGetFunc("customEP", "EPFormulas", i),
 			set = self:DBSetFunc("customEP", "EPFormulas", i),
             args = {
@@ -356,10 +324,10 @@ function RCEPGP:OptionsTable()
                     disabled = function() return i == 1 end,
                     func = function()
                         if i ~= 1 then
-                            local entry1 = self:GetEPGPdb().customEP.EPFormulas[i-1]
-                            local entry2 = self:GetEPGPdb().customEP.EPFormulas[i]
-                            self:GetEPGPdb().customEP.EPFormulas[i-1] = entry2
-                            self:GetEPGPdb().customEP.EPFormulas[i] = entry1
+                            local entry1 = self.db.customEP.EPFormulas[i-1]
+                            local entry2 = self.db.customEP.EPFormulas[i]
+                            self.db.customEP.EPFormulas[i-1] = entry2
+                            self.db.customEP.EPFormulas[i] = entry1
                             LibStub("AceConfigDialog-3.0"):SelectGroup("RCLootCouncil-EPGP", "epTab", "EPFormula"..(i-1))
                         end
                     end,
@@ -376,11 +344,11 @@ function RCEPGP:OptionsTable()
                     order = 3,
                     --disabled = function() return i == #RCCustomEP:GetCustomEPdb().EPFormulas end,
                     func = function()
-                        if i < self:GetEPGPdb().customEP.EPFormulas.count then
-							local entry1 = self:GetEPGPdb().customEP.EPFormulas[i+1]
-                            local entry2 = self:GetEPGPdb().customEP.EPFormulas[i]
-                            self:GetEPGPdb().customEP.EPFormulas[i+1] = entry2
-                            self:GetEPGPdb().customEP.EPFormulas[i] = entry1
+                        if i < self.db.customEP.EPFormulas.count then
+							local entry1 = self.db.customEP.EPFormulas[i+1]
+                            local entry2 = self.db.customEP.EPFormulas[i]
+                            self.db.customEP.EPFormulas[i+1] = entry2
+                            self.db.customEP.EPFormulas[i] = entry1
                             LibStub("AceConfigDialog-3.0"):SelectGroup("RCLootCouncil-EPGP", "epTab", "EPFormula"..(i+1))
                         end
                     end,
@@ -484,7 +452,7 @@ end
 function RCEPGP:DBGetFunc(...)
 	local args = {...}
 	return function(info)
-		local t = self:GetEPGPdb()
+		local t = self.db
 		for i=1,#args do
 			t = t[args[i]]
 		end
@@ -496,7 +464,7 @@ end
 function RCEPGP:DBSetFunc(...)
 	local args = {...}
 	return function(info, value)
-		local t = self:GetEPGPdb()
+		local t = self.db
 		local default = self.defaults
 		for i=1,#args do
 			t = t[args[i]]
@@ -533,18 +501,18 @@ function RCEPGP:ValidateBidOption(info, value)
 		return LEP["Input must be a non-negative number."]
 	end
 	if info[#info] == "maxBid" then
-		if (self:GetEPGPdb().bid.defaultBid ~= "" and tonumber(value) < tonumber(self:GetEPGPdb().bid.defaultBid)) or
-			tonumber(value) < tonumber(self:GetEPGPdb().bid.minBid) then
+		if (self.db.bid.defaultBid ~= "" and tonumber(value) < tonumber(self.db.bid.defaultBid)) or
+			tonumber(value) < tonumber(self.db.bid.minBid) then
 				return LEP["Invalid input"]
 		end
 	elseif info[#info] == "defaultBid" then
-		if value ~= "" and tonumber(value) < tonumber(self:GetEPGPdb().bid.minBid) or
-		(self:GetEPGPdb().bid.bidMode == "prRelative" and tonumber(value) > tonumber(self:GetEPGPdb().bid.maxBid)) then
+		if value ~= "" and tonumber(value) < tonumber(self.db.bid.minBid) or
+		(self.db.bid.bidMode == "prRelative" and tonumber(value) > tonumber(self.db.bid.maxBid)) then
 			return LEP["Invalid input"]
 		end
 	elseif info[#info] == "minBid" then
-		if (self:GetEPGPdb().bid.defaultBid ~= "" and tonumber(value) > tonumber(self:GetEPGPdb().bid.defaultBid)) or
-		(self:GetEPGPdb().bid.bidMode == "prRelative" and tonumber(value) > tonumber(self:GetEPGPdb().bid.maxBid)) then
+		if (self.db.bid.defaultBid ~= "" and tonumber(value) > tonumber(self.db.bid.defaultBid)) or
+		(self.db.bid.bidMode == "prRelative" and tonumber(value) > tonumber(self.db.bid.maxBid)) then
 			return LEP["Invalid input"]
 		end
 	end
