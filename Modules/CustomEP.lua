@@ -6,18 +6,14 @@ local EPGP = LibStub("AceAddon-3.0"):GetAddon("EPGP")
 local LibSpec = LibStub("LibGroupInSpecT-1.1")
 local LibDialog = LibStub("LibDialog-1.0")
 
-local lastOtherCalendarOpenEvent = 0
-local eventOpenQueue = {}
-local candidateInfos = {} -- The information of all raid and guild members, not including calendar infos.
-local eventInfos = {} -- The information of the calendar event today.
-
 function RCCustomEP:OnInitialize()
-	self.candidateInfos = candidateInfos
-	self.eventInfos = eventInfos
-	self.eventOpenQueue = eventOpenQueue
-	self.MaxFormulas = 100
+	self.candidateInfos = {} -- The information of everyone in the guild or group
+	self.eventInfos = {} -- The inforamation of events within += 12h, including the invite list
+	self.eventOpenQueue = {} -- The event that is waiting for process
+	self.MaxFormulas = 100 -- Maxmium formulas
+	self.lastOtherCalendarOpenEvent = 0 -- THe time when other program runs CalendarOpenEvent()
 	self:RegisterEvent("CALENDAR_OPEN_EVENT", "OPEN_CALENDAR")
-	self:RegisterBucketEvent({"CALENDAR_UPDATE_EVENT_LIST", "CALENDAR_UPDATE_INVITE_LIST"}, 10, "UPDATE_CALENDAR")
+	self:RegisterBucketEvent({"CALENDAR_UPDATE_EVENT_LIST", "CALENDAR_UPDATE_INVITE_LIST"}, 15, "UPDATE_CALENDAR")
 	self:RegisterBucketEvent("GROUP_ROSTER_UPDATE", 10, "GROUP_ROSTER_UPDATE")
 	self:RegisterBucketEvent("GUILD_ROSTER_UPDATE", 20, "GUILD_ROSTER_UPDATE")
 	self:SecureHook("CalendarOpenEvent", "OnCalendarOpenEvent")
@@ -41,10 +37,10 @@ function RCCustomEP:GROUP_ROSTER_UPDATE()
 			end
 			local fullName = RCEPGP:GetEPGPName(name)
 			local guildName, guildRankName, guildRankIndex = GetGuildInfo(unitID)
-			if not candidateInfos[fullName] then
-				candidateInfos[fullName] = {}
+			if not self.candidateInfos[fullName] then
+				self.candidateInfos[fullName] = {}
 			end
-			local info = candidateInfos[fullName]
+			local info = self.candidateInfos[fullName]
 			info["fullName"] = fullName
 			info["raidRank"] = rank
 			info["subgroup"] = subgroup
@@ -82,10 +78,10 @@ function RCCustomEP:GUILD_ROSTER_UPDATE()
 		status, classFileName, achievementPoints, achievementRank, isMobile, canSoR, reputation = GetGuildRosterInfo(i)
 		if fullName then
 			fullName = RCEPGP:GetEPGPName(fullName)
-			if not candidateInfos[fullName] then
-				candidateInfos[fullName] = {}
+			if not self.candidateInfos[fullName] then
+				self.candidateInfos[fullName] = {}
 			end
-			local info = candidateInfos[fullName]
+			local info = self.candidateInfos[fullName]
 
 			info["fullName"] = fullName
 			info["guildRank"] = rank
@@ -145,7 +141,7 @@ function RCCustomEP:UPDATE_CALENDAR()
 
 	local weekday, month, day, year = CalendarGetDate()
 	local existEvents = {}
-	wipe(eventOpenQueue)
+	wipe(self.eventOpenQueue)
 
 	local monthYesterday, dayYesterday, yearYesterday, offsetYesterday
 	if day == 1 then
@@ -181,7 +177,7 @@ function RCCustomEP:UPDATE_CALENDAR()
 			local title, startTime, calendarType = event.title, event.startTime, event.calendarType
 			if event and event.calendarType == "GUILD_EVENT" and math.abs(self:GetEventTimeDiff(startTime.month, startTime.monthDay, startTime.year, startTime.hour, startTime.minute)) < 12*60*60 then -- within +- 12h
 				existEvents[id] = true
-				tinsert(eventOpenQueue, {offsetYesterday, dayYesterday, i})
+				tinsert(self.eventOpenQueue, {offsetYesterday, dayYesterday, i})
 			end
 		end
 	end
@@ -194,7 +190,7 @@ function RCCustomEP:UPDATE_CALENDAR()
 			local title, startTime, calendarType = event.title, event.startTime, event.calendarType
 			if event and event.calendarType == "GUILD_EVENT" and math.abs(self:GetEventTimeDiff(startTime.month, startTime.monthDay, startTime.year, startTime.hour, startTime.minute)) < 12*60*60 then -- within +- 12h
 				existEvents[id] = true
-				tinsert(eventOpenQueue, {0, day, i})
+				tinsert(self.eventOpenQueue, {0, day, i})
 			end
 		end
 	end
@@ -207,14 +203,14 @@ function RCCustomEP:UPDATE_CALENDAR()
 			local title, startTime, calendarType = event.title, event.startTime, event.calendarType
 			if event and event.calendarType == "GUILD_EVENT" and math.abs(self:GetEventTimeDiff(startTime.month, startTime.monthDay, startTime.year, startTime.hour, startTime.minute)) < 12*60*60 then -- within +- 12h
 				existEvents[id] = true
-				tinsert(eventOpenQueue, {offsetTomorrow, dayTomorrow, i})
+				tinsert(self.eventOpenQueue, {offsetTomorrow, dayTomorrow, i})
 			end
 		end
 	end
 
-	for id, _ in pairs(eventInfos) do
+	for id, _ in pairs(self.eventInfos) do
 		if not existEvents[id] then
-			eventInfos[id] = nil
+			self.eventInfos[id] = nil
 		end
 	end
 end
@@ -222,7 +218,7 @@ end
 -- This module calls CalendarOpenEvent with additional argument identifer to know if the call if made by us.
 function RCCustomEP:OnCalendarOpenEvent(offset, day, index, identifier)
 	if identifier ~= "RCCustomEP" then
-		lastOtherCalendarOpenEvent = GetTime()
+		self.lastOtherCalendarOpenEvent = GetTime()
 	end
 end
 
@@ -232,10 +228,10 @@ function RCCustomEP:ProcessEventOpenQueue()
 	if _G.CalendarFrame and _G.CalendarFrame:IsShown() then
 		return -- Don't update when Blizzard calendar is shown
 	end
-	if GetTime() < lastOtherCalendarOpenEvent + 20 then  -- temporary supends this module open events when other program open events for 20s
+	if GetTime() < self.lastOtherCalendarOpenEvent + 20 then  -- temporary supends this module open events when other program open events for 20s
 		return
 	end
-	local entry = tremove(eventOpenQueue, 1)
+	local entry = tremove(self.eventOpenQueue, 1)
 	if entry then
 		CalendarOpenEvent(entry[1], entry[2], entry[3], "RCCustomEP")
 	end
@@ -251,30 +247,30 @@ function RCCustomEP:OPEN_CALENDAR()
 	if calendarType == "GUILD_EVENT" and math.abs(self:GetEventTimeDiff(month, day, year, hour, minute)) < 12*60*60 then
 		local monthOffset, day, index = CalendarGetEventIndex()
 		local id = self:GenerateEventID(monthOffset, day, index)
-		if not eventInfos[id] then
-			eventInfos[id] = {}
+		if not self.eventInfos[id] then
+			self.eventInfos[id] = {}
 		end
-		eventInfos[id].title = title
-		eventInfos[id].month = month
-		eventInfos[id].day = day
-		eventInfos[id].year = year
-		eventInfos[id].hour = hour
-		eventInfos[id].minute = minute
+		self.eventInfos[id].title = title
+		self.eventInfos[id].month = month
+		self.eventInfos[id].day = day
+		self.eventInfos[id].year = year
+		self.eventInfos[id].hour = hour
+		self.eventInfos[id].minute = minute
 
-		if not eventInfos[id].signupList then
-			eventInfos[id].signupList = {}
+		if not self.eventInfos[id].signupList then
+			self.eventInfos[id].signupList = {}
 		end
-		wipe(eventInfos[id].signupList)
+		wipe(self.eventInfos[id].signupList)
 
 		for i = 1, CalendarEventGetNumInvites() do
 			local name, level, className, classFileName, inviteStatus, modStatus, inviteIsMine, inviteType = CalendarEventGetInvite(i)
 			if name then
 				name = RCEPGP:GetEPGPName(name)
 				local info
-				if not eventInfos[id].signupList[name] then
-					eventInfos[id].signupList[name] = {}
+				if not self.eventInfos[id].signupList[name] then
+					self.eventInfos[id].signupList[name] = {}
 				end
-				info = eventInfos[id].signupList[name]
+				info = self.eventInfos[id].signupList[name]
 				local weekday, month, day, year, hour, minute = CalendarEventGetInviteResponseTime(i)
 				info.month = month
 				info.day = day
@@ -374,14 +370,13 @@ function RCCustomEP:IncMassEPBy(reason, amount, ...)
 	end
 
 	if not select(1, ...) then
-		RCEPGP:Debug("Origin MassEP", reason, amount)
+		RCEPGP:Debug("Run Origin IncMassEPBy", reason, amount)
 		return EPGP:IncMassEPBy(reason, amount)
 	end
 
 	if not self.initialize then return end
 
-	local awarded_mains = {}
-	local awarded_list = {}
+	local awarded_amount = {}
 	RCEPGP:Debug("Custom MassEP", reason, amount, ...)
 
 	for _, formulaIndexOrName in ipairs({...}) do
@@ -397,7 +392,7 @@ function RCCustomEP:IncMassEPBy(reason, amount, ...)
 			return RCEPGP:Print(format(LEP["Formula 'formula' does not exist"], formulaIndexOrName))
 		end
 
-		for name, info in pairs(candidateInfos) do
+		for name, info in pairs(self.candidateInfos) do
 			name = RCEPGP:GetEPGPName(name)
 			local ep, _, main = EPGP:GetEPGP(name)
 			main = main or name
@@ -415,7 +410,7 @@ function RCCustomEP:IncMassEPBy(reason, amount, ...)
 					groupCoeff = formula.standby
 				else
 					local signedUpInEvent = false
-					for _, event in pairs(eventInfos) do
+					for _, event in pairs(self.eventInfos) do
 						local signupStatus = event.signupList[name]
 						if signupStatus and signupStatus ~= _G.CALENDAR_INVITESTATUS_OUT
 							and signupStatus ~= _G.CALENDAR_INVITESTATUS_TENTATIVE then
@@ -436,25 +431,30 @@ function RCCustomEP:IncMassEPBy(reason, amount, ...)
 					rankCoeff = formula["isRank"..rankIndex] or 0
 				end
 
-				print(name, onlineCoeff, groupCoeff, rankCoeff)
+				local amountWithCoeff = amount*onlineCoeff*groupCoeff*rankCoeff
+				awarded_amount[name] = awarded_amount[name] and (awarded_amount[name] + amountWithCoeff) or amountWithCoeff
+			end
+		end
+	end
+-- TODO: EPGP:IncEPBy(name, reason, amount, true)
 
-
-				local awardAmount = math.floor((err or 0) + 0.5)
-				-- TODO: EPGP:IncEPBy(name, reason, amount, true)
-				local ep = tonumber(awardAmount or 0)
-				if ep and ep ~= 0 then
-					awarded_mains[main] = true
-					if not awarded_list[ep] then
-						awarded_list[ep] = {}
-					end
-					table.insert(awarded_list[ep], name)
-				end
+	-- Use the maximum amount among all characters
+	local awarded_mains_amount = {} -- [mainname] = {amount, name}
+	for name, value in pairs(awarded_amount) do
+		name = RCEPGP:GetEPGPName(name)
+		local ep, _, main = EPGP:GetEPGP(name)
+		main = main or name
+		if ep then
+			if not awarded_mains_amount[main] then
+				awarded_mains_amount[main] = {value, name}
+			elseif awarded_mains_amount[main][1] < value then
+				awarded_mains_amount[main] = {value, name}
 			end
 		end
 	end
 
 	-- sort award_list by ep and awarded_list[ep] by alphabet
-	local sorted_list = {}
+	local sorted_list = {} -- [amount] = {[]}
 	for ep, list in pairs(awarded_list) do
 		table.sort(list, function(a, b) return a < b end)
 		table.insert(sorted_list, {ep=ep, list=list})

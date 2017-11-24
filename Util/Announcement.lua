@@ -49,7 +49,6 @@ function RCEPGP:AddAwardAnnouncement()
 			tinsert(RCLootCouncilML.awardStringsDesc, LEP["announce_#itemgp#_desc"])
 		end
     end
-    self:Debug("Added EPGP award text keyword.")
 end
 
 function RCEPGP:AddConsiderationAnnouncement()
@@ -59,5 +58,4 @@ function RCEPGP:AddConsiderationAnnouncement()
 			tinsert(RCLootCouncilML.announceItemStringsDesc, LEP["announce_#itemgp#_desc"])
 		end
     end
-    self:Debug("Added EPGP consideration text keyword.")
 end
