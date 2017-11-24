@@ -59,6 +59,7 @@ function RCCustomGP:OnInitialize()
     }
     self:RegisterMessage("RCUpdateDB", "OnMessageReceived")
 	self:RegisterMessage("RCEPGPConfigTableChanged", "OnMessageReceived")
+	self:RegisterMessage("RCSyncComplete", "OnMessageReceived")
     self.initialize = true
 end
 
@@ -72,6 +73,10 @@ function RCCustomGP:OnMessageReceived(msg, ...)
 			wipe(self.gpCache)
 			self:SendMessage("RCCustomGPRuleChanged")
 		end
+	elseif msg == "RCSyncComplete" and select(1, ...) == "EPGP" then
+		RCEPGP:DebugPrint("Wipe GP cache due to setting sync.")
+		wipe(self.gpCache)
+		self:SendMessage("RCCustomGPRuleChanged")
 	end
 end
 

@@ -151,7 +151,6 @@ function RCEPGP:RefreshConfig(event, database, profile)
 end
 
 -- MAKESURE all messages are registered
--- MAKESURE all empty settings reseted to default when RCUpdateDB
 -- MAKESURE statement are executed after the OnMessageReceived of RCLootCouncil if needed.
 function RCEPGP:OnMessageReceived(msg, ...)
     self:DebugPrint("RCEPGP:OnMessageReceived", msg, ...)
