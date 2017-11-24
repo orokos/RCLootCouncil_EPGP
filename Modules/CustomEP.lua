@@ -15,7 +15,7 @@ function RCCustomEP:OnInitialize()
 	self.lastOtherCalendarOpenEvent = 0 -- THe time when other program runs CalendarOpenEvent()
 	self:RegisterEvent("CALENDAR_OPEN_EVENT", "OPEN_CALENDAR")
 	self:RegisterBucketEvent({"CALENDAR_UPDATE_EVENT_LIST", "CALENDAR_UPDATE_INVITE_LIST"}, 15, "UPDATE_CALENDAR")
-	self:RegisterBucketEvent("GROUP_ROSTER_UPDATE", 10, "GROUP_ROSTER_UPDATE")
+	self:ScheduleRepeatingTimer("GROUP_ROSTER_UPDATE", 15, "GROUP_ROSTER_UPDATE")
 	self:RegisterBucketEvent("GUILD_ROSTER_UPDATE", 20, "GUILD_ROSTER_UPDATE")
 	self:SecureHook("CalendarOpenEvent", "OnCalendarOpenEvent")
 	EPGP.RegisterCallback(self, "StopRecurringAward", "OnStopRecurringAward")
@@ -30,6 +30,7 @@ end
 
 function RCCustomEP:GROUP_ROSTER_UPDATE()
 	RCEPGP:DebugPrint("RCCustomEP", "GROUP_ROSTER_UPDATE")
+	GuildRoster()
 	for i = 1, GetNumGroupMembers() or 0 do
 		local name, rank, subgroup, level, class, classFileName, zone, online, isDead, groupRole, isML = GetRaidRosterInfo(i)
 		if name then
@@ -377,6 +378,58 @@ function RCCustomEP:OnStopRecurringAward()
 end
 
 -------------------------------------------------------------------------------
+
+-- Process the table "[name] = amount" and do the actual awarding.
+function RCCustomEP:ProcessAwardedAmount(reason, awarded_amount)
+	for name, amount in pairs(awarded_amount) do
+		awarded_amount[name] = math.floor(awarded_amount[name] + 0.5)
+	end
+
+	local awarded_mains_amount = {} -- [mainname] = {amount, name}
+	for name, amount in pairs(awarded_amount) do
+		name = RCEPGP:GetEPGPName(name)
+		local ep, _, main = EPGP:GetEPGP(name)
+		main = main or name
+		if ep then
+			if not awarded_mains_amount[main] then
+				awarded_mains_amount[main] = {amount=amount, name=name}
+			elseif awarded_mains_amount[main].amount < amount then
+				awarded_mains_amount[main] = {amount=amount, name=name}
+			end
+		end
+	end
+
+	local unsorted_list = {} -- [amount] = {[name1]=true, [name2]=true, ...}
+	for main, entry in pairs(awarded_mains_amount) do
+		local amount = entry.amount
+		local name = entry.name
+		if not unsorted_list[amount] then
+			unsorted_list[amount] = {[name]=true}
+		else
+			unsorted_list[amount][name] = true
+		end
+	end
+
+	local sorted_list = {} -- [index] = {amount=amount, names={[name1]=true, [name2]=true, ...}}, sorted by amount
+	for amount, names in pairs(unsorted_list) do
+		tinsert(sorted_list, {amount=amount, names=names})
+	end
+	table.sort(sorted_list, function(a, b) return a.amount > b.amount end)
+
+	for _, entry in ipairs(sorted_list) do
+		local amount = entry.amount
+		local awarded = entry.names
+		if amount ~= 0 then
+			for name, _ in pairs(awarded) do
+				print(name, amount)
+				RCEPGP:IncEPSecure(name, reason, amount, true)
+			end
+			EPGP.callbacks:Fire("MassEPAward", awarded, reason, amount)
+			print(awarded, reason, amount)
+		end
+	end
+end
+
 --@param ... the formulas
 function RCCustomEP:IncMassEPBy(reason, amount, ...)
 	amount = tonumber(amount)
@@ -392,6 +445,7 @@ function RCCustomEP:IncMassEPBy(reason, amount, ...)
 
 	if not self.initialize then return end
 
+	self:GROUP_ROSTER_UPDATE()
 	local awarded_amount = {}
 	RCEPGP:Debug("Custom MassEP", reason, amount, ...)
 
@@ -453,51 +507,7 @@ function RCCustomEP:IncMassEPBy(reason, amount, ...)
 		end
 	end
 
-	for name, amount in pairs(awarded_amount) do
-		awarded_amount[name] = math.floor(awarded_amount[name] + 0.5)
-	end
-
-	local awarded_mains_amount = {} -- [mainname] = {amount, name}
-	for name, amount in pairs(awarded_amount) do
-		name = RCEPGP:GetEPGPName(name)
-		local ep, _, main = EPGP:GetEPGP(name)
-		main = main or name
-		if ep then
-			if not awarded_mains_amount[main] then
-				awarded_mains_amount[main] = {amount=amount, name=name}
-			elseif awarded_mains_amount[main].amount < amount then
-				awarded_mains_amount[main] = {amount=amount, name=name}
-			end
-		end
-	end
-
-	local unsorted_list = {} -- [amount] = {[name1]=true, [name2]=true, ...}
-	for main, entry in pairs(awarded_mains_amount) do
-		local amount = entry.amount
-		local name = entry.name
-		if not unsorted_list[amount] then
-			unsorted_list[amount] = {[name]=true}
-		else
-			unsorted_list[amount][name] = true
-		end
-	end
-
-	local sorted_list = {} -- [index] = {amount=amount, names={[name1]=true, [name2]=true, ...}}, sorted by amount
-	for amount, names in pairs(unsorted_list) do
-		tinsert(sorted_list, {amount=amount, names=names})
-	end
-	table.sort(sorted_list, function(a, b) return a.amount > b.amount end)
-
-	for _, entry in ipairs(sorted_list) do
-		local amount = entry.amount
-		local awarded = entry.names
-		if amount ~= 0 then
-			for _, name in ipairs(awarded) do
-				RCEPGP:IncEPSecure(name, reason, amount, true)
-			end
-			EPGP.callbacks:Fire("MassEPAward", awarded, reason, amount)
-		end
-	end
+	self:ProcessAwardedAmount(reason, awarded_amount)
 end
 
 -----------------------------------------------------------------------------------------------
@@ -522,4 +532,78 @@ function RCCustomEP:EPFormulaGetUnrepeatedName(name, index)
 		end
 		return name.."_"..i
 	end
+end
+
+----- ZeroSum ------
+-- Convert float to int by probability
+local function FloatToIntByProb(float)
+	local floor = math.floor(float)
+	local rem = float - floor
+	local rand = random()
+	if rand < rem then
+		return floor + 1
+	else
+		return floor
+	end
+end
+
+-- Award amount to the target, and award -amount to people satisfy pred(name, target) to keep zerosum.
+function RCCustomEP:IncMassEPZeroSum(reason, amount, target, pred)
+	amount = tonumber(amount)
+	if not amount then
+		RCEPGP:Print(LEP["amount_must_be_number"])
+		return
+	end
+
+	if not self.initialize then return end
+
+	target = RCEPGP:GetEPGPName(target)
+
+	local awarded_amount = {}
+	RCEPGP:Debug("RCCustomEP:IncMassEPZeroSum", reason, amount, target, pred)
+
+	self:GROUP_ROSTER_UPDATE()
+	local count = 0
+	for name, info in pairs(self.candidateInfos) do
+		name = RCEPGP:GetEPGPName(name)
+		local ep, _, main = EPGP:GetEPGP(name)
+		if ep then
+			if name ~= target and pred(name, target) then
+				awarded_amount[name] = 1
+				count = count + 1
+			elseif name == target then
+				awarded_amount[name] = amount
+			end
+		end
+	end
+
+	if count > 0 then
+		local averageAmount = FloatToIntByProb(-amount/count)
+		for name, amount in pairs(awarded_amount) do
+			if name ~= target then
+				awarded_amount[name] = averageAmount
+			end
+		end
+	end
+
+	self:ProcessAwardedAmount(reason, awarded_amount)
+end
+
+-- ZerSum award to people in the same zone in the group as you
+function RCCustomEP:IncMassEPZeroSumGeneral(reason, amount, target)
+	local function pred(name, target)
+		local myName = RCEPGP:GetEPGPName("player")
+		return (UnitInRaid(Ambiguate(name, "short")) or UnitInParty(Ambiguate(name, "short"))) and self.candidateInfos[myName].zone and self.candidateInfos[name].zone == self.candidateInfos[myName].zone
+	end
+	self:IncMassEPZeroSum(reason, amount, target, pred)
+end
+
+-- ZerSum award to people in the same zone in the group as you
+function RCCustomEP:IncMassEPZeroSumRole(reason, amount, target)
+	local function pred(name, target)
+		local myName = RCEPGP:GetEPGPName("player")
+		return (UnitInRaid(Ambiguate(name, "short")) or UnitInParty(Ambiguate(name, "short"))) and self.candidateInfos[myName].zone and self.candidateInfos[name].zone == self.candidateInfos[myName].zone
+			and self.candidateInfos[myName].role == self.candidateInfos[name].role
+	end
+	self:IncMassEPZeroSum(reason, amount, target, pred)
 end

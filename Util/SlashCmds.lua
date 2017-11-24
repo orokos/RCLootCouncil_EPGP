@@ -18,6 +18,8 @@ function RCEPGP:AddSlashCmds()
 		["massep"] = {func = RCEPGP.MassEP, help = LEP["slash_rc_massep_help"], helpDetailed = LEP["slash_rc_massep_help_detailed"], permission = true},
 		["recurep"] = {func = RCEPGP.RecurEP, help = LEP["slash_rc_recurep_help"], helpDetailed = LEP["slash_rc_recurep_help_detailed"], permission = true},
 		["stoprecur"] = {func = RCEPGP.RecurEP, help = LEP["slash_rc_stoprecur_help"], helpDetailed = LEP["slash_rc_stoprecur_help_detailed"], permission = true},
+		["zs"] = {func = RCEPGP.ZeroSumGeneral, help = LEP["slash_rc_zs_help"], helpDetailed = LEP["slash_rc_zs_help_detailed"], permission = true},
+		["zsr"] = {func = RCEPGP.ZeroSumRole, help = LEP["slash_rc_zsr_help"], helpDetailed = LEP["slash_rc_zsr_help_detailed"], permission = true},
 	}
 	local i = 1
 	for command, v in pairs(self.SlashCmds) do
@@ -44,7 +46,19 @@ function RCEPGP:ExecuteSlashCmd(command, ...)
 			self:Print(LEP["no_permission_to_edit_officer_note"])
 			return
 		end
-		local ret = self.SlashCmds[command].func(self, ...)
+		local args = {...}
+		for k, arg in ipairs(args) do
+			if arg == "%p" then
+				args[k] = self:GetEPGPName("player")
+			elseif arg == "%t" then
+				if not UnitExists("target") then
+					self:Print(L["You must select a target"])
+					return
+				end
+				args[k] = self:GetEPGPName("target")
+			end
+		end
+		local ret = self.SlashCmds[command].func(self, unpack(args))
 		if ret == false then
 			self:Print(LEP["slash_rc_command_failed"])
 		end
@@ -53,23 +67,8 @@ function RCEPGP:ExecuteSlashCmd(command, ...)
 	end
 end
 
-function RCEPGP:GetSlashCmdName(name)
-	if name == "%p" then
-		name = self:GetEPGPName("player")
-	elseif name == "%t" then
-		if not UnitExists("target") then
-			self:Print(L["You must select a target"])
-			return
-		end
-		name = self:GetEPGPName("target")
-	end
-end
 -- /rc gp name reason [amount]
 function RCEPGP:IncGPBy(name, reason, amount)
-	name = RCEPGP:GetSlashCmdName(name)
-	if not name then
-		return
-	end
 	amount = amount and tonumber(amount) or GP:GetValue(reason)
 
     if EPGP:CanIncGPBy(reason, amount) then
@@ -84,11 +83,6 @@ end
 -- Undo the previous GP operations to 'name' with 'reason'
 -- Reason by be nil to match the most recent GP operation to 'name'
 function RCEPGP:UndoGP(name, reason)
-	name = RCEPGP:GetSlashCmdName(name)
-	if not name then
-		return
-	end
-
     local amount, reason2  = self:GetLastGPAmount(name, reason)
     if EPGP:CanIncGPBy(reason, amount) then
         EPGP:IncGPBy(name, reason2, -amount)
@@ -115,16 +109,6 @@ end
 
 -- /rc ep name reason amount
 function RCEPGP:IncEPBy(name, reason, amount)
-    if name == "%p" then
-        name = self:GetEPGPName("player")
-    elseif name == "%t" then
-        if not UnitExists("target") then
-            self:Print(L["You must select a target"])
-            return
-        end
-        name = self:GetEPGPName("target")
-    end
-
 	amount = tonumber(amount)
 	if EPGP:CanIncEPBy(reason, amount) then
     	EPGP:IncEPBy(name, reason, amount)
@@ -132,4 +116,12 @@ function RCEPGP:IncEPBy(name, reason, amount)
 	else
 		return false
 	end
+end
+
+function RCEPGP:ZeroSumGeneral(name, reason, amount)
+	self:GetModule("RCCustomEP"):IncMassEPZeroSumGeneral(reason, amount, name)
+end
+
+function RCEPGP:ZeroSumRole(name, reason, amount)
+	self:GetModule("RCCustomEP"):IncMassEPZeroSumRole(reason, amount, name)
 end
