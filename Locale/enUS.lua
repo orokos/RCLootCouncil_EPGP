@@ -15,7 +15,7 @@ L["announce_#itemgp#_desc"] = "|cfffcd400 #itemgp#|r: The GP value of the item."
 L["%s_formula_runtime_error"] = "'%s' formula has runtime error."
 L["%s_formula_syntax_error"] = "'%s' formula has syntax error."
 L["Award GP (Default: %s)"] = "Award GP (Default: %s)"
-L["bidding_desc"] = "This setting only applies to the loot master. Enable this will add a button in the rightclick menu of the voting frame to award GP to a player according to his bid. Several modes are available. Player can send bid price to the loot master by sending a note that starts with integer in the RCLootCouncil popup."
+L["bidding_desc"] = "Enable this will add a button in the rightclick menu of the voting frame to award GP to a player according to his bid. Several modes are available. Player can send bid price to the loot master by sending a note that starts with integer in the RCLootCouncil popup."
 L["chat_commands"] = "- epgp      - Open the RCLootCouncil-EPGP options interface"
 L["Credit GP to %s"] = "Credit GP to %s"
 L["Custom GP"] = "Custom GP"
@@ -25,7 +25,6 @@ Custom GP allows you to define a custom GP rule for every gear piece.
 You need to define a formula that calculates the GP value for the gear.
 You can choose to disable this feature, to calculated GP in the default way of EPGP(dkp reloaded).
 ]=]
-L["customGP_desc2"] = "When there is loot master, the configuration of the loot master will be used instead."
 L["disable_gp_popup"] = "GP popup is automatically disabled by RCLootCouncil - EPGP."
 L["EPGP_DKP_Reloaded_settings_received"] = "Received EPGP(dkp reloaded) settings through '/rc sync'."
 L["forbidden_function_used"] = "A forbidden function is used in a formula, but has been blocked from doing so. Please check if your formulas contain any malicious code!"

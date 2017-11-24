@@ -84,7 +84,7 @@ function RCEPGP:OptionsTable()
 		set = self:DBSetFunc(),
 		args = {
             version = {
-                name = function() return "|cFF87CEFAv"..self.version.."|r-"..self.testVersion end,
+                name = function() return "|cFF87CEFAv"..self.version.."|r-"..(self.tVersion and self.tVersion or "") end,
                 type = "description",
                 order = 1,
             },
@@ -132,14 +132,9 @@ function RCEPGP:OptionsTable()
 						args = {
 							bidEnabled = {
 								name = _G.ENABLE,
+								desc = LEP["bidding_desc"],
 								order = 1,
 								type = "toggle",
-								width = "full",
-							},
-							desc = {
-								name = LEP["bidding_desc"],
-								order = 2,
-								type = "description",
 								width = "full",
 							},
 							bidMode = {
@@ -205,12 +200,6 @@ function RCEPGP:OptionsTable()
                         type = "description",
                         width = "full",
                     },
-					customGPdesc2 = {
-						name = LEP["customGP_desc2"],
-						order = 1.5,
-						type = "description",
-						width = "full",
-					},
                     customGPEnabled = {
                         name = _G.ENABLE,
                         order = 2,
@@ -465,7 +454,7 @@ function RCEPGP:DBSetFunc(...)
 	local args = {...}
 	return function(info, value)
 		local t = self.db
-		local default = self.defaults
+		local default = self.defaults.profile
 		for i=1,#args do
 			t = t[args[i]]
 			default = default and default[args[i]]
