@@ -5,6 +5,7 @@
 local L = LibStub("AceLocale-3.0"):NewLocale("RCEPGP", "enUS", true, true)
 if not L then return end
 
+L["amount_must_be_number"] = "[amount] must be a number"
 L["announce_#diffgp#_desc"] = "|cfffcd400 #diffgp#|r: The amount of GP the player gains from the item."
 L["announce_#ep#_desc"] = "|cfffcd400 #ep#|r: The EP of player."
 L["announce_#gp#_desc"] = "|cfffcd400 #gp#|r: The GP of player before getting the item."
@@ -27,6 +28,7 @@ You can choose to disable this feature, to calculated GP in the default way of E
 ]=]
 L["disable_gp_popup"] = "GP popup is automatically disabled by RCLootCouncil - EPGP."
 L["EPGP_DKP_Reloaded_settings_received"] = "Received EPGP(dkp reloaded) settings through '/rc sync'."
+L["error_recurring_running"] = "A recurring award is running."
 L["forbidden_function_used"] = "A forbidden function is used in a formula, but has been blocked from doing so. Please check if your formulas contain any malicious code!"
 L["Formula 'formula' does not exist"] = "Formula %s does not exist"
 L["GP Bid"] = "GP Bid"

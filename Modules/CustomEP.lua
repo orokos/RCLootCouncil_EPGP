@@ -5,6 +5,7 @@ local LEP = LibStub("AceLocale-3.0"):GetLocale("RCEPGP")
 local EPGP = LibStub("AceAddon-3.0"):GetAddon("EPGP")
 local LibSpec = LibStub("LibGroupInSpecT-1.1")
 local LibDialog = LibStub("LibDialog-1.0")
+local GS = LibStub("LibGuildStorage-1.2")
 
 function RCCustomEP:OnInitialize()
 	self.candidateInfos = {} -- The information of everyone in the guild or group
@@ -17,6 +18,7 @@ function RCCustomEP:OnInitialize()
 	self:RegisterBucketEvent("GROUP_ROSTER_UPDATE", 10, "GROUP_ROSTER_UPDATE")
 	self:RegisterBucketEvent("GUILD_ROSTER_UPDATE", 20, "GUILD_ROSTER_UPDATE")
 	self:SecureHook("CalendarOpenEvent", "OnCalendarOpenEvent")
+	EPGP.RegisterCallback(self, "StopRecurringAward", "OnStopRecurringAward")
 	GuildRoster()
 	self:ProcessEventOpenQueue()
 	self:ScheduleTimer("UPDATE_CALENDAR", 10)
@@ -287,20 +289,16 @@ function RCCustomEP:OPEN_CALENDAR()
 	end
 end
 
------ Modified from EPGP/epgp_recurring.lua -----------------------------------
-local LEPGP = LibStub("AceLocale-3.0"):GetLocale("EPGP")
-local GS = LibStub("LibGuildStorage-1.2")
-local Debug = LibStub("LibDebug-1.0")
-local DLG = LibStub("LibDialog-1.0")
+----- Modified from EPGP/epgp_recurring.lua ----------------------------------
 
 RCCustomEP.recurTickFrame = CreateFrame("Frame", "RCCustomEP_Recur_Tick_Frame")
 RCCustomEP.recurTickFrame.timeout = 0
 
 RCCustomEP.recurTickFrame:SetScript("OnUpdate", function(self, elapsed)
 	if _G["EPGP_RecurringAwardFrame"]:IsShown() then
+		-- This frame is used by EPGP to do the same thing as RCCustomEP.recurTickFrame. Let's not conflict with it
 		return
 	end
-
 	if not EPGP.db then return end
 
 	local vars = EPGP.db.profile
@@ -308,10 +306,8 @@ RCCustomEP.recurTickFrame:SetScript("OnUpdate", function(self, elapsed)
 
 	local now = GetTime()
 	if now > vars.next_award and GS:IsCurrentState() then
-		RCCustomEP:IncMassEPBy(vars.next_award_reason, vars.next_award_amount,
-		vars.next_formula, vars.next_target_name)
-		vars.next_award =
-		vars.next_award + vars.recurring_ep_period_mins * 60
+		RCCustomEP:IncMassEPBy(vars.next_award_reason, vars.next_award_amount, unpack(vars.next_formulas))
+		vars.next_award = vars.next_award + vars.recurring_ep_period_mins * 60
 	end
 	self.timeout = self.timeout + elapsed
 	if self.timeout > 0.5 then
@@ -322,19 +318,26 @@ RCCustomEP.recurTickFrame:SetScript("OnUpdate", function(self, elapsed)
 		self.timeout = 0
 	end
 end)
-RCCustomEP.recurTickFrame:Show() -- TODO: Only show this frame when needed.
+RCCustomEP.recurTickFrame:Hide()
 
-function RCCustomEP:StartRecurringEP(reason, amount, periodMin, formulaIndexOrName)
-	-- TODO: Only guild officer can execute this func
+--@param ... formulas
+function RCCustomEP:StartRecurringEP(reason, amount, periodMin, ...)
 	if type(reason) ~= "string" or type(amount) ~= "number" or #reason == 0 then
 		return false
 	end
-	if formulaIndexOrName then
-		local formulaFunc = self:GetEPFormulaFunc(formulaIndexOrName)
-		if not formulaFunc then
-			print("Custom RecurringEP: Formula does not exist or has syntax error. Abort.")
-			RCEPGP:Debug("Custom RecurringEP: Formula does not exist or has syntax error. Abort.")
-			return
+	if select(1, ...) then
+		for _, formulaIndexOrName in ipairs({...}) do
+			local formula
+			for index=1,RCEPGP.db.customEP.EPFormulas.count do
+				local f = RCEPGP.db.customEP.EPFormulas[index]
+				if index == tonumber(formulaIndexOrName) or f.name == formulaIndexOrName then
+					formula = f
+					break
+				end
+			end
+			if not formula then
+				return RCEPGP:Print(format(LEP["Formula 'formula' does not exist"], formulaIndexOrName))
+			end
 		end
 	end
 
@@ -344,29 +347,32 @@ function RCCustomEP:StartRecurringEP(reason, amount, periodMin, formulaIndexOrNa
 	end
 
 	if vars.next_award then
-		return false -- TODO: Annouce this
+		RCEPGP:Print(LEP["error_recurring_running"])
+		return false
 	end
 
 	vars.next_award_reason = reason
 	vars.next_award_amount = amount
 	vars.next_award = GetTime() + vars.recurring_ep_period_mins * 60
-	vars.next_formula = formulaIndexOrName
-	vars.next_target_name = targetName
+	vars.next_formulas = {...}
 
-	EPGP.callbacks:Fire("StartRecurringAward",
-	vars.next_award_reason,
-	vars.next_award_amount,
-	vars.recurring_ep_period_mins)
+	EPGP.callbacks:Fire("StartRecurringAward", vars.next_award_reason, vars.next_award_amount, vars.recurring_ep_period_mins)
+	self.recurTickFrame:Show()
 	return true
 end
 
+function RCCustomEP:OnStopRecurringAward()
+	local vars = EPGP.db.profile
+	vars.next_formulas = nil
+	self.recurTickFrame:Hide()
+end
 
 -------------------------------------------------------------------------------
 --@param ... the formulas
 function RCCustomEP:IncMassEPBy(reason, amount, ...)
 	amount = tonumber(amount)
 	if not amount then
-		RCEPGP:Print("[amount] must be a number") -- TODO locale
+		RCEPGP:Print(LEP["amount_must_be_number"])
 		return
 	end
 
