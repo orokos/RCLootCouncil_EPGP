@@ -20,6 +20,8 @@ function RCCustomEP:OnInitialize()
 	GuildRoster()
 	self:ProcessEventOpenQueue()
 	self:ScheduleTimer("UPDATE_CALENDAR", 10)
+	self:ScheduleTimer("GROUP_ROSTER_UPDATE", 2)
+	self:ScheduleTimer("GUILD_ROSTER_UPDATE", 2)
 	LibSpec:Rescan()
 	self.initialize = true
 end
@@ -360,7 +362,6 @@ end
 
 
 -------------------------------------------------------------------------------
--- TODO: Finish this.
 --@param ... the formulas
 function RCCustomEP:IncMassEPBy(reason, amount, ...)
 	amount = tonumber(amount)
@@ -381,8 +382,8 @@ function RCCustomEP:IncMassEPBy(reason, amount, ...)
 
 	for _, formulaIndexOrName in ipairs({...}) do
 		local formula
-		for index=1,RCEPGP:GetEPGPdb().customEP.EPFormulas.count do
-			local f = RCEPGP:GetEPGPdb().customEP.EPFormulas[index]
+		for index=1,RCEPGP.db.customEP.EPFormulas.count do
+			local f = RCEPGP.db.customEP.EPFormulas[index]
 			if index == tonumber(formulaIndexOrName) or f.name == formulaIndexOrName then
 				formula = f
 				break
@@ -436,9 +437,11 @@ function RCCustomEP:IncMassEPBy(reason, amount, ...)
 			end
 		end
 	end
--- TODO: EPGP:IncEPBy(name, reason, amount, true)
 
-	-- Use the maximum amount among all characters
+	for name, amount in pairs(awarded_amount) do
+		awarded_amount[name] = math.floor(awarded_amount[name] + 0.5)
+	end
+
 	local awarded_mains_amount = {} -- [mainname] = {amount, name}
 	for name, amount in pairs(awarded_amount) do
 		name = RCEPGP:GetEPGPName(name)
@@ -453,30 +456,33 @@ function RCCustomEP:IncMassEPBy(reason, amount, ...)
 		end
 	end
 
-	-- sort award_list by ep and awarded_list[ep] by alphabet
-	local sorted_list = {} -- {amount=amount, list={name1, name2}}
+	local unsorted_list = {} -- [amount] = {[name1]=true, [name2]=true, ...}
 	for main, entry in pairs(awarded_mains_amount) do
-		local amount
-		table.sort(list, function(a, b) return a < b end)
-		table.insert(sorted_list, {ep=ep, list=list})
-	end
-	table.sort(sorted_list, function(a, b) return a.ep < b.ep end)
-
-	-- TODO
-	for _, entry in ipairs(sorted_list) do
-		local linePrint = entry.ep.." "
-		for _, name in ipairs(entry.list) do
-			linePrint = linePrint..name.." "
+		local amount = entry.amount
+		local name = entry.name
+		if not unsorted_list[amount] then
+			unsorted_list[amount] = {[name]=true}
+		else
+			unsorted_list[amount][name] = true
 		end
-		print(linePrint)
 	end
 
-	-- TODO: Actaully EP award
-	--[[
-	for _, entry in ipairs(sorted_list) do
-	EPGP.callbacks:Fire("MassEPAward", entry.list, reason, entry.ep)
-end]]--
+	local sorted_list = {} -- [index] = {amount=amount, names={[name1]=true, [name2]=true, ...}}, sorted by amount
+	for amount, names in pairs(unsorted_list) do
+		tinsert(sorted_list, {amount=amount, names=names})
+	end
+	table.sort(sorted_list, function(a, b) return a.amount > b.amount end)
 
+	for _, entry in ipairs(sorted_list) do
+		local amount = entry.amount
+		local awarded = entry.names
+		if amount ~= 0 then
+			for _, name in ipairs(awarded) do
+				RCEPGP:IncEPSecure(name, reason, amount, true)
+			end
+			EPGP.callbacks:Fire("MassEPAward", awarded, reason, amount)
+		end
+	end
 end
 
 -----------------------------------------------------------------------------------------------
