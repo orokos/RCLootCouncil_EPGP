@@ -146,7 +146,7 @@ function RCEPGP:OnInitialize()
 
 	if GetLocale() == "zhCN" then
 		SetCVar("profanityFilter", "0")
-		self:DebugPrint("Diable profanity filter of zhCN client.")
+		self:DebugPrint("Disable profanity filter of zhCN client.")
 	end
     self.initialize = true -- Set initialize to true, so option can be initialized correctly.
 end

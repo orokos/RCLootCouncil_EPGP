@@ -152,11 +152,11 @@ function RCEPGP:OptionsTable()
 								width = "full",
 							},
 							bidMode = {
-								name = "Bid Mode",
+								name = LEP["Bid Mode"],
 								values = {
-									prRelative="Highest PR*bid wins and gets GP of (gp of item)*bid",
-									gpAbsolute="Highest bid wins and gets GP of bid.",
-									gpRelative="Highest bid wins and gets GP of (gp of item)*bid",
+									prRelative = LEP["bid_prRelative_desc"],
+									gpAbsolute = LEP["bid_gpAbsolute_desc"],
+									gpRelative = LEP["bid_gpRelative_desc"],
 								},
 								order = 3,
 								type = "select",
@@ -170,28 +170,28 @@ function RCEPGP:OptionsTable()
 								width = "full",
 							},
 							minBid = {
-								name = "Min Bid",
+								name = LEP["Min Bid"],
 								order = 5,
 								type = "input",
 								validate = "ValidateBidOption",
 								hidden = function() return not self.db.bid.bidEnabled end,
 							},
 							maxBid = {
-								name = "Max Bid",
+								name = LEP["Max Bid"],
 								order = 6,
 								type = "input",
 								validate = "ValidateBidOption",
 								hidden = function() return not self.db.bid.bidEnabled or self.db.bid.bidMode ~= "prRelative" end
 							},
 							minNewPR = {
-								name = "Min New PR",
+								name = LEP["Min New PR"],
 								order = 7,
 								type = "input",
 								validate = "ValidateBidOption",
 								hidden = function() return not self.db.bid.bidEnabled or self.db.bid.bidMode == "prRelative" end
 							},
 							defaultBid = {
-								name = "Default Bid",
+								name = LEP["Default Bid"],
 								order = 8,
 								type = "input",
 								validate = "ValidateBidOption",
@@ -271,7 +271,7 @@ function RCEPGP:OptionsTable()
                         },
                         add = {
                             order = 2,
-                            name = LEP["Add EP Formula"],
+                            name = _G.ADD,
                             type = "execute",
                             disabled = function() return self.db.customEP.EPFormulas.count >= RCCustomEP.MaxFormulas end,
                             func = function()
@@ -399,7 +399,7 @@ function RCEPGP:OptionsTable()
 					order = 0.9,
 				},
                 up = {
-                    name = "up",
+                    name = LEP["Up"],
                     type = "execute",
 					width = "half",
                     order = 1,
@@ -415,7 +415,7 @@ function RCEPGP:OptionsTable()
                     end,
                 },
                 down = {
-                    name = "down",
+                    name = LEP["Down"],
                     type = "execute",
 					width = "half",
                     order = 3,
@@ -456,7 +456,7 @@ function RCEPGP:OptionsTable()
 					end
 				},
 				onlineStatus = {
-					name = "Online Status",
+					name = LEP["Online Status"],
 					order = 10,
 					type = "group",
 					inline = true,
@@ -466,14 +466,14 @@ function RCEPGP:OptionsTable()
 					},
 				},
 				groupStatus = {
-					name = "Group Status",
+					name = LEP["Group Status"],
 					order = 11,
 					type = "group",
 					inline = true,
 					args = {
 						inGroup = EPFormulaOptionEntry(LEP["In Group"], 1),
-						standby = EPFormulaOptionEntry(LEP["In standby"], 2),
-						calendarSignedUp = EPFormulaOptionEntry(LEP["signed up in calendar"], 3),
+						standby = EPFormulaOptionEntry(LEP["In Standby"], 2),
+						calendarSignedUp = EPFormulaOptionEntry(LEP["Signed up in calendar"], 3),
 						completelyNotInGroup = EPFormulaOptionEntry(LEP["None of the above"], 4),
 					},
 				},
@@ -503,10 +503,10 @@ function RCEPGP:OptionsTable()
 					inline = true,
 					args = {
 						inZones = EPFormulaOptionEntry(LEP["In Zones"], 1),
-						notInZones = EPFormulaOptionEntry(LEP["Not In Zones"], 2),
+						notInZones = EPFormulaOptionEntry(LEP["Not in Zones"], 2),
 						zones = {
 							name = _G.ZONE,
-							desc = LEP["customep_zones_desc"],
+							desc = LEP["customEP_zones_desc"],
 							width = "full",
 							type = "input",
 							order = 3,

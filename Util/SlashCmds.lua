@@ -15,30 +15,41 @@ function RCEPGP:AddSlashCmds()
 	-- help: The help message shown in '/rc help'
 	-- helpDetailed: the help message of command. Printed by '/rc command help'
 	self.SlashCmds = {
-		["epgp"] = {func = RCEPGP.OpenOptions, help = LEP["chat_commands"], helpDetailed = nil, permission = false},
 		["ep"] = {func = RCEPGP.IncEPBy, help = LEP["slash_rc_ep_help"], helpDetailed = LEP["slash_rc_ep_help_detailed"], permission = true},
-		["gp"] = {func = RCEPGP.IncGPBy, help = LEP["slash_rc_gp_help"], helpDetailed = LEP["slash_rc_gp_help_detailed"], permission = true},
-		["undogp"] = {func = RCEPGP.UndoGP, help = LEP["slash_rc_undogp_help"], helpDetailed = LEP["slash_rc_undogp_help_detailed"], permission = true},
-		["massep"] = {func = RCEPGP.MassEP, help = LEP["slash_rc_massep_help"], helpDetailed = LEP["slash_rc_massep_help_detailed"], permission = true},
-		["recurep"] = {func = RCEPGP.RecurEP, help = LEP["slash_rc_recurep_help"], helpDetailed = LEP["slash_rc_recurep_help_detailed"], permission = true},
-		["stoprecur"] = {func = RCEPGP.RecurEP, help = LEP["slash_rc_stoprecur_help"], helpDetailed = LEP["slash_rc_stoprecur_help_detailed"], permission = true},
-		["zs"] = {func = RCEPGP.ZeroSumGeneral, help = LEP["slash_rc_zs_help"], helpDetailed = LEP["slash_rc_zs_help_detailed"], permission = true},
-		["zsr"] = {func = RCEPGP.ZeroSumRole, help = LEP["slash_rc_zsr_help"], helpDetailed = LEP["slash_rc_zsr_help_detailed"], permission = true},
-		["zsdr"] = {func = RCEPGP.ZeroSumDetailedRole, help = LEP["slash_rc_zsdr_help"], helpDetailed = LEP["slash_rc_zsdr_help_detailed"], permission = true},
 		--@debug@
 		["epdebug"] = {func = function() RCEPGP.debug = true; RCEPGP:Print("debug = true") end, help = ""},
 		--@end-debug@
+		["epgp"] = {func = RCEPGP.OpenOptions, help = LEP["chat_commands"], helpDetailed = nil, permission = false},
+		["gp"] = {func = RCEPGP.IncGPBy, help = LEP["slash_rc_gp_help"], helpDetailed = LEP["slash_rc_gp_help_detailed"], permission = true},
+		["massep"] = {func = RCEPGP.MassEP, help = LEP["slash_rc_massep_help"], helpDetailed = LEP["slash_rc_massep_help_detailed"], permission = true},
+		["recurep"] = {func = RCEPGP.RecurEP, help = LEP["slash_rc_recurep_help"], helpDetailed = LEP["slash_rc_recurep_help_detailed"], permission = true},
+		["stoprecur"] = {func = RCEPGP.RecurEP, help = LEP["slash_rc_stoprecur_help"], helpDetailed = nil, permission = true},
+		["undogp"] = {func = RCEPGP.UndoGP, help = LEP["slash_rc_undogp_help"], helpDetailed = LEP["slash_rc_undogp_help_detailed"], permission = true},
+		["zs"] = {func = RCEPGP.ZeroSumGeneral, help = LEP["slash_rc_zs_help"], helpDetailed = LEP["slash_rc_zs_help_detailed"], permission = true},
+		["zsr"] = {func = RCEPGP.ZeroSumRole, help = LEP["slash_rc_zsr_help"], helpDetailed = LEP["slash_rc_zs_help_detailed"], permission = true},
+		["zsdr"] = {func = RCEPGP.ZeroSumDetailedRole, help = LEP["slash_rc_zsdr_help"], helpDetailed = LEP["slash_rc_zs_help_detailed"], permission = true},
 	}
-	local i = 1
-	for command, v in pairs(self.SlashCmds) do
+
+	self["SlashCmdFuncHeader"] = function() end
+
+	addon:CustomChatCmd(self, "SlashCmdFuncHeader", "\n\n"..LEP["slash_help_header"]) -- Just add some help at the beginning and the end.
+
+	local commands = {}
+	for command, v in pairs(self.SlashCmds) do tinsert(commands, command) end
+	table.sort(commands)
+
+	for i, command in ipairs(commands) do
+		local v = self.SlashCmds[command]
 		if v.func and v.help then
 			self["SlashCmdFunc"..i] = function(self, ...) self:ExecuteSlashCmd(command, ...) end
 			addon:CustomChatCmd(self, "SlashCmdFunc"..i, v.help, command)
 		else
 			error("SlashCmds func and help not specified: "..command)
 		end
-		i = i + 1
 	end
+
+	self["SlashCmdFuncFooter"] = function() end
+	addon:CustomChatCmd(self, "SlashCmdFuncFooter", "\n"..LEP["slash_help_footer"])
 end
 -- /rc command ...
 -- '/rc command help' shows the help of the command, if exists.
@@ -47,7 +58,7 @@ end
 function RCEPGP:ExecuteSlashCmd(command, ...)
 	if self.SlashCmds[command] and self.SlashCmds[command].func then
 		if self.SlashCmds[command].helpDetailed and (not select(1, ...) or string.lower(tostring(select(1, ...))) == "help") then
-			self:Print(self.SlashCmds[command].helpDetailed)
+			gsub(self.SlashCmds[command].helpDetailed, "[^\n]+", function(msg) DEFAULT_CHAT_FRAME:AddMessage(msg) end)
 			return
 		end
 		if self.SlashCmds[command].permission and not CanEditOfficerNote() then
@@ -126,21 +137,21 @@ function RCEPGP:IncEPBy(name, reason, amount)
 	end
 end
 
-function RCEPGP:ZeroSumGeneral(reason, amount, name)
+function RCEPGP:ZeroSumGeneral(name, reason, amount)
 	if not IsInRaid() then
 		return self:Print(LEP["You cannot use this command if you are not in raid."])
 	end
 	self:GetModule("RCCustomEP"):IncMassEPZeroSumGeneral(reason, amount, name)
 end
 
-function RCEPGP:ZeroSumRole(reason, amount, name)
+function RCEPGP:ZeroSumRole(name, reason, amount)
 	if not IsInRaid() then
 		return self:Print(LEP["You cannot use this command if you are not in raid."])
 	end
 	self:GetModule("RCCustomEP"):IncMassEPZeroSumRole(reason, amount, name)
 end
 
-function RCEPGP:ZeroSumDetailedRole(reason, amount, name)
+function RCEPGP:ZeroSumDetailedRole(name, reason, amount)
 	if not IsInRaid() then
 		return self:Print(LEP["You cannot use this command if you are not in raid."])
 	end
