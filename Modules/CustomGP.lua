@@ -155,14 +155,12 @@ function lib:GetValue(item)
             local variableValue = entry.value(itemLink)
             itemData[variableName] = variableValue
         end
-		RCEPGP:DebugPrint("CustomGPItemInfoUpdate", itemLink)
         RCCustomGP.itemInfoCache[itemLink] = itemData
     end
 
 	local high = tonumber(RCEPGP:SecureExecString(RCEPGP.db.customGP.formula, itemData)) or 0
 	high = math.floor(0.5 + high)
 
-    RCEPGP:DebugPrint("ItemGPUpdate", itemLink, high)
     RCCustomGP.gpCache[itemLink] = high
     return high, nil, level, rarity, equipLoc
 end
