@@ -9,7 +9,7 @@ addon.Sync.syncHandlers["epgp"] =
 		for k, v in pairs(data) do
 			RCEPGP.db[k] = v
 		end
-		addon.db:GetNamespace("EPGP"):RegisterDefaults(self.defaults)
+		addon.db:GetNamespace("EPGP"):RegisterDefaults(RCEPGP.defaults)
 		RCEPGP:SendMessage("RCEPGPUpdateDB")
 	end,
 	send = function()
