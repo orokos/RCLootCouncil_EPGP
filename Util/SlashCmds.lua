@@ -107,7 +107,7 @@ function RCEPGP:MassEP(reason, amount, ...)
 end
 
 -- /rc recurep periodMin reason amount [formulaIndexOrName1] [formulaIndexOrName2], ...
-function RCEPGP:RecurEP(periodMin, reason, amount, ...)
+function RCEPGP:RecurEP(reason, amount, periodMin, ...)
 	self:GetModule("RCCustomEP"):StartRecurringEP(reason, tonumber(amount), tonumber(periodMin), ...)
 end
 

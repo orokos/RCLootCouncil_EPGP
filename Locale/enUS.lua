@@ -19,6 +19,9 @@ L["Award GP (Default: %s)"] = "Award GP (Default: %s)"
 L["bidding_desc"] = "Enable this will add a button in the rightclick menu of the voting frame to award GP to a player according to his bid. Several modes are available. Player can send bid price to the loot master by sending a note that starts with integer in the RCLootCouncil popup."
 L["chat_commands"] = "- epgp      - Open the RCLootCouncil-EPGP options interface"
 L["Credit GP to %s"] = "Credit GP to %s"
+L["customEP_formula_award_confirm"] = "Are you sure you want to do mass EP award by the formula %s?"
+L["customEP_formula_start_recur_award_confirm"] = "Are you sure you want to start recurring award by the formula %s?"
+L["customEP_formula_stop_recur_award_confirm"] = "Are you sure you want to stop recurring award?"
 L["Custom GP"] = "Custom GP"
 L["customGP_desc"] = [=[
 

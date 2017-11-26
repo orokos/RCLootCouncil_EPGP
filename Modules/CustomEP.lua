@@ -25,6 +25,7 @@ function RCCustomEP:OnInitialize()
 	self:RegisterBucketEvent("GUILD_ROSTER_UPDATE", 20, "GUILD_ROSTER_UPDATE")
 	self:SecureHook("CalendarOpenEvent", "OnCalendarOpenEvent")
 	EPGP.RegisterCallback(self, "StopRecurringAward", "OnStopRecurringAward")
+	EPGP.RegisterCallback(self, "ResumeRecurringAward", "OnResumeRecurringAward")
 	GuildRoster()
 	self:ProcessEventOpenQueue()
 	self:ScheduleTimer("UPDATE_CALENDAR", 10)
@@ -372,13 +373,16 @@ function RCCustomEP:StartRecurringEP(reason, amount, periodMin, ...)
 		return false
 	end
 
-	vars.next_award_reason = reason
-	vars.next_award_amount = amount
-	vars.next_award = GetTime() + vars.recurring_ep_period_mins * 60
-	vars.next_formulas = {...}
+	if select(1, ...) then
+		vars.next_formulas = {...}
+		EPGP:StartRecurringEP(reason, amount)
+		self.recurTickFrame:Show()
+		_G["EPGP_RecurringAwardFrame"]:Hide()
+	else
+		vars.next_formulas = nil
+		EPGP:StartRecurringEP(reason, amount)
+	end
 
-	EPGP.callbacks:Fire("StartRecurringAward", vars.next_award_reason, vars.next_award_amount, vars.recurring_ep_period_mins)
-	self.recurTickFrame:Show()
 	return true
 end
 
@@ -386,6 +390,20 @@ function RCCustomEP:OnStopRecurringAward()
 	local vars = EPGP.db.profile
 	vars.next_formulas = nil
 	self.recurTickFrame:Hide()
+end
+
+function RCCustomEP:OnResumeRecurringAward()
+	local vars = EPGP.db.profile
+	if vars.next_formulas then
+		self.recurTickFrame:Show()
+		local frame = _G["EPGP_RecurringAwardFrame"]
+		local RecurringTicker = frame:GetScript("OnUpdate")
+		frame:SetScript("OnUpdate", nil)
+		self:ScheduleTimer(function()
+			frame:Hide()
+			frame:SetScript("OnUpdate", RecurringTicker )
+		end, 0)
+	end
 end
 
 -------------------------------------------------------------------------------
