@@ -578,7 +578,7 @@ function RCCustomEP:IncMassEPZeroSum(reason, amount, target, pred)
 		local ep, _, main = EPGP:GetEPGP(name)
 		if ep then
 			if name ~= target and pred(name, target) then
-				awarded_amount[name] = 1
+				awarded_amount[name] = 0
 				count = count + 1
 			elseif name == target then
 				awarded_amount[name] = amount
