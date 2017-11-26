@@ -3,4 +3,5 @@
 	<Script file = "popups.lua" />
 	<Script file = "SecureExec.lua" />
 	<Script file = "SlashCmds.lua" />
+	<Script file = "sync.lua" />
 </Ui>

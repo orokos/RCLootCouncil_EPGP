@@ -61,23 +61,20 @@ function RCCustomGP:OnInitialize()
         INVTYPE_TRINKET		    = "TrinketSlot",
         INVTYPE_RELIC           = "RelicSlot",
     }
-    self:RegisterMessage("RCUpdateDB", "OnMessageReceived")
 	self:RegisterMessage("RCEPGPConfigTableChanged", "OnMessageReceived")
-	self:RegisterMessage("RCSyncComplete", "OnMessageReceived")
+	self:RegisterMessage("RCEPGPUpdateDB", "OnMessageReceived")
     self.initialize = true
 end
 
 function RCCustomGP:OnMessageReceived(msg, ...)
 	RCEPGP:DebugPrint("RCCustomGP:OnMessageReceived", msg, ...)
-	if msg == "RCUpdateDB" then
-		wipe(self.gpCache)
-	elseif msg == "RCEPGPConfigTableChanged" then
+	if msg == "RCEPGPConfigTableChanged" then
 		if "customGP" == select(1, ...) then
 			RCEPGP:DebugPrint("Wipe GP cache due to custom GP rule changed.")
 			wipe(self.gpCache)
 			self:SendMessage("RCCustomGPRuleChanged")
 		end
-	elseif msg == "RCSyncComplete" and select(1, ...) == "EPGP" then
+	elseif msg == "RCEPGPUpdateDB" then
 		RCEPGP:DebugPrint("Wipe GP cache due to setting sync.")
 		wipe(self.gpCache)
 		self:SendMessage("RCCustomGPRuleChanged")

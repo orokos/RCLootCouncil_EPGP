@@ -274,8 +274,10 @@ function RCEPGP:OptionsTable()
                             type = "execute",
                             disabled = function() return self.db.customEP.EPFormulas.count >= RCCustomEP.MaxFormulas end,
                             func = function()
+								self.db.customEP.EPFormulas[self.db.customEP.EPFormulas.count+1] = {}
 								self.db.customEP.EPFormulas[self.db.customEP.EPFormulas.count+1].name = RCCustomEP:EPFormulaGetUnrepeatedName("New")
 								self.db.customEP.EPFormulas.count = self.db.customEP.EPFormulas.count + 1
+								addon.db:GetNamespace("EPGP"):RegisterDefaults(self.defaults) -- Important
 							end,
                         },
                     },

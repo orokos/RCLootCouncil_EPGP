@@ -100,9 +100,6 @@ function RCEPGP:OnInitialize()
 			}
 		}
 	}
-	for i=2, 1000 do
-		self.defaults.profile.customEP.EPFormulas[i] = {}
-	end
 
 	-- Clean garbage in SV
 	addon.db.profile.epgp = nil -- No longer used
@@ -138,7 +135,6 @@ function RCEPGP:OnInitialize()
 
 	self:RegisterMessage("RCMLAddItem", "OnMessageReceived")
 	self:RegisterMessage("RCMLBuildMLdb", "OnMessageReceived")
-	self:RegisterMessage("RCSyncComplete", "OnMessageReceived")
 	self:RegisterBucketMessage("RCEPGPConfigTableChanged", 2, "EPGPConfigTableChanged")
 
     self:AddGPOptions()
@@ -171,8 +167,6 @@ function RCEPGP:OnMessageReceived(msg, ...)
 		local MLdb = ...
 		self:BuildMLdb(MLdb)
 		local str = self:Serialize(MLdb)
-	elseif msg == "RCSyncComplete" and select(1, ...) == "EPGP" then
-		addon.db:GetNamespace("EPGP"):RegisterDefaults(self.defaults)
     end
 end
 
