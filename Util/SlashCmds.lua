@@ -25,6 +25,9 @@ function RCEPGP:AddSlashCmds()
 		["zs"] = {func = RCEPGP.ZeroSumGeneral, help = LEP["slash_rc_zs_help"], helpDetailed = LEP["slash_rc_zs_help_detailed"], permission = true},
 		["zsr"] = {func = RCEPGP.ZeroSumRole, help = LEP["slash_rc_zsr_help"], helpDetailed = LEP["slash_rc_zsr_help_detailed"], permission = true},
 		["zsdr"] = {func = RCEPGP.ZeroSumDetailedRole, help = LEP["slash_rc_zsdr_help"], helpDetailed = LEP["slash_rc_zsdr_help_detailed"], permission = true},
+		--@debug@
+		["epdebug"] = {func = function() RCEPGP.debug = true; RCEPGP:Print("debug = true") end, help = ""},
+		--@end-debug@
 	}
 	local i = 1
 	for command, v in pairs(self.SlashCmds) do

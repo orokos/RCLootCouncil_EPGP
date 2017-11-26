@@ -1,7 +1,7 @@
-local DEBUG = false
---[===[@debug@
-DEBUG = false
---@end-debug@]===]
+--@debug@
+if LibDebug then LibDebug() end
+--@end-debug@
+
 local addon = LibStub("AceAddon-3.0"):GetAddon("RCLootCouncil")
 _G.RCEPGP = addon:NewModule("RCEPGP", "AceComm-3.0", "AceConsole-3.0", "AceHook-3.0", "AceEvent-3.0", "AceTimer-3.0", "AceSerializer-3.0", "AceBucket-3.0")
 local EPGP = LibStub("AceAddon-3.0"):GetAddon("EPGP")
@@ -24,7 +24,7 @@ function RCEPGP:OnInitialize()
 	self.lastVersionResetSetting = "2.0.0"
 	self.minRCVersion = "2.7.0"
 
-	self.debug = DEBUG
+	self.debug = false
 	local meta = getmetatable(self) 	-- Set the addon name for self:Print()
 	meta.__tostring = function() return "RCLootCouncil-EPGP" end
 	setmetatable(self, meta)
@@ -346,9 +346,9 @@ end
 function RCEPGP:DebugPrint(msg, ...)
 	if self.debug then
 		if select("#", ...) > 0 then
-			print("|cffcb6700rcepgpdebug:|r "..tostring(msg).."|cffff6767", ...)
+			self:Print("|cffcb6700rcepgpdebug:|r "..tostring(msg).."|cffff6767", ...)
 		else
-			print("|cffcb6700rcepgpdebug:|r "..tostring(msg).."|r")
+			self:Print("|cffcb6700rcepgpdebug:|r "..tostring(msg).."|r")
 		end
 	end
 end
