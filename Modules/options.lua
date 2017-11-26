@@ -274,7 +274,6 @@ function RCEPGP:OptionsTable()
                             type = "execute",
                             disabled = function() return self.db.customEP.EPFormulas.count >= RCCustomEP.MaxFormulas end,
                             func = function()
-								wipe(self.db.customEP.EPFormulas[self.db.customEP.EPFormulas.count+1])
 								self.db.customEP.EPFormulas[self.db.customEP.EPFormulas.count+1].name = RCCustomEP:EPFormulaGetUnrepeatedName("New")
 								self.db.customEP.EPFormulas.count = self.db.customEP.EPFormulas.count + 1
 							end,
@@ -410,7 +409,7 @@ function RCEPGP:OptionsTable()
 					},
 				},
 				zones = {
-					name = _G.RANK,
+					name = _G.ZONE,
 					order = 8,
 					type = "group",
 					inline = true,

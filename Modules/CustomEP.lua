@@ -11,11 +11,13 @@ local LibSpec = LibStub("LibGroupInSpecT-1.1")
 local LibDialog = LibStub("LibDialog-1.0")
 local GS = LibStub("LibGuildStorage-1.2")
 
+RCCustomEP.MaxFormulas = 100 -- Maxmium formulas
+
 function RCCustomEP:OnInitialize()
 	self.candidateInfos = {} -- The information of everyone in the guild or group
 	self.eventInfos = {} -- The inforamation of events within += 12h, including the invite list
 	self.eventOpenQueue = {} -- The event that is waiting for process
-	self.MaxFormulas = 100 -- Maxmium formulas
+
 	self.lastOtherCalendarOpenEvent = 0 -- THe time when other program runs CalendarOpenEvent()
 	self:RegisterEvent("CALENDAR_OPEN_EVENT", "OPEN_CALENDAR")
 	self:RegisterBucketEvent({"CALENDAR_UPDATE_EVENT_LIST", "CALENDAR_UPDATE_INVITE_LIST"}, 15, "UPDATE_CALENDAR")
