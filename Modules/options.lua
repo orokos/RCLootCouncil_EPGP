@@ -1,3 +1,7 @@
+--@debug@
+if LibDebug then LibDebug() end
+--@end-debug@
+
 local addon = LibStub("AceAddon-3.0"):GetAddon("RCLootCouncil")
 local RCEPGP = addon:GetModule("RCEPGP")
 local RCCustomGP = RCEPGP:GetModule("RCCustomGP", true)

@@ -1,6 +1,10 @@
 --- Contains all LibDialog popups used by RCLootCouncil-EPGP
 -- @author: Safetee
 -- 10/27/2017
+
+--@debug@
+if LibDebug then LibDebug() end
+--@end-debug@
 local addon = LibStub("AceAddon-3.0"):GetAddon("RCLootCouncil")
 local RCEPGP = addon:GetModule("RCEPGP")
 local EPGP = LibStub("AceAddon-3.0"):GetAddon("EPGP")

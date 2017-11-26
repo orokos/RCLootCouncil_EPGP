@@ -1,6 +1,10 @@
 --- Provide a secure environment to execute user code.
 -- @author: Safetee
 -- 10/27/2017
+
+--@debug@
+if LibDebug then LibDebug() end
+--@end-debug@
 local addon = LibStub("AceAddon-3.0"):GetAddon("RCLootCouncil")
 local RCEPGP = addon:GetModule("RCEPGP")
 local LEP = LibStub("AceLocale-3.0"):GetLocale("RCEPGP")

@@ -1,5 +1,9 @@
 -- A library to compute Gear Points for items as described in
 -- http://code.google.com/p/epgp/wiki/GearPoints
+--@debug@
+if LibDebug then LibDebug() end
+--@end-debug@
+
 local addon = LibStub("AceAddon-3.0"):GetAddon("RCLootCouncil")
 local RCEPGP = addon:GetModule("RCEPGP")
 local RCCustomGP = RCEPGP:NewModule("RCCustomGP", "AceConsole-3.0", "AceEvent-3.0", "AceBucket-3.0", "AceTimer-3.0")
