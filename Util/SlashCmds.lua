@@ -20,6 +20,7 @@ function RCEPGP:AddSlashCmds()
 		["stoprecur"] = {func = RCEPGP.RecurEP, help = LEP["slash_rc_stoprecur_help"], helpDetailed = LEP["slash_rc_stoprecur_help_detailed"], permission = true},
 		["zs"] = {func = RCEPGP.ZeroSumGeneral, help = LEP["slash_rc_zs_help"], helpDetailed = LEP["slash_rc_zs_help_detailed"], permission = true},
 		["zsr"] = {func = RCEPGP.ZeroSumRole, help = LEP["slash_rc_zsr_help"], helpDetailed = LEP["slash_rc_zsr_help_detailed"], permission = true},
+		["zsdr"] = {func = RCEPGP.ZeroSumDetailedRole, help = LEP["slash_rc_zsdr_help"], helpDetailed = LEP["slash_rc_zsdr_help_detailed"], permission = true},
 	}
 	local i = 1
 	for command, v in pairs(self.SlashCmds) do
@@ -118,10 +119,23 @@ function RCEPGP:IncEPBy(name, reason, amount)
 	end
 end
 
-function RCEPGP:ZeroSumGeneral(name, reason, amount)
+function RCEPGP:ZeroSumGeneral(reason, amount, name)
+	if not IsInRaid() then
+		return self:Print(LEP["You cannot use this command if you are not in raid."])
+	end
 	self:GetModule("RCCustomEP"):IncMassEPZeroSumGeneral(reason, amount, name)
 end
 
-function RCEPGP:ZeroSumRole(name, reason, amount)
+function RCEPGP:ZeroSumRole(reason, amount, name)
+	if not IsInRaid() then
+		return self:Print(LEP["You cannot use this command if you are not in raid."])
+	end
 	self:GetModule("RCCustomEP"):IncMassEPZeroSumRole(reason, amount, name)
+end
+
+function RCEPGP:ZeroSumDetailedRole(reason, amount, name)
+	if not IsInRaid() then
+		return self:Print(LEP["You cannot use this command if you are not in raid."])
+	end
+	self:GetModule("RCCustomEP"):IncMassEPZeroSumDetailedRole(reason, amount, name)
 end

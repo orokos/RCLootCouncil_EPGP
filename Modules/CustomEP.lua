@@ -28,6 +28,11 @@ function RCCustomEP:OnInitialize()
 	self.initialize = true
 end
 
+function RCCustomEP:UnitInGroup(name)
+	name = RCEPGP:GetEPGPName(name)
+	return UnitInRaid(Ambiguate(name, "short")) or UnitInParty(Ambiguate(name, "short"))
+end
+
 function RCCustomEP:GROUP_ROSTER_UPDATE()
 	RCEPGP:DebugPrint("RCCustomEP", "GROUP_ROSTER_UPDATE")
 	GuildRoster()
@@ -60,7 +65,7 @@ function RCCustomEP:GROUP_ROSTER_UPDATE()
 			info["guildName"] = guildName
 			info["guildRank"] = guildRankName
 			info["guildRankIndex"] = guildRankIndex
-			info["guid"] = UnitGUID("raid"..i)
+			info["guid"] = UnitGUID(unitID)
 		else
 			RCEPGP:DebugPrint("GROUP_ROSTER_UPDATE uncached, retry after 1s.")
 			self:ScheduleTimer("GROUP_ROSTER_UPDATE", 1)
@@ -101,7 +106,7 @@ function RCCustomEP:GUILD_ROSTER_UPDATE()
 			info["canSoR"] = canSoR
 			info["reputation"] = reputation
 			info["guildName"] = guildName
-			if (not UnitInRaid(Ambiguate(fullName, "short")) and not UnitInParty(Ambiguate(fullName, "short"))) then
+			if (not self:UnitInGroup(fullName)) then
 				info["online"] = online
 				info["level"] = level
 				info["zone"] = zone
@@ -592,8 +597,7 @@ end
 -- ZerSum award to people in the same zone in the group as you
 function RCCustomEP:IncMassEPZeroSumGeneral(reason, amount, target)
 	local function pred(name, target)
-		local myName = RCEPGP:GetEPGPName("player")
-		return (UnitInRaid(Ambiguate(name, "short")) or UnitInParty(Ambiguate(name, "short"))) and self.candidateInfos[myName].zone and self.candidateInfos[name].zone == self.candidateInfos[myName].zone
+		return self:UnitInGroup(name) and self.candidateInfos[target].zone and self.candidateInfos[name].zone == self.candidateInfos[target].zone
 	end
 	self:IncMassEPZeroSum(reason, amount, target, pred)
 end
@@ -601,9 +605,25 @@ end
 -- ZerSum award to people in the same zone in the group as you
 function RCCustomEP:IncMassEPZeroSumRole(reason, amount, target)
 	local function pred(name, target)
-		local myName = RCEPGP:GetEPGPName("player")
-		return (UnitInRaid(Ambiguate(name, "short")) or UnitInParty(Ambiguate(name, "short"))) and self.candidateInfos[myName].zone and self.candidateInfos[name].zone == self.candidateInfos[myName].zone
-			and self.candidateInfos[myName].role == self.candidateInfos[name].role
+		return self:UnitInGroup(name) and self.candidateInfos[target].zone and self.candidateInfos[name].zone == self.candidateInfos[target].zone
+			and self.candidateInfos[target].role == self.candidateInfos[name].role
+	end
+	self:IncMassEPZeroSum(reason, amount, target, pred)
+end
+
+-- tank, healer, melee, ranged
+function RCCustomEP:GetDetailedRole(name)
+	local name = RCEPGP:GetEPGPName(name)
+	local guid = self.candidateInfos[name] and self.candidateInfos[name].guid
+	return guid and LibSpec:GetCachedInfo(guid) and LibSpec:GetCachedInfo(guid).spec_role_detailed
+end
+
+-- ZerSum award to people in the same zone in the group as you (ONLY WORK IN RAID. LibSpec not working in party)
+function RCCustomEP:IncMassEPZeroSumDetailedRole(reason, amount, target)
+	local function pred(name, target)
+		local target = RCEPGP:GetEPGPName("player")
+		return self:UnitInGroup(name) and self.candidateInfos[target].zone and self.candidateInfos[name].zone == self.candidateInfos[target].zone
+			and self:GetDetailedRole(target) == self:GetDetailedRole(name)
 	end
 	self:IncMassEPZeroSum(reason, amount, target, pred)
 end

@@ -101,3 +101,4 @@ Undo the most recent GP operations to a character with the matching reason.
 ]=]
 L["slot_weights"] = "Slot Weights"
 L["Undo GP"] = "Undo GP"
+L["You cannot use this command if you are not in raid."] = true
