@@ -369,9 +369,18 @@ function RCEPGP:OptionsTable()
 						LibStub("AceConfigDialog-3.0"):SelectGroup("RCLootCouncil-EPGP", "epTab", "EPFormula"..i)
 					end,
                 },
+				name = {
+					name = _G.NAME,
+					order = 6,
+					type = "input",
+					set = function(info, value)
+						value = RCCustomEP:EPFormulaGetUnrepeatedName(value)
+						self:DBSetFunc("customEP", "EPFormulas", i)(info, value);
+					end
+				},
 				onlineStatus = {
 					name = "Online Status",
-					order = 6,
+					order = 10,
 					type = "group",
 					inline = true,
 					args = {
@@ -381,7 +390,7 @@ function RCEPGP:OptionsTable()
 				},
 				groupStatus = {
 					name = "Group Status",
-					order = 7,
+					order = 11,
 					type = "group",
 					inline = true,
 					args = {
@@ -393,7 +402,7 @@ function RCEPGP:OptionsTable()
 				},
 				ranks = {
 					name = _G.RANK,
-					order = 8,
+					order = 12,
 					type = "group",
 					inline = true,
 					args = {
@@ -412,7 +421,7 @@ function RCEPGP:OptionsTable()
 				},
 				zones = {
 					name = _G.ZONE,
-					order = 8,
+					order = 13,
 					type = "group",
 					inline = true,
 					args = {
