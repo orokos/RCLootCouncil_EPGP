@@ -26,6 +26,8 @@ Custom GP allows you to define a custom GP rule for every gear piece.
 You need to define a formula that calculates the GP value for the gear.
 You can choose to disable this feature, to calculated GP in the default way of EPGP(dkp reloaded).
 ]=]
+L["DKP Mode"] = true
+L["dkp_mode_desc"] = "If checked, all GP increase/decrease operations done by the addon are converted to EP decrease/increase operations."
 L["disable_gp_popup"] = "GP popup is automatically disabled by RCLootCouncil - EPGP."
 L["EPGP_DKP_Reloaded_settings_received"] = "Received EPGP(dkp reloaded) settings through '/rc sync'."
 L["error_recurring_running"] = "A recurring award is running."

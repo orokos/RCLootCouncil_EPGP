@@ -39,7 +39,10 @@ local function GetGPInfo(data)
 		local responseGP = RCEPGP:GetResponseGP(entry.responseID, entry.tokenRoll, entry.relicRoll) or 0
 		local itemgp = GP:GetValue(item) or 0
 		local gp = RCEPGP:GetFinalGP(responseGP, itemgp) or 0
-		local lastgp = RCEPGP:GetLastGPAmount(name, item) or 0
+		local lastgp = RCEPGP:GetLastEPGPAmount("GP", name, item) or 0
+		if RCEPGP.db.dkpMode then
+			lastgp = -(RCEPGP:GetLastEPGPAmount("EP", name, item) or 0)
+		end
 		return name, class, item, responseGP, gp, lastgp
 	end
 	return _G.UNKNOWN, _G.UNKNOWN, _G.UNKNOWN, 0, 0, 0 -- nil protection

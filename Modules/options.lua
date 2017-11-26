@@ -106,7 +106,7 @@ function RCEPGP:OptionsTable()
 				type = "group",
 				args = {
 					gpOptions = {
-						name = LEP["gpOptions"],
+						name = LEP["GP Options"],
 						order = 0.5,
 						type = "group",
 						inline = true,
@@ -122,6 +122,17 @@ function RCEPGP:OptionsTable()
 									LibStub("AceConfigDialog-3.0"):SelectGroup("RCLootCouncil", "mlSettings", "buttonsTab")
 								end,
 							},
+							header = {
+								name = "",
+								type = "header",
+								order = 2,
+							},
+							dkpMode = {
+								name = LEP["DKP Mode"],
+								type = "toggle",
+								desc = LEP["dkp_mode_desc"],
+								confirm = function(_, value) if value then return LEP["dkp_mode_desc"] end end,
+							}
 						},
 					},
 					bid = {

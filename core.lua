@@ -42,6 +42,7 @@ function RCEPGP:OnInitialize()
 					['*'] = "100%",
 				}
 			},
+			dkpMode = false,
 			bid = {
 				bidEnabled = false,
 				bidMode = "prRelative",
@@ -245,6 +246,9 @@ end
 
 function RCEPGP:IncGPSecure(name, reason, amount)
 	name = self:GetEPGPName(name)
+	if self.db.dkpMode then -- If in DKP mode, decrease EP instead of increase GP.
+		return self:IncEPSecure(name, reason, -amount)
+	end
 	if not GS:IsCurrentState() then
 		self:Debug("IncGPSecure GS is not ready. Retry after 0.5s", name, reason, amount)
 		return self:ScheduleTimer("IncGPSecure", 0.5, name, reason, amount)
@@ -297,16 +301,16 @@ function RCEPGP:GetGPAndResponseGPText(gp, responseGP)
     return text
 end
 
--- Get the amount of last GP operations with given name and reason.
+-- Get the amount of last EP/GP operations with given name and reason.
 -- Reason can be not specified.
-function RCEPGP:GetLastGPAmount(name, reason)
+function RCEPGP:GetLastEPGPAmount(kind, name, reason)
     local logMod = EPGP:GetModule("log")
     if logMod and logMod.db and logMod.db.profile and logMod.db.profile.log then
         for i = #logMod.db.profile.log, 1, - 1 do
 
             local entry = logMod.db.profile.log[i]
-            local timestamp, kind, name2, reason2, amount = unpack(entry)
-            if kind == 'GP' and name2 == name  then
+            local timestamp, kind2, name2, reason2, amount = unpack(entry)
+            if kind2 == kind and name2 == name  then
                 if not reason then
                     return amount, reason2
                 elseif reason == reason2 then
