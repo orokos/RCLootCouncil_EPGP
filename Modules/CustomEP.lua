@@ -430,14 +430,25 @@ function RCCustomEP:ProcessAwardedAmount(reason, awarded_amount)
 		local awarded = entry.names
 		if amount ~= 0 then
 			for name, _ in pairs(awarded) do
-				print(name, amount)
 				RCEPGP:IncEPSecure(name, reason, amount, true)
 			end
 			EPGP.callbacks:Fire("MassEPAward", awarded, reason, amount)
-			print(awarded, reason, amount)
 		end
 	end
 end
+
+function RCCustomEP:ParseZonesStr(zonesStr)
+	local zones = {strsplit(",", zonesStr)}
+	for k, zone in ipairs(zones) do
+		zones[k] = zone:gsub("^ +", "") -- remove prefix spaces
+		zones[k] = zone:gsub(" +$", "") -- remove trailing spaces
+		if tonumber(zone) then
+			zones[k] = GetMapNameByID(tonumber(zone)) or "Unknown"
+		end
+	end
+	return zones
+end
+
 
 --@param ... the formulas
 function RCCustomEP:IncMassEPBy(reason, amount, ...)
@@ -509,9 +520,18 @@ function RCCustomEP:IncMassEPBy(reason, amount, ...)
 					local rankIndex = info["guildRankIndex"] or ""
 					rankCoeff = formula["isRank"..rankIndex] or 0
 				end
+				local zonesCoeff
+				local zones = self:ParseZonesStr(formula.zones)
+				if tContains(zones, info["zone"] or "") then
+					zonesCoeff = formula.inZones
+				else
+					zonesCoeff = formula.notInZones
+				end
 
-				local amountWithCoeff = amount*onlineCoeff*groupCoeff*rankCoeff
-				awarded_amount[name] = awarded_amount[name] and (awarded_amount[name] + amountWithCoeff) or amountWithCoeff
+				local amountWithCoeff = amount*onlineCoeff*groupCoeff*rankCoeff*zonesCoeff
+				if amountWithCoeff ~= 0 then
+					awarded_amount[name] = awarded_amount[name] and (awarded_amount[name] + amountWithCoeff) or amountWithCoeff
+				end
 			end
 		end
 	end

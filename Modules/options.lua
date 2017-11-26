@@ -409,6 +409,23 @@ function RCEPGP:OptionsTable()
 						notInGuild = EPFormulaOptionEntry(LEP["Not in your guild"], 11),
 					},
 				},
+				zones = {
+					name = _G.RANK,
+					order = 8,
+					type = "group",
+					inline = true,
+					args = {
+						inZones = EPFormulaOptionEntry(LEP["In Zones"], 1),
+						notInZones = EPFormulaOptionEntry(LEP["Not In Zones"], 2),
+						zones = {
+							name = _G.ZONE,
+							desc = LEP["customep_zones_desc"],
+							width = "full",
+							type = "input",
+							order = 3,
+						}
+					},
+				}
             }
         }
     end

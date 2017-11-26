@@ -92,6 +92,9 @@ function RCEPGP:OnInitialize()
 						isRank8 = 1,
 						isRank9 = 1,
 						notInGuild = 1,
+						inZones = 1,
+						notInZones = 1,
+						zones = "",
 					},
 				}
 			}
