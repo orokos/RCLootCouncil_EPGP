@@ -1,9 +1,32 @@
-### v2.2
+### v2.2.0
 ---
-- Screenshot feature is removed.
-  - There are some issues with this feature that is difficult to solve as a plugin of RCLootCouncil.
-  - If this feature returns, this feature should be in RCLootCouncil instead of RCLootCouncil-EPGP.
-- Improve performance when you are using custom GP.
+- **Require RCLootCouncil v2.7.0+**. No longer work for v2.6.x due to large amount of changes in RCLootCouncil v2.7
+- **All Settings of RCLootCouncil-EPGP are reseted because the addon got a major rewrite.**
+- The Curseforge page and README file under the addon folder offers the full explanation of the new features.
+- **General**
+  - Add a "DKP mode" that converts all GP decrease/increase operations into EP increase/decrease operations.
+- **Bid**
+  - The bid feature is improved. It now gives you three mode to choose from and you can decide the maximum and minimum bid the player can send.
+  - For two of three modes, the addon limits the maximum bid to ensure the candidate's PR does not drop below a value after getting the GP award.
+- **Announcements**
+  - Several new keywords are added into the announcement.
+- **Loot Frame**
+  - The GP value of the item is shown in the loot frame, if this addon is installed.
+  - If you want other raid members to see GP in the loot frame, they should install this addon.
+- **Custom EP**
+  - A custom EP feature is added, so you can customize who should be included in the mass ep award.
+  - Commands to run custom EP are "/rc massep", "/rc recurep". You can also run this in option panel.
+- **ZeroSum EP Award**
+  - ZeroSum EP awards attempt to solve the problem that EPGP cannot evaluate player performance. It solves the problem of the simple EP reduction which benefits substitube but unfair for the non-substitudes.
+  - Commands to execute them are "/rc zs", "/rc zsr", "/rc zsdr"
+- **Custom GP**
+  - Improve performance when you are using custom GP.
+- **Removed features**
+  - Screenshot feature is removed.
+    - There are some issues with this feature that is difficult to solve as a plugin of RCLootCouncil.
+    - If this feature returns, this feature should be in RCLootCouncil instead of RCLootCouncil-EPGP.
+  - Sync EPGP(dkp reloaded) settings with '/rc sync' is removed.
+
 ###### Bugfixes
 - Fix an issue in custom GP that causes the item list in EPGP's UI show unintended items.
 
