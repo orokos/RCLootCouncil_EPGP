@@ -347,13 +347,6 @@ function RCEPGP:OptionsTable()
 						local reason = self.db.customEP.EPFormulas[i].reason
 						local amount = self.db.customEP.EPFormulas[i].amount
 						self:MassEP(reason, amount, i)
-						local updateMenu
-						updateMenu = function() LibStub("AceConfigRegistry-3.0"):NotifyChange("RCLootCouncil-EPGP");
-							if not EPGP:CanIncEPBy(reason, amount) then
-								self:ScheduleTimer(updateMenu, 3)
-							end
-						end
-						self:ScheduleTimer(updateMenu, 1) -- Refresh disable status of the button
 					end,
 					disabled = function()
 						local reason = self.db.customEP.EPFormulas[i].reason
@@ -368,37 +361,29 @@ function RCEPGP:OptionsTable()
 					type = "input",
 				},
 				recurAwardStart = {
-					name = function() return LEPGP["Recurring awards start"] end,
+					name = function() return EPGP:RunningRecurringEP() and LEP["Add to recurring award"] or LEPGP["Recurring awards start"] end,
 					order = 0.5,
 					type = "execute",
-					confirm = function() return format(LEP["customEP_formula_start_recur_award_confirm"], i..". "..(self.db.customEP.EPFormulas[i].name or "")) end,
+					confirm = function() return format(EPGP:RunningRecurringEP() and LEP["customEP_formula_add_recur_award_confirm"] or LEP["customEP_formula_start_recur_award_confirm"], i..". "..(self.db.customEP.EPFormulas[i].name or "")) end,
 					func = function()
 						local reason = self.db.customEP.EPFormulas[i].reason
 						local amount = tonumber(self.db.customEP.EPFormulas[i].amount)
 						local period = self.db.customEP.EPFormulas[i].period
 						self:RecurEP(reason, amount, period, i)
-						local updateMenu
-						updateMenu = function() LibStub("AceConfigRegistry-3.0"):NotifyChange("RCLootCouncil-EPGP");
-							if not EPGP:CanIncEPBy(reason, amount) then
-								self:ScheduleTimer(updateMenu, 3)
-							end
-						end
-						self:ScheduleTimer(updateMenu, 1) -- Refresh disable status of the button
 					end,
 					disabled = function()
 						local reason = self.db.customEP.EPFormulas[i].reason
 						local amount = tonumber(self.db.customEP.EPFormulas[i].amount)
 						return not EPGP:CanIncEPBy(reason, amount)
 					end,
-					hidden = function() return EPGP:RunningRecurringEP() end,
 				},
 				recurAwardStop = {
 					name = function() return LEPGP["Recurring awards stop"] end,
-					order = 0.5,
+					order = 0.7,
 					type = "execute",
 					confirm = function() return LEP["customEP_formula_stop_recur_award_confirm"] end,
 					func = function() EPGP:StopRecurringEP() end,
-					hidden = function() return not EPGP:RunningRecurringEP() end,
+					disabled = function() return not EPGP:RunningRecurringEP() end,
 				},
 			 	header = {
 					name = "",
@@ -665,6 +650,12 @@ function RCEPGP:AddOptions()
     LibStub("AceConfigRegistry-3.0"):RegisterOptionsTable("RCLootCouncil-EPGP", self.epgpOptions)
     self.optionsFrame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions("RCLootCouncil-EPGP", "EPGP", "RCLootCouncil")
     LibStub("AceConfigRegistry-3.0"):NotifyChange("RCLootCouncil-EPGP")
+
+	LibStub("LibGuildStorage-1.2").RegisterCallback(self, "StateChanged", function()
+		if LibStub("LibGuildStorage-1.2"):IsCurrentState() then
+			LibStub("AceConfigRegistry-3.0"):NotifyChange("RCLootCouncil-EPGP")
+		end
+	end)
     return self.epgpOptions
 end
 

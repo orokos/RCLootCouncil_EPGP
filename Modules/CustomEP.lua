@@ -59,6 +59,7 @@ function RCCustomEP:GROUP_ROSTER_UPDATE()
 				self.candidateInfos[fullName] = {}
 			end
 			local info = self.candidateInfos[fullName]
+			info["guid"] = UnitGUID(unitID)
 			info["fullName"] = fullName
 			info["raidRank"] = rank
 			info["subgroup"] = subgroup
@@ -75,6 +76,13 @@ function RCCustomEP:GROUP_ROSTER_UPDATE()
 				info["guildName"] = guildName
 				info["guildRank"] = guildRankName
 				info["guildRankIndex"] = guildRankIndex
+			end
+			if UnitIsVisible(unitID) then
+				local guid = info["guid"]
+				local specInfo = LibSpec:GetCachedInfo(guid)
+				if not specInfo or not specInfo.spec_role_detailed then
+					LibSpec:Rescan(guid)
+				end
 			end
 		else
 			RCEPGP:DebugPrint("GROUP_ROSTER_UPDATE uncached, retry after 1s.")
@@ -336,6 +344,18 @@ RCCustomEP.recurTickFrame:SetScript("OnUpdate", function(self, elapsed)
 end)
 RCCustomEP.recurTickFrame:Hide()
 
+function RCCustomEP:GetFormula(formulaIndexOrName)
+	if formulaIndexOrName == "EPGP_Default" or tonumber(formulaIndexOrName) == 0 then
+		return RCEPGP.defaults.profile.customEP.EPFormulas["**"]
+	end
+	for index=0,RCEPGP.db.customEP.EPFormulas.count do -- Start from 0 to include EPGP_Default
+		local f = RCEPGP.db.customEP.EPFormulas[index]
+		if index == tonumber(formulaIndexOrName) or f.name == formulaIndexOrName then
+			return f
+		end
+	end
+end
+
 --@param ... formulas
 function RCCustomEP:StartRecurringEP(reason, amount, periodMin, ...)
 	if not tonumber(periodMin) and tonumber(periodMin) <= 0 then
@@ -352,14 +372,7 @@ function RCCustomEP:StartRecurringEP(reason, amount, periodMin, ...)
 	end
 	if select(1, ...) then
 		for _, formulaIndexOrName in ipairs({...}) do
-			local formula
-			for index=1,RCEPGP.db.customEP.EPFormulas.count do
-				local f = RCEPGP.db.customEP.EPFormulas[index]
-				if index == tonumber(formulaIndexOrName) or f.name == formulaIndexOrName then
-					formula = f
-					break
-				end
-			end
+			local formula = self:GetFormula(formulaIndexOrName)
 			if not formula then
 				return RCEPGP:Print(format(LEP["Formula 'formula' does not exist"], formulaIndexOrName))
 			end
@@ -371,19 +384,29 @@ function RCCustomEP:StartRecurringEP(reason, amount, periodMin, ...)
 		vars.recurring_ep_period_mins = tonumber(periodMin)
 	end
 
-	if vars.next_award then
-		RCEPGP:Print(LEP["error_recurring_running"])
-		return false
+	local formulas = vars.next_formulas
+	if not formulas then
+		formulas = {}
 	end
-
 	if select(1, ...) then
-		EPGP:StartRecurringEP(reason, amount)
-		self.recurTickFrame:Show()
-		vars.next_formulas = {...}
-		_G["EPGP_RecurringAwardFrame"]:Hide()
+		for _, formulaIndexOrName in ipairs({...}) do
+			tinsert(formulas, self:GetFormula(formulaIndexOrName).name)
+		end
 	else
-		EPGP:StartRecurringEP(reason, amount)
+		tinsert(formulas, "EPGP_Default")
 	end
+	if vars.next_award then -- already running.
+		if not vars.next_formulas then
+			tinsert(formulas, 1, "EPGP_Default")
+		end
+		RCEPGP:Print(LEP["recurring_award_running"])
+	end
+	RCEPGP:Print(format(LEP["recurring_award_formulas"], table.concat(formulas, ", ")))
+
+	EPGP:StartRecurringEP(reason, amount)
+	vars.next_formulas = formulas
+	_G["EPGP_RecurringAwardFrame"]:Hide()
+	self.recurTickFrame:Show()
 
 	return true
 end
@@ -497,18 +520,13 @@ function RCCustomEP:IncMassEPBy(reason, amount, ...)
 	local awarded_amount = {}
 	RCEPGP:Debug("Custom MassEP", reason, amount, ...)
 
-	for _, formulaIndexOrName in ipairs({...}) do
-		local formula
-		for index=1,RCEPGP.db.customEP.EPFormulas.count do
-			local f = RCEPGP.db.customEP.EPFormulas[index]
-			if index == tonumber(formulaIndexOrName) or f.name == formulaIndexOrName then
-				formula = f
-				break
-			end
-		end
+	local formulas = {...}
+	for k, formulaIndexOrName in ipairs(formulas) do
+		local formula = self:GetFormula(formulaIndexOrName)
 		if not formula then
 			return RCEPGP:Print(format(LEP["Formula 'formula' does not exist"], formulaIndexOrName))
 		end
+		formulas[k] = formula.name
 
 		for name, info in pairs(self.candidateInfos) do
 			name = RCEPGP:GetEPGPName(name)
@@ -567,6 +585,7 @@ function RCCustomEP:IncMassEPBy(reason, amount, ...)
 		end
 	end
 
+	RCEPGP:Print(format(LEP["customEP_massEP_by_formulas"], table.concat(formulas, ", ")))
 	self:ProcessAwardedAmount(reason, awarded_amount)
 end
 

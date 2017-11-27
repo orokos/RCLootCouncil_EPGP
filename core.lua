@@ -75,6 +75,7 @@ function RCEPGP:OnInitialize()
 						name = "Default",
 					},
 					['**'] = {
+						name = "EPGP_Default",
 						reason = "reason",
 						amount = "100",
 						period = "15",

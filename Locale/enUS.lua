@@ -5,6 +5,7 @@
 local L = LibStub("AceLocale-3.0"):NewLocale("RCEPGP", "enUS", true)
 if not L then return end
 
+L["Add to recurring award"] = true
 L["amount_must_be_number"] = "Amount must be a number"
 L["announce_#diffgp#_desc"] = "|cfffcd400 #diffgp#|r: The amount of GP the player gains from the item."
 L["announce_#ep#_desc"] = "|cfffcd400 #ep#|r: The EP of player."
@@ -25,6 +26,7 @@ L["chat_commands"] = "- epgp      - Open the RCLootCouncil-EPGP options interfac
 L["Credit GP to %s"] = true
 L["customEP_formula_award_confirm"] = "Are you sure you want to do mass EP award by the formula %s?"
 L["customEP_formula_start_recur_award_confirm"] = "Are you sure you want to start recurring award by the formula %s?"
+L["customEP_formula_add_recur_award_confirm"] = "Are you sure you want to add the formula %s to the running recurring award?"
 L["customEP_formula_stop_recur_award_confirm"] = "Are you sure you want to stop recurring award?"
 L["customEP_online_desc"] = "The EP percentage when the candidate is online."
 L["customEP_offline_desc"] = "The EP percentage when the candidate is offline."
@@ -36,6 +38,7 @@ L["customEP_in_group_desc"] = "The EP percentage when the candidate is in your g
 L["customEP_rank_desc"] = "The EP percentage when the candidate guild rank matches this."
 L["customEP_signed_up_in_calendar_desc"] = "The EP percentage when the candidate signs up in a guild event that starts within ±12h of the current time, but not in the group, nor in the EPGP standby list."
 L["customEP_none_of_the_above_desc"] = "The EP percentage when the candidate is not in group, not in EPGP standby list, and does not sign up in calendar."
+L["customEP_massEP_by_formulas"] = "Mass EP award by the formulas: %s"
 L["Custom EP"] = true
 L["Custom GP"] = true
 L["customEP_desc"] = [=[
@@ -57,7 +60,8 @@ L["dkp_mode_desc"] = "If checked, all GP increase/decrease operations done by th
 L["disable_gp_popup"] = "GP popup is automatically disabled by RCLootCouncil - EPGP."
 L["Down"] = true
 L["EPGP_DKP_Reloaded_settings_received"] = "Received EPGP(dkp reloaded) settings through '/rc sync'."
-L["error_recurring_running"] = "A recurring award is running."
+L["recurring_award_running"] = "A recurring award is already running. Add this formula into the recurring award."
+L["recurring_award_formulas"] = "Current formulas for recurring award: %s"
 L["formula_delete_confirm"] = "Are you sure you want to delete the formula %s?"
 L["forbidden_function_used"] = "A forbidden function is used in a formula, but has been blocked from doing so. Please check if your formulas contain any malicious code!"
 L["Formula 'formula' does not exist"] = "Formula %s does not exist"
@@ -168,6 +172,7 @@ L["slash_rc_recurep_help_detailed"] = [=[
 - recurep reason amount period [formula ...]
 
 Start recurring mass EP Award using custom EP feature.
+If the recurring award is already running, then the formulas will be added to the current recurring award.
 
 |cffffd000periodMin|r: The period for the recurring award (in minute).
 
