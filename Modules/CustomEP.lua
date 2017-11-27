@@ -70,10 +70,12 @@ function RCCustomEP:GROUP_ROSTER_UPDATE()
 			info["groupRole"] = groupRole
 			info["isML"] = isML
 			info["role"] = UnitGroupRolesAssigned(unitID)
-			info["guildName"] = guildName
-			info["guildRank"] = guildRankName
-			info["guildRankIndex"] = guildRankIndex
 			info["guid"] = UnitGUID(unitID)
+			if guildName and guildRankName and guildRankIndex then -- Must check this because this is not available when offline
+				info["guildName"] = guildName
+				info["guildRank"] = guildRankName
+				info["guildRankIndex"] = guildRankIndex
+			end
 		else
 			RCEPGP:DebugPrint("GROUP_ROSTER_UPDATE uncached, retry after 1s.")
 			self:ScheduleTimer("GROUP_ROSTER_UPDATE", 1)
