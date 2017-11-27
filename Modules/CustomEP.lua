@@ -405,7 +405,9 @@ function RCCustomEP:StartRecurringEP(reason, amount, periodMin, ...)
 			vars.recurring_ep_period_mins = tonumber(periodMin)
 		end
 	end
-	RCEPGP:Print(format(LEP["recurring_award_formulas"], table.concat(formulas, ", ")))
+
+	 local fmt, val = SecondsToTimeAbbrev(vars.recurring_ep_period_mins * 60)
+	RCEPGP:Print(format(LEP["recurring_award_formulas"], table.concat(formulas, ", ")).." ("..fmt:format(val)..")")
 
 	EPGP:StartRecurringEP(reason, amount)
 	vars.next_formulas = formulas
