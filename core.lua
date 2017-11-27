@@ -75,6 +75,10 @@ function RCEPGP:OnInitialize()
 						name = "Default",
 					},
 					['**'] = {
+						reason = "reason",
+						amount = "100",
+						period = "15",
+
 						online = 1,
 						offline = 1,
 						inGroup = 1,

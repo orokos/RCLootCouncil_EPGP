@@ -313,9 +313,6 @@ function RCEPGP:OptionsTable()
 		}
 	end
 
-	local epReason = ""
-	local epValue = nil
-	local epPeriod = nil
     for i=1,RCCustomEP.MaxFormulas do
         local formulaName = "Name"..i
         local description = "DESC1"..i
@@ -328,22 +325,18 @@ function RCEPGP:OptionsTable()
 			get = self:DBGetFunc("customEP", "EPFormulas", i),
 			set = self:DBSetFunc("customEP", "EPFormulas", i),
             args = {
-				epReason = {
+				reason = {
 					name = LEPGP["EP Reason"],
 					width = "half",
 					type = "input",
 					order = 0.1,
-					set = function(_, value) epReason = value end,
-					get = function() return epReason end
 				},
-				epValue = {
+				amount = {
 					name = LEPGP["Value"],
 					width = "half",
 					pattern = "%d+",
 					type = "input",
 					order = 0.2,
-					set = function(_, value) epValue = tonumber(value) or 0 end,
-					get = function() return epValue and tostring(epValue) end,
 				},
 				award = {
 					name = LEPGP["Award EP"],
@@ -351,24 +344,28 @@ function RCEPGP:OptionsTable()
 					type = "execute",
 					confirm = function() return format(LEP["customEP_formula_award_confirm"], i..". "..(self.db.customEP.EPFormulas[i].name or "")) end,
 					func = function()
-						self:MassEP(epReason, epValue, i)
+						local reason = self.db.customEP.EPFormulas[i].reason
+						local amount = self.db.customEP.EPFormulas[i].amount
+						self:MassEP(reason, amount, i)
 						local updateMenu
 						updateMenu = function() LibStub("AceConfigRegistry-3.0"):NotifyChange("RCLootCouncil-EPGP");
-							if not epValue or not EPGP:CanIncEPBy(epReason, epValue) then
+							if not EPGP:CanIncEPBy(reason, amount) then
 								self:ScheduleTimer(updateMenu, 3)
 							end
 						end
 						self:ScheduleTimer(updateMenu, 1) -- Refresh disable status of the button
 					end,
-					disabled = function() return not epValue or not EPGP:CanIncEPBy(epReason, epValue) end,
+					disabled = function()
+						local reason = self.db.customEP.EPFormulas[i].reason
+						local amount = tonumber(self.db.customEP.EPFormulas[i].amount)
+						return not EPGP:CanIncEPBy(reason, amount)
+					end,
 				},
 				period = {
 					name = LEP["Recurring Award Period(Min)"],
 					order = 0.4,
 					validate = function(_, value) return tonumber(value) and tonumber(value) > 0 end,
 					type = "input",
-					set = function(_, value) epPeriod = tonumber(value) or 10 end,
-					get = function() return epPeriod and tostring(epPeriod) end,
 				},
 				recurAwardStart = {
 					name = function() return LEPGP["Recurring awards start"] end,
@@ -376,16 +373,23 @@ function RCEPGP:OptionsTable()
 					type = "execute",
 					confirm = function() return format(LEP["customEP_formula_start_recur_award_confirm"], i..". "..(self.db.customEP.EPFormulas[i].name or "")) end,
 					func = function()
-						self:RecurEP(epReason, epValue, epPeriod, i)
+						local reason = self.db.customEP.EPFormulas[i].reason
+						local amount = tonumber(self.db.customEP.EPFormulas[i].amount)
+						local period = self.db.customEP.EPFormulas[i].period
+						self:RecurEP(reason, amount, period, i)
 						local updateMenu
 						updateMenu = function() LibStub("AceConfigRegistry-3.0"):NotifyChange("RCLootCouncil-EPGP");
-							if not epPeriod or not epValue or not EPGP:CanIncEPBy(epReason, epValue) then
+							if not EPGP:CanIncEPBy(reason, amount) then
 								self:ScheduleTimer(updateMenu, 3)
 							end
 						end
 						self:ScheduleTimer(updateMenu, 1) -- Refresh disable status of the button
 					end,
-					disabled = function() return not epPeriod or not epValue or not EPGP:CanIncEPBy(epReason, epValue) end,
+					disabled = function()
+						local reason = self.db.customEP.EPFormulas[i].reason
+						local amount = tonumber(self.db.customEP.EPFormulas[i].amount)
+						return not EPGP:CanIncEPBy(reason, amount)
+					end,
 					hidden = function() return EPGP:RunningRecurringEP() end,
 				},
 				recurAwardStop = {
