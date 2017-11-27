@@ -26,14 +26,23 @@ L["Credit GP to %s"] = true
 L["customEP_formula_award_confirm"] = "Are you sure you want to do mass EP award by the formula %s?"
 L["customEP_formula_start_recur_award_confirm"] = "Are you sure you want to start recurring award by the formula %s?"
 L["customEP_formula_stop_recur_award_confirm"] = "Are you sure you want to stop recurring award?"
-L["customEP_inStandby_desc"] = "In EPGP's standby list but not in group."
+L["customEP_online_desc"] = "The EP percentage when the candidate is online."
+L["customEP_offline_desc"] = "The EP percentage when the candidate is offline."
+L["customEP_in_standby_desc"] = "The EP percentage when the candidate is in EPGP's standby list but not in group."
 L["customEP_zones_desc"] = "Enter the zones' names or ids here. Multiple zones need be to splited by comma(','). Leading and trailing spaces are ignored."
+L["customEP_in_zones_desc"] = "The EP percentage when the zone of the candidate matches any zone below."
+L["customEP_not_in_zones_desc"] = "The EP percentage when the zone of the candidate does not match any zone below."
+L["customEP_in_group_desc"] = "The EP percentage when the candidate is in your group."
+L["customEP_rank_desc"] = "The EP percentage when the candidate guild rank matches this."
+L["customEP_signed_up_in_calendar_desc"] = "The EP percentage when the candidate signs up in a guild event that starts within ±12h of the current time, but not in the group, nor in the EPGP standby list."
+L["customEP_none_of_the_above_desc"] = "The EP percentage when the candidate is not in group, not in EPGP standby list, and does not sign up in calendar."
 L["Custom EP"] = true
 L["Custom GP"] = true
 L["customEP_desc"] = [=[
 
 Custom EP allows you to customize who should be included in mass EP award.
 You can mass award EP with Custom EP in this window or by the command '/rc massep' or '/rc recurep'
+Run these commands without argument to show their help message.
 ]=]
 L["customGP_desc"] = [=[
 
@@ -42,6 +51,7 @@ You need to define a formula that calculates the GP value for the gear.
 You can choose to disable this feature, to calculated GP in the default way of EPGP(dkp reloaded).
 ]=]
 L["Default Bid"] = true
+L["default_bid_desc"] = "The default bid to use if the candidate does not send his bid."
 L["DKP Mode"] = true
 L["dkp_mode_desc"] = "If checked, all GP increase/decrease operations done by the addon are converted to EP decrease/increase operations."
 L["disable_gp_popup"] = "GP popup is automatically disabled by RCLootCouncil - EPGP."
@@ -92,6 +102,7 @@ L["Invalid input"] = true
 L["Max Bid"] = true
 L["Min Bid"] = true
 L["Min New PR"] = true
+L["min_new_pr_desc"] = "The addon will calculate the candidate's maximum bids to ensure his PR does not drop below this value after winning the item and getting the GP."
 L["need_restart_notification"] = "RCLootCouncil-EPGP v%s update requires full restart of the client. Some features of the addon don't work until client restarts."
 L["new_version_detected"] = "Your version %s is outdated. Newer Version %s detected. You can update the addon from [https://mods.curse.com/addons/wow/269161-rclootcouncil-epgp]"
 L["None of the above"] = true

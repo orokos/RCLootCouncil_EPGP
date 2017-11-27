@@ -185,6 +185,7 @@ function RCEPGP:OptionsTable()
 							},
 							minNewPR = {
 								name = LEP["Min New PR"],
+								desc = LEP["min_new_pr_desc"],
 								order = 7,
 								type = "input",
 								validate = "ValidateBidOption",
@@ -192,6 +193,7 @@ function RCEPGP:OptionsTable()
 							},
 							defaultBid = {
 								name = LEP["Default Bid"],
+								desc = LEP["default_bid_desc"],
 								order = 8,
 								type = "input",
 								validate = "ValidateBidOption",
@@ -286,9 +288,10 @@ function RCEPGP:OptionsTable()
 			}
         }
 
-	local function EPFormulaOptionEntry(name, order)
+	local function EPFormulaOptionEntry(name, order, desc)
 		return {
 			name = name,
+			desc = desc,
 			step = 0.001,
 			order = order,
 			type = "range",
@@ -297,9 +300,10 @@ function RCEPGP:OptionsTable()
 			isPercent = true,
 		}
 	end
-	local function EPFormulaRankEntry(rank)
+	local function EPFormulaRankEntry(rank, desc)
 		return {
 			name = GuildControlGetRankName(rank+1) or "",
+			desc = desc,
 			hidden = not GuildControlGetRankName(rank+1),
 			order = rank+1,
 			type = "range",
@@ -461,8 +465,8 @@ function RCEPGP:OptionsTable()
 					type = "group",
 					inline = true,
 					args = {
-						online = EPFormulaOptionEntry(_G.GUILD_ONLINE_LABEL, 1),
-						offline = EPFormulaOptionEntry(_G.PLAYER_OFFLINE, 2),
+						online = EPFormulaOptionEntry(_G.GUILD_ONLINE_LABEL, 1, LEP["customEP_online_desc"]),
+						offline = EPFormulaOptionEntry(_G.PLAYER_OFFLINE, 2, LEP["customEP_offline_desc"]),
 					},
 				},
 				groupStatus = {
@@ -471,10 +475,10 @@ function RCEPGP:OptionsTable()
 					type = "group",
 					inline = true,
 					args = {
-						inGroup = EPFormulaOptionEntry(LEP["In Group"], 1),
-						standby = EPFormulaOptionEntry(LEP["In Standby"], 2),
-						calendarSignedUp = EPFormulaOptionEntry(LEP["Signed up in calendar"], 3),
-						completelyNotInGroup = EPFormulaOptionEntry(LEP["None of the above"], 4),
+						inGroup = EPFormulaOptionEntry(LEP["In Group"], 1, LEP["customEP_in_group_desc"]),
+						standby = EPFormulaOptionEntry(LEP["In Standby"], 2, LEP["customEP_in_standby_desc"]),
+						calendarSignedUp = EPFormulaOptionEntry(LEP["Signed up in calendar"], 3, LEP["customEP_signed_up_in_calendar_desc"]),
+						completelyNotInGroup = EPFormulaOptionEntry(LEP["None of the above"], 4, LEP["customEP_none_of_the_above_desc"]),
 					},
 				},
 				ranks = {
@@ -483,17 +487,17 @@ function RCEPGP:OptionsTable()
 					type = "group",
 					inline = true,
 					args = {
-						isRank0 = EPFormulaRankEntry(0),
-						isRank1 = EPFormulaRankEntry(1),
-						isRank2 = EPFormulaRankEntry(2),
-						isRank3 = EPFormulaRankEntry(3),
-						isRank4 = EPFormulaRankEntry(4),
-						isRank5 = EPFormulaRankEntry(5),
-						isRank6 = EPFormulaRankEntry(6),
-						isRank7 = EPFormulaRankEntry(7),
-						isRank8 = EPFormulaRankEntry(8),
-						isRank9 = EPFormulaRankEntry(9),
-						notInGuild = EPFormulaOptionEntry(LEP["Not in your guild"], 11),
+						isRank0 = EPFormulaRankEntry(0, LEP["customEP_rank_desc"]),
+						isRank1 = EPFormulaRankEntry(1, LEP["customEP_rank_desc"]),
+						isRank2 = EPFormulaRankEntry(2, LEP["customEP_rank_desc"]),
+						isRank3 = EPFormulaRankEntry(3, LEP["customEP_rank_desc"]),
+						isRank4 = EPFormulaRankEntry(4, LEP["customEP_rank_desc"]),
+						isRank5 = EPFormulaRankEntry(5, LEP["customEP_rank_desc"]),
+						isRank6 = EPFormulaRankEntry(6, LEP["customEP_rank_desc"]),
+						isRank7 = EPFormulaRankEntry(7, LEP["customEP_rank_desc"]),
+						isRank8 = EPFormulaRankEntry(8, LEP["customEP_rank_desc"]),
+						isRank9 = EPFormulaRankEntry(9, LEP["customEP_rank_desc"]),
+						notInGuild = EPFormulaOptionEntry(LEP["Not in your guild"], 11, LEP["customEP_rank_desc"]),
 					},
 				},
 				zones = {
@@ -502,8 +506,8 @@ function RCEPGP:OptionsTable()
 					type = "group",
 					inline = true,
 					args = {
-						inZones = EPFormulaOptionEntry(LEP["In Zones"], 1),
-						notInZones = EPFormulaOptionEntry(LEP["Not in Zones"], 2),
+						inZones = EPFormulaOptionEntry(LEP["In Zones"], 1, LEP["customEP_in_zones_desc"]),
+						notInZones = EPFormulaOptionEntry(LEP["Not in Zones"], 2, LEP["customEP_not_in_zones_desc"]),
 						zones = {
 							name = _G.ZONE,
 							desc = LEP["customEP_zones_desc"],
