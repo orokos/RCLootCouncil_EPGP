@@ -172,7 +172,7 @@ Award GP to a character.
 L["slash_rc_massep_help"] = "- massep reason amount [formula ...]  - Mass EP Award using custom EP feature."
 L["slash_rc_massep_help_detailed"] = [=[
 
-- massep reason amount [formulaIndexOrName, ...]
+- massep reason amount [formula, ...]
 
 Mass EP Award using custom EP feature.
 
@@ -210,6 +210,8 @@ Undo the most recent GP operation (EP operation in DKP mode) to a character with
 L["slash_rc_zs_help"] = "- zs name reason amount   - ZeroSum EP award."
 L["slash_rc_zs_help_detailed"] = [=[
 
+ZeroSum EP award offers to fair way to penalize mistakes in raid for both substitudes and non-substitudes.
+
 |cffffd000- zs name reason amount|r
 EP award is redistributed evenly among all other group members in the same zone as the awardee.
 |cffffd000- zsr name reason amount|r
@@ -221,7 +223,7 @@ EP award is redistributed evenly among all other group members with the same det
 
 |cffffd000reason|r: Required. The reason to award.
 
-|cffffd000amount|r: Optional. Integer. The amount of EP awarding to the character and this EP amount will be redistributed to other people so the total EP of the group is unchanged.
+|cffffd000amount|r: Required. Integer. The amount of EP awarding to the character and this EP amount will be redistributed to other people so the total EP of the group is unchanged.
 
 
 Examples:
