@@ -304,6 +304,7 @@ end
 -- Get the amount of last EP/GP operations with given name and reason.
 -- Reason can be not specified.
 function RCEPGP:GetLastEPGPAmount(kind, name, reason)
+	name = self:GetEPGPName(name)
     local logMod = EPGP:GetModule("log")
     if logMod and logMod.db and logMod.db.profile and logMod.db.profile.log then
         for i = #logMod.db.profile.log, 1, - 1 do

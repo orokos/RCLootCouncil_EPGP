@@ -102,8 +102,12 @@ end
 -- Undo the previous GP operations to 'name' with 'reason'
 -- Reason by be nil to match the most recent GP operation to 'name'
 function RCEPGP:UndoGP(name, reason)
-    local amount, reason2  = self:GetLastGPAmount(name, reason)
-    if EPGP:CanIncGPBy(reason, amount) then
+    local amount, reason2  = self:GetLastEPGPAmount("GP", name, reason)
+	if self.db.dkpMode then
+		amount, reason2 = self:GetLastEPGPAmount("EP", name, reason)
+		amount = -amount
+	end
+    if EPGP:CanIncGPBy(reason2, amount) then
         self:IncGPSecure(name, reason2, -amount)
 		return true
     else

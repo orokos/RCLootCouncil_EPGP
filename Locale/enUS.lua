@@ -203,7 +203,7 @@ L["slash_rc_undogp_help"] = "- undogp name [reason]       - Undo the most recent
 L["slash_rc_undogp_help_detailed"] = [=[
 
 /rc undogp name [reason]
-Undo the most recent GP operations to a character with the matching reason.
+Undo the most recent GP operation (EP operation in DKP mode) to a character with the matching reason.
 
 |cffffd000name|r: Required. The name of the character you want to undo EP. Realm name can be omitted if he's in the same realm of you. You can also use '%p' to refer yourself or '%t' to refer your target.
 
