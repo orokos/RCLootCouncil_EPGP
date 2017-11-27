@@ -13,6 +13,8 @@ local L = LibStub("AceLocale-3.0"):GetLocale("RCLootCouncil")
 local LEP = LibStub("AceLocale-3.0"):GetLocale("RCEPGP")
 local LEPGP = LibStub("AceLocale-3.0"):GetLocale("EPGP")
 
+local awardButtonNeedCheckStatus = false -- Need to update the enable/disable status of the button after a click.
+
 function RCEPGP:AddGPOptions()
     local options = addon.options
     local button, picker, text, gp = {}, {}, {}, {}
@@ -346,6 +348,7 @@ function RCEPGP:OptionsTable()
 					func = function()
 						local reason = self.db.customEP.EPFormulas[i].reason
 						local amount = self.db.customEP.EPFormulas[i].amount
+						awardButtonNeedCheckStatus = true
 						self:MassEP(reason, amount, i)
 					end,
 					disabled = function()
@@ -369,6 +372,7 @@ function RCEPGP:OptionsTable()
 						local reason = self.db.customEP.EPFormulas[i].reason
 						local amount = tonumber(self.db.customEP.EPFormulas[i].amount)
 						local period = self.db.customEP.EPFormulas[i].period
+						awardButtonNeedCheckStatus = true
 						self:RecurEP(reason, amount, period, i)
 					end,
 					disabled = function()
@@ -652,7 +656,7 @@ function RCEPGP:AddOptions()
     LibStub("AceConfigRegistry-3.0"):NotifyChange("RCLootCouncil-EPGP")
 
 	LibStub("LibGuildStorage-1.2").RegisterCallback(self, "StateChanged", function()
-		if LibStub("LibGuildStorage-1.2"):IsCurrentState() then
+		if LibStub("LibGuildStorage-1.2"):IsCurrentState() and awardButtonNeedCheckStatus then
 			LibStub("AceConfigRegistry-3.0"):NotifyChange("RCLootCouncil-EPGP")
 		end
 	end)
