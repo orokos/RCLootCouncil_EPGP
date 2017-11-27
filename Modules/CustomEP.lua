@@ -20,7 +20,7 @@ function RCCustomEP:OnInitialize()
 
 	self.lastOtherCalendarOpenEvent = 0 -- THe time when other program runs CalendarOpenEvent()
 	self:RegisterEvent("CALENDAR_OPEN_EVENT", "OPEN_CALENDAR")
-	self:RegisterBucketEvent({"CALENDAR_UPDATE_EVENT_LIST", "CALENDAR_UPDATE_INVITE_LIST"}, 15, "UPDATE_CALENDAR")
+	self:RegisterBucketEvent({"CALENDAR_UPDATE_EVENT_LIST", "CALENDAR_UPDATE_INVITE_LIST"}, 20, "UPDATE_CALENDAR")
 	self:ScheduleRepeatingTimer("GROUP_ROSTER_UPDATE", 15, "GROUP_ROSTER_UPDATE")
 	self:RegisterBucketEvent("GUILD_ROSTER_UPDATE", 20, "GUILD_ROSTER_UPDATE")
 	self:SecureHook("CalendarOpenEvent", "OnCalendarOpenEvent")
