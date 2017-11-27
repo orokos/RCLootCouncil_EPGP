@@ -36,6 +36,8 @@ function RCCustomEP:OnInitialize()
 	if not EPGP.db.profile.next_award then
 		self:OnStopRecurringAward()
 	end
+	self.defaultFormula = CopyTable(RCEPGP.defaults.profile.customEP.EPFormulas["**"])
+	self.defaultFormula.standby = EPGP.db.profile.extras_p * 0.01
 	self.initialize = true
 end
 
@@ -349,7 +351,7 @@ RCCustomEP.recurTickFrame:Hide()
 
 function RCCustomEP:GetFormula(formulaIndexOrName)
 	if formulaIndexOrName == "EPGP_Default" or tonumber(formulaIndexOrName) == 0 then
-		return RCEPGP.defaults.profile.customEP.EPFormulas["**"]
+		return self.defaultFormula
 	end
 	for index=0,RCEPGP.db.customEP.EPFormulas.count do -- Start from 0 to include EPGP_Default
 		local f = RCEPGP.db.customEP.EPFormulas[index]
