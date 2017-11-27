@@ -33,6 +33,9 @@ function RCCustomEP:OnInitialize()
 	self:ScheduleTimer("GROUP_ROSTER_UPDATE", 2)
 	self:ScheduleTimer("GUILD_ROSTER_UPDATE", 2)
 	LibSpec:Rescan()
+	if not vars.next_formulas then
+		self:OnStopRecurringAward()
+	end
 	self.initialize = true
 end
 
@@ -380,9 +383,6 @@ function RCCustomEP:StartRecurringEP(reason, amount, periodMin, ...)
 	end
 
 	local vars = EPGP.db.profile
-	if tonumber(periodMin) then
-		vars.recurring_ep_period_mins = tonumber(periodMin)
-	end
 
 	local formulas = vars.next_formulas
 	if not formulas then
@@ -400,6 +400,10 @@ function RCCustomEP:StartRecurringEP(reason, amount, periodMin, ...)
 			tinsert(formulas, 1, "EPGP_Default")
 		end
 		RCEPGP:Print(LEP["recurring_award_running"])
+	else
+		if tonumber(periodMin) then
+			vars.recurring_ep_period_mins = tonumber(periodMin)
+		end
 	end
 	RCEPGP:Print(format(LEP["recurring_award_formulas"], table.concat(formulas, ", ")))
 
