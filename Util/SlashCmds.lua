@@ -23,7 +23,7 @@ function RCEPGP:AddSlashCmds()
 		["gp"] = {func = RCEPGP.IncGPBy, help = LEP["slash_rc_gp_help"], helpDetailed = LEP["slash_rc_gp_help_detailed"], permission = true},
 		["massep"] = {func = RCEPGP.MassEP, help = LEP["slash_rc_massep_help"], helpDetailed = LEP["slash_rc_massep_help_detailed"], permission = true},
 		["recurep"] = {func = RCEPGP.RecurEP, help = LEP["slash_rc_recurep_help"], helpDetailed = LEP["slash_rc_recurep_help_detailed"], permission = true},
-		["stoprecur"] = {func = RCEPGP.RecurEP, help = LEP["slash_rc_stoprecur_help"], helpDetailed = nil, permission = true},
+		["stoprecur"] = {func = RCEPGP.StopRecur, help = LEP["slash_rc_stoprecur_help"], helpDetailed = nil, permission = true},
 		["undogp"] = {func = RCEPGP.UndoGP, help = LEP["slash_rc_undogp_help"], helpDetailed = LEP["slash_rc_undogp_help_detailed"], permission = true},
 		["zs"] = {func = RCEPGP.ZeroSumGeneral, help = LEP["slash_rc_zs_help"], helpDetailed = LEP["slash_rc_zs_help_detailed"], permission = true},
 		["zsr"] = {func = RCEPGP.ZeroSumRole, help = LEP["slash_rc_zsr_help"], helpDetailed = LEP["slash_rc_zs_help_detailed"], permission = true},
@@ -123,6 +123,10 @@ end
 
 -- /rc recurep periodMin reason amount [formulaIndexOrName1] [formulaIndexOrName2], ...
 function RCEPGP:RecurEP(reason, amount, periodMin, ...)
+	if not tonumber(periodMin) then
+		self:Print(LEP["period_not_positive_error"])
+		return
+	end
 	self:GetModule("RCCustomEP"):StartRecurringEP(reason, tonumber(amount), tonumber(periodMin), ...)
 end
 

@@ -5,7 +5,7 @@
 local L = LibStub("AceLocale-3.0"):NewLocale("RCEPGP", "enUS", true)
 if not L then return end
 
-L["amount_must_be_number"] = "[amount] must be a number"
+L["amount_must_be_number"] = "Amount must be a number"
 L["announce_#diffgp#_desc"] = "|cfffcd400 #diffgp#|r: The amount of GP the player gains from the item."
 L["announce_#ep#_desc"] = "|cfffcd400 #ep#|r: The EP of player."
 L["announce_#gp#_desc"] = "|cfffcd400 #gp#|r: The GP of player before getting the item."
