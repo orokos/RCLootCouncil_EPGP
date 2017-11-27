@@ -137,8 +137,11 @@ function RCVF:UpdateColumns()
     local pr =
     { name = "PR", DoCellUpdate = self.SetCellPR, colName = "pr", width = 50, align = "CENTER", comparesort = self.PRSort, defaultsort = "dsc" }
     local bid =
-    { name = "Bid", DoCellUpdate = self.SetCellBid, colName = "bid", sortnext = self:GetScrollColIndexFromName("response"), width = 100, align = "CENTER",
+    { name = LEP["Bid"], DoCellUpdate = self.SetCellBid, colName = "bid", sortnext = self:GetScrollColIndexFromName("response"), width = 120, align = "CENTER",
     defaultsort = "dsc" }
+	local bidTimesPR =
+	{ name = LEP["Bid"].."*PR", DoCellUpdate = self.SetCellBidTimesPR, colName = "bidTimesPR", sortnext = self:GetScrollColIndexFromName("response"), width = 80, align = "CENTER",
+	defaultsort = "dsc" }
 
     RCEPGP:ReinsertColumnAtTheEnd(RCVotingFrame.scrollCols, ep)
     RCEPGP:ReinsertColumnAtTheEnd(RCVotingFrame.scrollCols, gp)
@@ -148,6 +151,12 @@ function RCVF:UpdateColumns()
         RCEPGP:ReinsertColumnAtTheEnd(RCVotingFrame.scrollCols, bid)
     else
         RCEPGP:RemoveColumn(RCVotingFrame.scrollCols, bid)
+    end
+
+	if RCEPGP:GetMLEPGPdb().bid and RCEPGP:GetMLEPGPdb().bid.bidEnabled and  RCEPGP:GetMLEPGPdb().bid.bidMode == "prRelative" then
+        RCEPGP:ReinsertColumnAtTheEnd(RCVotingFrame.scrollCols, bidTimesPR)
+    else
+        RCEPGP:RemoveColumn(RCVotingFrame.scrollCols, bidTimesPR)
     end
 
     self:ResponseSortPRNext()
@@ -247,18 +256,28 @@ function RCVF:GetBidInfo(session, name, itemGP)
 		end
 	end
 
-	local response = lootTable[session].candidates[name].response
-
-	if type(response) ~= "number" then -- The response is autopass, status response that user does not send response manually, so no bid in this case.
-		return nil, nil, minBid, maxBid, nil
-	end
-
 	-- nil protection
 	if session and name and lootTable and lootTable[session]
 	and lootTable[session].candidates and lootTable[session].candidates[name] then
 		local note = lootTable[session].candidates[name].note
 		if note then
-			bidFromNote = tonumber(string.match(note, "[0-9]+"))
+			if note:lower() == "min" then
+				bidFromNote = minBid
+			elseif note:lower() == "max" then
+				bidFromNote = maxBid
+			elseif note:lower() == "default" then
+				bidFromNote = defaultBid
+			else
+				bidFromNote = tonumber(string.match(note, "[0-9]+"))
+			end
+		else
+			local response = lootTable[session] and lootTable[session].candidates[name]
+				and lootTable[session].candidates[name].response -- This nil check is needed
+
+			if type(response) ~= "number" then -- The response is autopass, status response that user does not send response manually,
+											   -- and the user didn't send bid, so no bid in this case.
+				return nil, nil, minBid, maxBid, nil
+			end
 		end
 	end
 
@@ -291,13 +310,13 @@ function RCVF.SetCellBid(rowFrame, frame, data, cols, row, realrow, column, fSho
 		if not realBid then
 			frame.text:SetText("")  -- could happen when no default bid is set.
 		else
-			frame.text:SetText(format("%.4g", realBid))
+			frame.text:SetText(format("%.7g", realBid))
 		end
 	else
 		if not realBid then
 			frame.text:SetText("")
 		elseif not bidFromNote then
-			frame.text:SetText(format("%.4g", realBid).." (?)")
+			frame.text:SetText(format("%.7g", realBid).." (?)")
 		else
 			local color = ""
 			if realBid <= minBid + 1e-9 then
@@ -305,11 +324,24 @@ function RCVF.SetCellBid(rowFrame, frame, data, cols, row, realrow, column, fSho
 			elseif realBid >= maxBid - 1e-9 then
 				color = COLOR_RED
 			end
-			frame.text:SetText(color..format("%.4g", realBid).." ("..format("%.4g",bidFromNote)..")")
+			frame.text:SetText(color..format("%.7g", realBid).." ("..format("%.7g",bidFromNote)..")")
 		end
 	end
 
 	data[realrow].cols[column].value = realBid or -1
+end
+
+function RCVF.SetCellBidTimesPR(rowFrame, frame, data, cols, row, realrow, column, fShow, table, ...)
+	local name = data[realrow].name
+	local ep, gp, main = EPGP:GetEPGP(RCEPGP:GetEPGPName(name)) -- Dont assign name to GetEPGPName(name)
+	local realBid = RCVF:GetBidInfo(session, name, RCVotingFrame:GetFrame().gpEditbox:GetNumber())
+
+	local result
+	if realBid and ep and gp then
+		result = realBid*ep/gp
+		frame.text:SetText(format("%.7g", result))
+	end
+	data[realrow].cols[column].value = result or -1
 end
 
 function RCVF.PRSort(table, rowa, rowb, sortbycol)
@@ -484,7 +516,7 @@ RCVF.rightClickEntries = {
             end,
             text = function(name)
                 local data, name, item, responseGP, gp, realBid, bidFromNote, minBid, maxBid, bidGPAward = GetMenuInfo(name)
-                local text =  L["Award"].." ("..bidGPAward.." GP, ".._G.BID..": "..realBid..")"
+                local text =  L["Award"].." ("..bidGPAward.." GP, "..LEP["Bid"]..": "..realBid..")"
 				return text
             end,
             disabled = function(name)
