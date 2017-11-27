@@ -52,7 +52,7 @@ L["customEP_not_in_zones_desc"] = "The EP percentage when the zone of the candid
 L["customEP_offline_desc"] = "The EP percentage when the candidate is offline."
 L["customEP_online_desc"] = "The EP percentage when the candidate is online."
 L["customEP_rank_desc"] = "The EP percentage when the candidate guild rank matches this."
-L["customEP_signed_up_in_calendar_desc"] = "The EP percentage when the candidate signs up in a guild event that starts within \195\130\194\17712h of the current time, but not in the group, nor in the EPGP standby list."
+L["customEP_signed_up_in_calendar_desc"] = "The EP percentage when the candidate signs up in a guild event that starts within +-12h of the current time, but not in the group, nor in the EPGP standby list."
 L["customEP_zones_desc"] = "Enter the zones' names or ids here. Multiple zones need be to splited by comma(','). Leading and trailing spaces are ignored."
 L["customGP_desc"] = [=[
 
@@ -231,7 +231,7 @@ Examples:
 
 ]=]
 L["slash_rc_zsdr_help"] = "- zsdr name reason amount   - ZeroSum EP award by detailed role."
-L["slash_rc_zsr_help"] = "- zsdr name reason amount   - ZeroSum EP award by role."
+L["slash_rc_zsr_help"] = "- zsr name reason amount   - ZeroSum EP award by role."
 L["slot_weights"] = "Slot Weights"
 L["Undo GP"] = true
 L["Up"] = true
