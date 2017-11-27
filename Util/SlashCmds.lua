@@ -91,7 +91,7 @@ function RCEPGP:IncGPBy(name, reason, amount)
 	amount = amount and tonumber(amount) or GP:GetValue(reason)
 
     if EPGP:CanIncGPBy(reason, amount) then
-        EPGP:IncGPBy(name, reason, amount)
+        self:IncGPSecure(name, reason, amount)
 		return true
     else
         return false
@@ -104,7 +104,7 @@ end
 function RCEPGP:UndoGP(name, reason)
     local amount, reason2  = self:GetLastGPAmount(name, reason)
     if EPGP:CanIncGPBy(reason, amount) then
-        EPGP:IncGPBy(name, reason2, -amount)
+        self:IncGPSecure(name, reason2, -amount)
 		return true
     else
 		return false
@@ -130,7 +130,7 @@ end
 function RCEPGP:IncEPBy(name, reason, amount)
 	amount = tonumber(amount)
 	if EPGP:CanIncEPBy(reason, amount) then
-    	EPGP:IncEPBy(name, reason, amount)
+    	self:IncEPSecure(name, reason, amount)
 		return true
 	else
 		return false
