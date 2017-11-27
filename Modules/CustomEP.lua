@@ -528,9 +528,12 @@ function RCCustomEP:IncMassEPBy(reason, amount, ...)
 					local signedUpInEvent = false
 					for _, event in pairs(self.eventInfos) do
 						local signupStatus = event.signupList[name]
-						if signupStatus and signupStatus ~= _G.CALENDAR_INVITESTATUS_OUT
-							and signupStatus ~= _G.CALENDAR_INVITESTATUS_TENTATIVE then
+						if signupStatus then
+							local inviteStatus = signupStatus.inviteStatus
+							if inviteStatus ~= _G.CALENDAR_INVITESTATUS_OUT
+							and inviteStatus ~= _G.CALENDAR_INVITESTATUS_TENTATIVE then
 								signedUpInEvent = true
+							end
 						end
 					end
 					if signedUpInEvent then
