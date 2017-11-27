@@ -4,7 +4,7 @@ if LibDebug then LibDebug() end
 
 local addon = LibStub("AceAddon-3.0"):GetAddon("RCLootCouncil")
 local RCEPGP = addon:GetModule("RCEPGP")
-_G.RCCustomEP = RCEPGP:NewModule("RCCustomEP", "AceConsole-3.0", "AceEvent-3.0", "AceHook-3.0", "AceComm-3.0", "AceBucket-3.0", "AceTimer-3.0")
+local RCCustomEP = RCEPGP:NewModule("RCCustomEP", "AceConsole-3.0", "AceEvent-3.0", "AceHook-3.0", "AceComm-3.0", "AceBucket-3.0", "AceTimer-3.0")
 local LEP = LibStub("AceLocale-3.0"):GetLocale("RCEPGP")
 local EPGP = LibStub("AceAddon-3.0"):GetAddon("EPGP")
 local LibSpec = LibStub("LibGroupInSpecT-1.1")

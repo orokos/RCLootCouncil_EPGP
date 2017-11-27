@@ -7,7 +7,7 @@ if not L then return end
 
 L["Add to recurring award"] = true
 L["amount_must_be_number"] = "Amount must be a number"
-L["announce_#diffgp#_desc"] = "|cfffcd400 #diffgp#|r: The amount of GP the player gains from the item."
+L["announce_#diffgp#_desc"] = "|cfffcd400 #diffgp#|r: The amount of GP the player gains."
 L["announce_#ep#_desc"] = "|cfffcd400 #ep#|r: The EP of player."
 L["announce_#gp#_desc"] = "|cfffcd400 #gp#|r: The GP of player before getting the item."
 L["announce_#newgp#_desc"] = "|cfffcd400 #newgp#|r: The GP of player after getting the item."
