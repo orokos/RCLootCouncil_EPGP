@@ -33,7 +33,7 @@ function RCCustomEP:OnInitialize()
 	self:ScheduleTimer("GROUP_ROSTER_UPDATE", 2)
 	self:ScheduleTimer("GUILD_ROSTER_UPDATE", 2)
 	LibSpec:Rescan()
-	if not vars.next_formulas then
+	if not EPGP.db.profile.next_award then
 		self:OnStopRecurringAward()
 	end
 	self.initialize = true
