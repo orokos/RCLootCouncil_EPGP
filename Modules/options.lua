@@ -162,7 +162,7 @@ function RCEPGP:OptionsTable()
 								},
 								order = 3,
 								type = "select",
-								width = "double",
+								width = "full",
 								hidden = function() return not self.db.bid.bidEnabled end,
 							},
 							space = {
