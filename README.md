@@ -1,13 +1,19 @@
-**Before reporting any bugs, make sure to read the [FAQ](https://wow.curseforge.com/projects/rclootcouncil-epgp/pages/faq)!**
+**The author of RCLootCouncil-EPGP is NOT the author of RCLootCouncil. Please do NOT report any EPGP related bugs to RCLootCouncil. Before reporting any bugs, make sure to read the [FAQ](https://wow.curseforge.com/projects/rclootcouncil-epgp/pages/faq)!**
 
 
+**Requires [EPGP(dkp reloaded)](https://mods.curse.com/addons/wow/epgp-dkp-reloaded) and [RCLootCouncil](https://mods.curse.com/addons/wow/rclootcouncil). This addon cannot be enabled without those two addons enabled.**
+
+---
 This is an _**UNOFFICIAL**_ module of the loot distribution addon [RCLootCouncil](https://mods.curse.com/addons/wow/rclootcouncil) that adds full EPGP support and customization to it.  
 \(EPGP is a loot distribution system. [Read Here](http://www.epgpweb.com/help/system) for more information about the EPGP system.\)  
 
-**Requires [EPGP(dkp reloaded)](https://mods.curse.com/addons/wow/epgp-dkp-reloaded) and [RCLootCouncil](https://mods.curse.com/addons/wow/rclootcouncil)**  
-**Only the Loot master needs to install this module, [EPGP(dkp reloaded)](https://mods.curse.com/addons/wow/epgp-dkp-reloaded) and [RCLootCouncil](https://mods.curse.com/addons/wow/rclootcouncil)**  
-**Other raid members just need to install [RCLootCouncil](https://mods.curse.com/addons/wow/rclootcouncil)**  
-**This module should works fine together with the official modules [RCLootCouncil - GroupGear](https://mods.curse.com/addons/wow/rclootcouncil-groupgear) and [RCLootCouncil - ExtraUtilities](https://mods.curse.com/addons/wow/257427-rclootcouncil-extrautilities)**  
+
+
+Only the Master Looter needs to install this module, [EPGP(dkp reloaded)](https://mods.curse.com/addons/wow/epgp-dkp-reloaded) and [RCLootCouncil](https://mods.curse.com/addons/wow/rclootcouncil)
+
+Other raid members just need to install [RCLootCouncil](https://mods.curse.com/addons/wow/rclootcouncil), but it's still recommended to install this addon and [EPGP(dkp reloaded)](https://mods.curse.com/addons/wow/epgp-dkp-reloaded), especially for council members.
+
+This module should works fine together with the official modules [RCLootCouncil - GroupGear](https://mods.curse.com/addons/wow/rclootcouncil-groupgear) and [RCLootCouncil - ExtraUtilities](https://mods.curse.com/addons/wow/257427-rclootcouncil-extrautilities)
 
 ## Features
 **Full EPGP Support**
@@ -16,28 +22,101 @@ This is an _**UNOFFICIAL**_ module of the loot distribution addon [RCLootCouncil
 + Loot master can assign percentage GP value to the different responses from the raid members. The setting is in Interface->Addons->RCLootCouncil->Master Looter->Buttons and Responses. The final gp value calculated by the addon normally is itemGP*responseGPPercentage.  
 + Award GP automatically without any extra click. Simply click the first button of the rightclick menu in the RCLootCouncil Voting Frame to award item and GP value at the same time.
 + If the raid member wants to change response after he has responded, and that change will affect the final GP value, Master Looter can use "Change Response" button in the rightclick menu to change his response.
++ Easily change awardee in the voting frame. Simply award the item which has been awarded to another people. The GP operations to the previous awardee will be reverted automatically.
 
 **Create Your Own GP Rule**
 ######  
-+ Guild that does not use default GP rule of EPGP(dkp reloaded) can create own GP rule. Then this module will calculate the GP value automatically by the new rule instead of the default rule, that would free the loot master from human calculation. The setting is in Interface->Addons->RCLootCouncil->EPGP.  
++ Guild that does not use default GP rule of EPGP(dkp reloaded) can create own GP rule. Then this module will calculate the GP value automatically by the new rule instead of the default rule, that would free the master looter from human calculation. The setting is in Interface->Addons->RCLootCouncil->EPGP.
++ See the detailed tutorial below (Custom GP Tutorial)
+
+**Create Your Own EP Rule** (v2.2)
+######  
++ You can customize who should be included in the mass EP award or recurring EP Award, without forcing people to stay inside the raid group the entire night.
++ See the detailed tutorial below (Custom EP Tutorial)
 
 **Easy GP Management After Loot Has Been Distributed**
 ######  
 + When a player change the mind about the loot after receiving it, guild Admins can visit RCLootCouncil Loot History ("/rc history") to undo last GP action or award GP to the player. If the response is changed or the player who received the item is changed, first click the 1st button in the rightclick menu to undo the previous GP, then use other buttons to change the response or the name of player who received the item, then award the GP by clicking the 2nd button in the rightclick menu.  
 
-**Simple Bidding Feature**
+**Bidding Feature**
 ######  
-+ Players can send their GP bidding price to the loot master by sending a note which starts with integer in the RCLootCouncil popup.(Disabled by default. Loot master can enable it in Interface->Addons->RCLootCouncil->EPGP).
++ Players can send their GP bidding price to the loot master by sending a note which starts with integer in the RCLootCouncil popup.(Disabled by default. Loot master can enable it in Interface->Addons->RCLootCouncil->EPGP).  
++ This feature is improved in v2.2. See the detailed explanation below.
+
+**ZeroSum EP Award** (v2.2)
+######  
++ Offer a way to evaluate player performance which is fair for both substitudes and non-substitudes. Use commands '/rc zs', '/rc zsr' or '/rc zsdr' to run it. See the defail explanation below.
 
 **Sync Settings Between Guild Members**
 ######  
-
-+ v2.0.0+: The settings of EPGP(dkp reloaded) will also be sychronzied with '/rc sync'
-+ This is actually the feature of RCLootCouncil itself, introduced by RCLootCouncil v2.5. Use command "/rc sync" to sync RCLootCouncil settings between guild members. The setting of this module is also synchronized because the setting of this module is a part of RCLootCouncil.   
++ This is actually the feature of RCLootCouncil itself, introduced by RCLootCouncil v2.5. Use command "/rc sync" to sync RCLootCouncil-EPGP settings between guild members.
 
 **Enhanced Award Announcements** (v1.8+)
 ######  
 + You can add the awardee's EPGP related information to the award announcement. Check Interface->Addons->RCLootCouncil->Master Looter->Announcements for more information.
+
+## Bidding
+**Introduction**
+######  
+For long time, EPGP system does not provide good bidding system because unlike DKP amount that you can only use all your DKP, there is no cap on the GP value you can bid. RCLootCouncil-EPGP resolves this issue that allows the master looter to setup a Min New PR value. The addon will limit the GP bid of the candidate so that his PR will not drop below Min New PR after getting the GP.
+
+**Modes**
++ **Highest bid wins and gets GP of bid** (gp Absolute mode)  
+  This works similar as bidding in DKP when min new pr is set to 1. In this way, the bid of candidate will limited by EP-GP.
++ **"Highest bid wins and gets GP of (gp of item)*bid** (gp Relative Mode)  
+  This actually works the same as above, except the bid value of people are changed to percentage value.
++ **"Highest bid*pr wins and gets GP of (gp of item)*bid** (pr Relative Mode)  
+    This is an interesting mode. Instead of setting min new PR, Master Looter limits the maximum bid by raw value. The Master Looter should makes the maximum bid small, for example, 2. This is used to allow candidates to express their willingness to get the item.
+
+## ZeroSum EP Tutorial
+**Introduction**
+######  
+The goal of ZeroSum EP allows the Master Looter to evaluate people by performance, in a way that is fair to both substitutes and non-substitudes.
+
+**The problem that using EP reduction to evaluate performance**
+Some guild reduces EP when the people make mistakes. The problem is that this benefits substitudes, but unfair to people inside the raid. It's impossible that substitudes who is outside of the raid makes any mistake. Therefore, overtime, people who sits more often will be more likely to have more EP. Some guild attempts to solve this problem by giving substitubes less EP, but this does not feel good to substitudes. Besides, it is hard to find a balance between EP reduction and less EP to substitudes.
+
+**How ZeroSum EP solves the problem**
+Whenever a person makes mistake, EP managers can use ZeroSum EP Award to redistribute a partial of his EP to other raid members in the same zone. The EP of people that are outside of the instance will be unaffected. The idea is people should be awarded when someone else makes mistake when he does not. After many ZeroSum EP awards, people who has better performance than the average of the raid gains EP. People who has worse performance than the average of the raid loses EP.
+
+**Commands**
++ /rc zs name reason amount
+  Award people with "name" the amount, and redistribute that amount evenly among all other raid members in the same zone.
+  Example: /rc zs PERSON1 mistake -190. Suppose 20 man in the raid zone, PERSON1 gains -190 EP, all other members gains 10EP.
++ /rc zsr name reason amount.
+  Similar to above, except the amount is redistributed among all other people with the same role(TANK, DAMAGER, HEALER) as the award target. This is more fair than the above, because boss mechanic does not apply to everyone.
++ /rc zsdr name reason amount.
+  Similar to above, except the amount is redistributed among all other people with the same detail role(TANK, MELEE DPS, RANGED DPS, HEALER)
+
+## Custom EP Tutorial
+**Introduction**
+######  
++ CustomEP features fetches the information of everyone in the raid or in the group, and apply Custom EP rule to them. People whose EP change is not 0 will be awarded.
++ The purpose of this feature is to allow people to leave the raid, but still be able to receive EP award.
+
+**How to use**
++ You need to create a formula to use this feature. Open the option panel('/rc epgp') and then goto the "Custom EP" panel. Press the add button to create a formula.
++ Use command '/rc massep' or click the button "Award EP" to do mass ep award.
++ Use command '/rc recurep' or click the button "Recurring award starts" to start recurring EP Award.
+
+**Categories**
++ There are currently the following categories available in the custom EP. In each category, any guild or group member will satisfy one and only one variable under it. (For example, in Online status category, people is either online or offline.) The final EP percentage of the person is the multiplication of all variables he satisfied. For example, if a person is online, in group, guild rank 1, in zone, and the percentage of all those settings are 0.5, the final EP percentage of him is 0.5*0.5*0.5*0.5 = 0.0625
++ See their meaning in game.
++ **Online Status**: `Online`, `Offline`:
++ **Group Status**: `In Group`, `In standby`, `Signed up in calendar`, `None of the above`
++ **Rank**: `GuildRank0`, `GuildRank1`, ..., `Not in your guild`
++ **Zone**: `In Zone`, `Not in Zone`
+
+**Examples**
++ You want to award people above guild rank 4 who is either in the group, or is online. You will to create two formulas:
+  + FORMULA1: `offline`=0, `In Group`=0,`variables that guild rank>4`=0. all other variables should be set as 1.
+  + FORMULA2: `In Group`=1, `In standby`=0, `Signed up in calendar`=0, `None of the above`=0
+  + You can run the mass EP award :
+    + Click "Award EP" once in FORMULA1 then "Award EP" once in FORMULA2
+	+ Or by the command "/rc massep reason amount FORMULA1 FORMULA2"
+  + The method to run recurring EP award is similar.
+
+
 
 ## Custom GP Rule Tutorial
 **Introduction**
@@ -108,22 +187,28 @@ Open Dungeon Journal and mouseover a loot. Check if the GP value shown in the to
 
 ## Commands
 ######  
++ For most of the commands with arguments, run them in-game without argument show detailed help message.
 + **/rc epgp**   Open the RCLootCouncil - EPGP settings
-+ **/rc gp name reason [amount]** Award GP to a character. Use '/rc gp help' for the detailed usage.
-+ **/rc undogp name [reason]** Undo the most recent GP operations to a character. Use '/rc undogp help' for the detailed usage.
++ **/rc gp name reason [amount]** Award GP to a character.
++ **/rc undogp name [reason]** Undo the most recent GP operations to a character.
++ **/rc massep reason amount [formulas, ...]** Mass EP award using CustomEP.
++ **/rc ep name reason amount** Award EP to a player.
++ **/rc recurep reason amount period [formulas, ...]** Start recurring EP award using Custom EP.
++ **/rc stoprecur** Stop recurring award.
++ **/rc zs name reason amount** ZeroSum EP award.
++ **/rc zsr name reason amount** ZeroSum EP award by role.
++ **/rc zsdr name reason amount** ZeroSum EP award by detailed role.
 
 ## Tips
 + **Easily award GP when the raid member changes his mind after responsed to RCLootCouncil, BEFORE the loot is distributed.**  
-Often a person click "Pass" and later tells the loot master that he actually wants this item. You may find it hard to award GP to him because the award GP button awards 0GP to person who pass. Simply click "Change Response" button to change his reponse to fix this problem.
+Often a person click "Pass" and later tells the loot master that he actually wants this item. You may find it hard to award GP to him because the award GP button awards 0GP to person who pass. Simply click "Change Response" button to change his response to fix this problem.
 
 + **Easily fix GP when the raid member changes his mind AFTER the loot is distributed.**  
 If two raid members notifies the loot master and trades the loot after RCLootCouncil session ends and GP has been awarded, you can easily fix the GP of two members. Use '/rc history' to open the history frame. Find the item and undo the GP operation to the origin awardee in the Rightclick menu. Then change the name of awardee in the rightclick menu. Then award the GP to the new awardee.
 
 ## Planned Features
 ######  
-+ Enhancement to how EP is rewarded.
-  + Add features similar to quick DKP v2 that gives different EP percentage to players offline, out of zone, different guild rank, using alt, etc.
-  + Add ZeroSum EP Award among raid members in the zone. Many guild gives player minus EP if they make mistakes, but it is unfair to the people in the zone and good for subs because subs can never make a mistake. ZeroSum EP Award will help to solve this problem by moving EP of the player who makes a mistake to other players in the raid zone. This will make the average EP of players in the raid zone and subs unchanged, so it will be fair for everyone.
++ Feel free to send your ideas on Curseforge.
 
 ## Known Issues
 + This module always put columns "EP", "GP" and "PR" at the rightmost of voting frame. You cant use "RCLootCouncil - ExtraUtilities" to disable, set width or position of these columns at the moment. This module does not affect other columns from ExtraUtilities.
@@ -135,3 +220,12 @@ If two raid members notifies the loot master and trades the loot after RCLootCou
 + Report bug or make suggestion in the [curseforge issue tracker](https://wow.curseforge.com/projects/rclootcouncil-epgp/issues) or [github issue tracker](https://github.com/SafeteeWoW/RCLootCouncil_EPGP/issues)
 
 Appreciate [evil_morfar](https://mods.curse.com/members/evil_morfar), the author of RCLootCouncil, who gives me suggestions while writing this module.
+
+## About the Author
++ My main character is "Safetyy" on the server Illidan-US. Sadly, the username "Safetee" is not avaiable when I transferred to that server. I wrote several small addons before. This is the first major addon I write.
+
+---
+**The author of RCLootCouncil-EPGP is NOT the author of RCLootCouncil. Please do NOT report any EPGP related bugs to RCLootCouncil. Before reporting any bugs, make sure to read the [FAQ](https://wow.curseforge.com/projects/rclootcouncil-epgp/pages/faq)!**
+
+
+**Requires [EPGP(dkp reloaded)](https://mods.curse.com/addons/wow/epgp-dkp-reloaded) and [RCLootCouncil](https://mods.curse.com/addons/wow/rclootcouncil). This addon cannot be enabled without those two addons enabled.**

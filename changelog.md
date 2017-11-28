@@ -5,6 +5,8 @@
 - The Curseforge page and README file under the addon folder offers the full explanation of the new features.
 - **General**
   - Add a "DKP mode" that converts all GP decrease/increase operations into EP increase/decrease operations.
+- **Reaward**
+  - If you award an item which has been awarded, the GP operations done to the previous awardee will be automatically reverted.
 - **Bid**
   - The bid feature is improved. It now gives you three mode to choose from and you can decide the maximum and minimum bid the player can send.
   - For two of three modes, the addon limits the maximum bid to ensure the candidate's PR does not drop below a value after getting the GP award.
