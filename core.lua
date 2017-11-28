@@ -128,7 +128,7 @@ function RCEPGP:OnInitialize()
 		self:ShowNotification(format(LEP["need_restart_notification"], self.version..(self.tVersion and ("-"..self.tVersion) or "")))
     end
 
-    local lastVersion = self.globalDB.lastVersion
+    local lastVersion = self.globalDB.version
     self.globalDB.version = self.version
     self.globalDB.tocVersion = self.tocVersion
     self.globalDB.tVersion = self.tVersion

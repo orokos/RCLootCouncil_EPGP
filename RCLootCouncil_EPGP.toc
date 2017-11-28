@@ -5,9 +5,9 @@
 ## X-TestVersion:
 
 ## Author: Safetee
-## Notes: An unofficial RCLootCouncil module with full EPGP support and customization.
-## Notes-zhCN: 对RCLootCouncil添加EPGP支持与自定义功能的非官方模块.
-## Notes-zhTW: 對RCLootCouncil添加EPGP支持與自定義功能的非官方模塊.
+## Notes: An unofficial RCLootCouncil module with full EPGP support and customization. v2.2.0
+## Notes-zhCN: 对RCLootCouncil添加EPGP支持与自定义功能的非官方模块. v2.2.0
+## Notes-zhTW: 對RCLootCouncil添加EPGP支持與自定義功能的非官方模塊. v2.2.0
 ## Dependencies: RCLootCouncil, EPGP
 ## X-Embeds: LibGroupInSpecT-1.1
 ## OptionalDeps: RCLootCouncil_ExtraUtilities, RCLootCouncil_GroupGear, LibGroupInSpecT-1.1
