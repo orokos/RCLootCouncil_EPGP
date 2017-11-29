@@ -31,6 +31,7 @@ L["Bidding"] = true
 L["bidding_desc"] = "Enable this will add a button in the rightclick menu of the voting frame to award GP to a player according to his bid. Several modes are available. Player can send bid price to the loot master by sending a note that starts with integer in the RCLootCouncil loot frame. They can also send \"min\" for the minimum bid, \"max\" for the maximum bid, and \"default\" for the default bid."
 L["chat_commands"] = "- epgp      - Open the RCLootCouncil-EPGP options interface"
 L["Credit GP to %s"] = true
+L["Columns"] = true
 L["Custom EP"] = true
 L["Custom GP"] = true
 L["customEP_desc"] = [=[

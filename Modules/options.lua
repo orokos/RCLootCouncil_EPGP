@@ -105,7 +105,7 @@ function RCEPGP:OptionsTable()
             },
 			mlTab = {
 				name = L["Master Looter"],
-				order = 2,
+				order = 1,
 				type = "group",
 				args = {
 					gpOptions = {
@@ -205,6 +205,48 @@ function RCEPGP:OptionsTable()
 					},
 				},
 			},
+			generalTab = {
+            	name = _G.GENERAL,
+            	type = "group",
+            	order = 2,
+            	args = {
+            		columns = {
+            			name = LEP["Columns"],
+            			order = 1,
+            			type = "group",
+            			inline = true,
+            			get = self:DBGetFunc("columns"),
+						set = self:DBSetFunc("columns"),
+            			args = {
+            				ep = {
+            					name = "EP",
+            					type = "toggle",
+            					order = 1,
+            				},
+            				gp = {
+            					name = "GP",
+            					type = "toggle",
+            					order = 2,
+            				},
+            				pr = {
+            					name = "PR",
+            					type = "toggle",
+            					order = 3,
+            				},
+            				bid = {
+            					name = LEP["Bid"],
+            					type = "toggle",
+            					order = 4,
+            				},
+            				bidTimesPR = {
+            					name = LEP["Bid"].."*PR",
+            					type = "toggle",
+            					order = 5,
+            				},
+            			}
+            		}
+            	}
+        	},
             gpTab = {
                 name = LEP["Custom GP"],
                 order = 3,

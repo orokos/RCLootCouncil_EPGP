@@ -27,6 +27,7 @@ function RCVF:OnInitialize()
 	self:RegisterMessage("RCCustomGPRuleChanged", "OnMessageReceived")
 	self:RegisterMessage("RCSessionChangedPre", "OnMessageReceived")
     self:RegisterMessage("RCUpdateDB", "OnMessageReceived")
+    self:RegisterMessage("RCEPGPConfigTableChanged", "OnMessageReceived")
 
     self:UpdateColumns()
 
@@ -48,6 +49,11 @@ function RCVF:OnMessageReceived(msg, ...)
 		local s = unpack({...})
 		session = s
 		self:Update()
+    elseif msg == "RCEPGPConfigTableChanged" then
+        if select(1, ...) == "columns" then
+            RCEPGP:DebugPrint("EPGP voting frame columns changed.")
+            self:UpdateColumns()
+        end
 	end
 end
 
@@ -60,9 +66,6 @@ function RCVF:OnCommReceived(prefix, serializedMsg, distri, sender)
 		if command == "change_response" or command == "response" then
 			RCEPGP:DebugPrint("RCVF:OnCommReceived", command, unpack(data))
             self:ScheduleTimer("Update", 0) -- to ensure menu refreshes after RCVotingFrame:OnCommReceived()
-		elseif command == "MLdb" then
-			RCEPGP:DebugPrint("RCVF:OnCommReceived", command, unpack(data))
-			self:ScheduleTimer(function() self:UpdateColumns(); self:Update() end, 0) -- to ensure menu refreshes after RCVotingFrame:OnCommReceived()
 		end
 	end
 end
@@ -143,17 +146,28 @@ function RCVF:UpdateColumns()
 	{ name = LEP["Bid"].."*PR", DoCellUpdate = self.SetCellBidTimesPR, colName = "bidTimesPR", sortnext = self:GetScrollColIndexFromName("response"), width = 80, align = "CENTER",
 	defaultsort = "dsc" }
 
-    RCEPGP:ReinsertColumnAtTheEnd(RCVotingFrame.scrollCols, ep)
-    RCEPGP:ReinsertColumnAtTheEnd(RCVotingFrame.scrollCols, gp)
-    RCEPGP:ReinsertColumnAtTheEnd(RCVotingFrame.scrollCols, pr)
-
-    if RCEPGP:GetMLEPGPdb().bid and RCEPGP:GetMLEPGPdb().bid.bidEnabled then
+    if RCEPGP.db.columns.ep then
+        RCEPGP:ReinsertColumnAtTheEnd(RCVotingFrame.scrollCols, ep)
+    else
+        RCEPGP:RemoveColumn(RCVotingFrame.scrollCols, ep)
+    end
+    if RCEPGP.db.columns.gp then
+        RCEPGP:ReinsertColumnAtTheEnd(RCVotingFrame.scrollCols, gp)
+    else
+        RCEPGP:RemoveColumn(RCVotingFrame.scrollCols, gp)
+    end
+    if RCEPGP.db.columns.pr then
+        RCEPGP:ReinsertColumnAtTheEnd(RCVotingFrame.scrollCols, pr)
+    else
+        RCEPGP:RemoveColumn(RCVotingFrame.scrollCols, pr)
+    end
+    if RCEPGP.db.columns.bid then
         RCEPGP:ReinsertColumnAtTheEnd(RCVotingFrame.scrollCols, bid)
     else
         RCEPGP:RemoveColumn(RCVotingFrame.scrollCols, bid)
     end
 
-	if RCEPGP:GetMLEPGPdb().bid and RCEPGP:GetMLEPGPdb().bid.bidEnabled and  RCEPGP:GetMLEPGPdb().bid.bidMode == "prRelative" then
+	if RCEPGP.db.columns.bidTimesPR then
         RCEPGP:ReinsertColumnAtTheEnd(RCVotingFrame.scrollCols, bidTimesPR)
     else
         RCEPGP:RemoveColumn(RCVotingFrame.scrollCols, bidTimesPR)

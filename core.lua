@@ -42,6 +42,13 @@ function RCEPGP:OnInitialize()
 					['*'] = "100%",
 				}
 			},
+			columns = {
+				ep = true,
+				gp = true,
+				pr = true,
+				bid = true,
+				bidTimesPR = true,
+			},
 			dkpMode = false,
 			bid = {
 				bidEnabled = false,
@@ -464,8 +471,9 @@ function RCEPGP:EPGPConfigTableChanged(val)
 	-- The db was changed, so check if we should make a new mldb
 	-- We can do this by checking if the changed value is a key in mldb
 	if not addon.mldb then return RCLootCouncilML:UpdateMLdb() end -- mldb isn't made, so just make it
+
 	for val in pairs(val) do
-		for key in pairs(addon.mldb.epgp) do
+		for key in pairs(self:GetMLEPGPdb()) do
 			if key == val then return RCLootCouncilML:UpdateMLdb() end
 		end
 	end
