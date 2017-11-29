@@ -1,7 +1,7 @@
 ﻿## Interface: 70300
 
 ## Title: RCLootCouncil - EPGP
-## Version: 2.2.0
+## Version: 2.2.1
 ## X-TestVersion:
 
 ## Author: Safetee

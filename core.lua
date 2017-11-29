@@ -1,6 +1,6 @@
 --@debug@
 if LibDebug then LibDebug() end
---@end-debug@
+--@end-debug@ 
 
 local addon = LibStub("AceAddon-3.0"):GetAddon("RCLootCouncil")
 local RCEPGP = addon:NewModule("RCEPGP", "AceComm-3.0", "AceConsole-3.0", "AceHook-3.0", "AceEvent-3.0", "AceTimer-3.0", "AceSerializer-3.0", "AceBucket-3.0")
@@ -16,7 +16,7 @@ local currentAwardingGP = 0
 
 function RCEPGP:OnInitialize()
 	-- MAKESURE: Edit the following versions every update, and should also update the version in TOC file.
-	self.version = "2.2.0"
+	self.version = "2.2.1"
 	self.tVersion = nil -- format: nil/Beta.num/Alpha.num, testVersion compares only by number. eg. "Alpha.2" > "Beta.1"
 	self.tocVersion = GetAddOnMetadata("RCLootCouncil_EPGP", "Version")
 	self.testTocVersion = GetAddOnMetadata("RCLootCouncil_EPGP", "X-TestVersion") -- "" (emtyp string)/Beta.num/Alpha.num
