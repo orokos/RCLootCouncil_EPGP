@@ -47,7 +47,6 @@ function RCCustomEP:UnitInGroup(name)
 end
 
 function RCCustomEP:GROUP_ROSTER_UPDATE()
-	RCEPGP:DebugPrint("RCCustomEP", "GROUP_ROSTER_UPDATE")
 	GuildRoster()
 	for i = 1, GetNumGroupMembers() or 0 do
 		local name, rank, subgroup, level, class, classFileName, zone, online, isDead, groupRole, isML = GetRaidRosterInfo(i)
@@ -102,7 +101,6 @@ function RCCustomEP:GUILD_ROSTER_UPDATE()
 		RCEPGP:DebugPrint("RCCustomEP", "GUILD_ROSTER_UPDATE", "but no infomation is fetched.")
 		return
 	end
-	RCEPGP:DebugPrint("RCCustomEP", "GUILD_ROSTER_UPDATE")
 	local guildName, _, _ = GetGuildInfo("player")
 	self.playerGuild = guildName
 
