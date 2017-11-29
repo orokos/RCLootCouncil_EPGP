@@ -1,3 +1,9 @@
+### v2.2.1
+---
++ You can now customize what columns to enable/disable.
+###### Bugfixes
+- Fix a breaking bug that causes rows in voting frame to randomly disappear.
+
 ### v2.2.0
 ---
 - **Require RCLootCouncil v2.7.0+**. No longer work for v2.6.x due to large amount of changes in RCLootCouncil v2.7
