@@ -1,6 +1,8 @@
 --@debug@
 if LibDebug then LibDebug() end
---@end-debug@ 
+--@end-debug@
+
+
 
 local addon = LibStub("AceAddon-3.0"):GetAddon("RCLootCouncil")
 local RCEPGP = addon:NewModule("RCEPGP", "AceComm-3.0", "AceConsole-3.0", "AceHook-3.0", "AceEvent-3.0", "AceTimer-3.0", "AceSerializer-3.0", "AceBucket-3.0")
@@ -246,7 +248,6 @@ end
 function RCEPGP:IncEPSecure(name, reason, amount, mass, undo)
 	name = self:GetEPGPName(name)
 	if not GS:IsCurrentState() then
-		self:Debug("IncEPSecure GS is not ready. Retry after 0.5s", name, reason, amount, mass, undo)
 		return self:ScheduleTimer("IncEPSecure", 0.5, name, reason, amount, mass, undo)
 	end
 	if not EPGP:CanIncEPBy(reason, amount) then
@@ -262,7 +263,6 @@ function RCEPGP:IncGPSecure(name, reason, amount)
 		return self:IncEPSecure(name, reason, -amount)
 	end
 	if not GS:IsCurrentState() then
-		self:Debug("IncGPSecure GS is not ready. Retry after 0.5s", name, reason, amount)
 		return self:ScheduleTimer("IncGPSecure", 0.5, name, reason, amount)
 	end
 	if not EPGP:CanIncGPBy(reason, amount) then

@@ -164,8 +164,6 @@ function RCCustomEP:UPDATE_CALENDAR()
 		return -- Don't update when Blizzard calendar is shown
 	end
 
-	RCEPGP:DebugPrint("RCCustomEP", "UPDATE_CALENDAR")
-
 	local prevMonth, prevYear, prevNumDays = CalendarGetMonth(-1);
 	local nextMonth, nextYear, nextNumDays = CalendarGetMonth(1);
 	local month	   , year	 , numDays 	   = CalendarGetMonth();
@@ -272,8 +270,6 @@ function RCCustomEP:OPEN_CALENDAR()
 	local title, description, creator, eventType, repeatOption, maxSize, textureIndex, weekday, month, day, year, hour, minute,
 	lockoutWeekday, lockoutMonth, lockoutDay, lockoutYear, lockoutHour, lockoutMinute, locked, autoApprove, pendingInvite,
 	inviteStatus, inviteType, calendarType = CalendarGetEventInfo()
-
-	RCEPGP:DebugPrint("RCCustomEP", "OPEN_CALENDAR", tostring(title))
 
 	if calendarType == "GUILD_EVENT" and math.abs(self:GetEventTimeDiff(month, day, year, hour, minute)) < 12*60*60 then
 		local monthOffset, day, index = CalendarGetEventIndex()
