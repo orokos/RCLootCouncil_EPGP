@@ -15,3 +15,6 @@ license-output: LICENSE.md
 required-dependencies:
     - rclootcouncil
     - epgp-dkp-reloaded
+
+tools-used:
+	- FindGlobals
