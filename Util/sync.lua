@@ -1,6 +1,10 @@
 local addon = LibStub("AceAddon-3.0"):GetAddon("RCLootCouncil")
 local RCEPGP = addon:GetModule("RCEPGP")
 
+-- Upvalue
+local pairs = pairs
+local wipe = wipe
+
 addon.Sync.syncHandlers["epgp"] =
 {
 	text = "EPGP",
