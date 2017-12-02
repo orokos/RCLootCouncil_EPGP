@@ -2,6 +2,23 @@
 if LibDebug then LibDebug() end
 --@end-debug@
 
+--Upvalue for better performance
+local CanEditOfficerNote = CanEditOfficerNote
+local IsInRaid = IsInRaid
+local UnitExists = UnitExists
+local _G = _G
+local error = error
+local gsub = gsub
+local ipairs = ipairs
+local pairs = pairs
+local select = select
+local string = string
+local table = table
+local tinsert = tinsert
+local tonumber = tonumber
+local tostring = tostring
+local unpack = unpack
+
 local addon = LibStub("AceAddon-3.0"):GetAddon("RCLootCouncil")
 local RCEPGP = addon:GetModule("RCEPGP")
 local EPGP = LibStub("AceAddon-3.0"):GetAddon("EPGP")
@@ -41,7 +58,7 @@ function RCEPGP:AddSlashCmds()
 	for i, command in ipairs(commands) do
 		local v = self.SlashCmds[command]
 		if v.func and v.help then
-			self["SlashCmdFunc"..i] = function(self, ...) self:ExecuteSlashCmd(command, ...) end
+			self["SlashCmdFunc"..i] = function(module, ...) module:ExecuteSlashCmd(command, ...) end
 			addon:CustomChatCmd(self, "SlashCmdFunc"..i, v.help, command)
 		else
 			error("SlashCmds func and help not specified: "..command)
@@ -58,7 +75,7 @@ end
 function RCEPGP:ExecuteSlashCmd(command, ...)
 	if self.SlashCmds[command] and self.SlashCmds[command].func then
 		if self.SlashCmds[command].helpDetailed and (not select(1, ...) or string.lower(tostring(select(1, ...))) == "help") then
-			gsub(self.SlashCmds[command].helpDetailed, "[^\n]+", function(msg) DEFAULT_CHAT_FRAME:AddMessage(msg) end)
+			gsub(self.SlashCmds[command].helpDetailed, "[^\n]+", function(msg) _G.DEFAULT_CHAT_FRAME:AddMessage(msg) end)
 			return
 		end
 		if self.SlashCmds[command].permission and not CanEditOfficerNote() then
@@ -138,7 +155,7 @@ end
 function RCEPGP:IncEPBy(name, reason, amount)
 	amount = tonumber(amount)
 	if EPGP:CanIncEPBy(reason, amount) then
-    	self:IncEPSecure(name, reason, amount)
+		self:IncEPSecure(name, reason, amount)
 		return true
 	else
 		return false
