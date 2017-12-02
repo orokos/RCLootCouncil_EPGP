@@ -5,6 +5,16 @@
 --@debug@
 if LibDebug then LibDebug() end
 --@end-debug@
+
+-- Upvalue for better performance
+local GetTime = GetTime
+local _G = _G
+local format = format
+local loadstring = loadstring
+local pcall = pcall
+local setfenv = setfenv
+local setmetatable = setmetatable
+
 local addon = LibStub("AceAddon-3.0"):GetAddon("RCLootCouncil")
 local RCEPGP = addon:GetModule("RCEPGP")
 local LEP = LibStub("AceLocale-3.0"):GetLocale("RCEPGP")
@@ -51,7 +61,8 @@ local ANNOUNCE_ERROR_INTERVAL = 3
 -- @param overrides this contains the data you want to insert info the secure environment
 -- @return the return value of called function if the excution success. "error" if any error.
 function RCEPGP:SecureExecString(funcString, overrides)
-	local func, err = loadstring(funcString)
+	local func, err
+	func = loadstring(funcString)
 	if not func then
 		func, err = loadstring("return "..funcString)
 		if not func then
