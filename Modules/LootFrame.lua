@@ -4,11 +4,6 @@ if LibDebug then LibDebug() end
 
 local addon = LibStub("AceAddon-3.0"):GetAddon("RCLootCouncil")
 local RCEPGP = addon:GetModule("RCEPGP")
-local EPGP = LibStub("AceAddon-3.0"):GetAddon("EPGP")
-local L = LibStub("AceLocale-3.0"):GetLocale("RCLootCouncil")
-local LEP = LibStub("AceLocale-3.0"):GetLocale("RCEPGP")
-local GP = LibStub("LibGearPoints-1.2")
-local LibDialog = LibStub("LibDialog-1.0")
 local LootFrame = addon:GetModule("RCLootFrame")
 local RCLF = RCEPGP:NewModule("RCEPGPLootFrame", "AceHook-3.0")
 
@@ -41,7 +36,7 @@ function RCLF.HookEntryUpdate(_, entry)
 	if session then
 		local gp = lootTable[session].gp
 		if gp then
-			entry.itemLvl:SetText(entry.itemLvl:GetText().."  |cffffff00GP: "..gp.."|r")
+			entry.itemLvl:SetText(text.."  |cffffff00GP: "..gp.."|r")
 		end
 	end
 end
