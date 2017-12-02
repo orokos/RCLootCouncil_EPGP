@@ -4,6 +4,25 @@
 if LibDebug then LibDebug() end
 --@end-debug@
 
+-- Upvalue for better performance
+local GetItemInfo = GetItemInfo
+local GetLocale = GetLocale
+local LE_ITEM_CLASS_GEM = LE_ITEM_CLASS_GEM
+local LE_ITEM_GEM_ARTIFACTRELIC = LE_ITEM_GEM_ARTIFACTRELIC
+local UIParent = UIParent
+local getglobal = getglobal
+local ipairs = ipairs
+local math = math
+local pairs = pairs
+local select = select
+local table = table
+local tonumber = tonumber
+local wipe = wipe
+
+-- Global vars/functions that we don't upvalue since they might get hooked, or upgraded
+-- List them here for Mikk's FindGlobals script
+-- GLOBALS: RCTokenTable
+
 local addon = LibStub("AceAddon-3.0"):GetAddon("RCLootCouncil")
 local RCEPGP = addon:GetModule("RCEPGP")
 local RCCustomGP = RCEPGP:NewModule("RCCustomGP", "AceConsole-3.0", "AceEvent-3.0", "AceBucket-3.0", "AceTimer-3.0")
@@ -13,7 +32,6 @@ local MAJOR_VERSION = "LibGearPoints-1.2"
 
 -- Backup functions of LibGearPoints from EPGP
 local functionOldLibGearPoints = {}
-local versionOldLibGearPoints = LibStub.minors[MAJOR_VERSION]
 local oldLib = LibStub:GetLibrary(MAJOR_VERSION)
 for funcName, func in pairs(oldLib) do
     functionOldLibGearPoints[funcName] = func
@@ -95,8 +113,8 @@ local function UpdateRecentLoot(itemLink)
     table.insert(recent_items_queue, 1, itemLink)
     recent_items_map[itemLink] = true
     if #recent_items_queue > 30 then
-        local itemLink = table.remove(recent_items_queue)
-        recent_items_map[itemLink] = nil
+        local link = table.remove(recent_items_queue)
+        recent_items_map[link] = nil
     end
 end
 
@@ -121,7 +139,7 @@ function lib:GetValue(item)
     if not item then return end
     if not RCCustomGP.initialize then return end
 
-    local _, itemLink, rarity, level, _, itemClass, itemSubClass, _, equipLoc = GetItemInfo(item)
+    local _, itemLink, rarity, level, _, _, _, _, equipLoc = GetItemInfo(item)
     if not itemLink then return end
 	if level < 463 and (not RCCustomGP:GetTokenInfo(itemLink)) then
 		return nil, nil, level, rarity, equipLoc
@@ -132,8 +150,6 @@ function lib:GetValue(item)
     if RCCustomGP.gpCache[itemLink] then -- Return GP directly if it is cached.
         return RCCustomGP.gpCache[itemLink]
     end
-
-    local itemID = addon:GetItemIDFromLink(itemLink)
 
     local itemData = {}
 
@@ -171,9 +187,8 @@ function RCCustomGP:GetTokenInfo(itemLink)
     return ilvl, slot
 end
 
-function RCCustomGP:GetRarityIlvlSlot(itemLink)
-    local _, itemLink, rarity, level, _, itemClass, itemSubClass, _, equipLoc, _, _, itemClassID, itemSubClassID = GetItemInfo(itemLink)
-    local itemBonuses = select(17, addon:DecodeItemLink(itemLink))
+function RCCustomGP:GetRarityIlvlSlot(item)
+    local _, itemLink, rarity, level, _, _, _, _, equipLoc, _, _, itemClassID, itemSubClassID = GetItemInfo(item)
     if itemClassID == LE_ITEM_CLASS_GEM and itemSubClassID == LE_ITEM_GEM_ARTIFACTRELIC then
 		equipLoc = "INVTYPE_RELIC"
 	end
