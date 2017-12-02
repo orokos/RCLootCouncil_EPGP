@@ -2,13 +2,60 @@
 if LibDebug then LibDebug() end
 --@end-debug@
 
+local Ambiguate = Ambiguate
+local C_Calendar = C_Calendar
+local CalendarEventGetInvite = CalendarEventGetInvite
+local CalendarEventGetInviteResponseTime = CalendarEventGetInviteResponseTime
+local CalendarEventGetNumInvites = CalendarEventGetNumInvites
+local CalendarGetDate = CalendarGetDate
+local CalendarGetEventIndex = CalendarGetEventIndex
+local CalendarGetEventInfo = CalendarGetEventInfo
+local CalendarGetMonth = CalendarGetMonth
+local CalendarGetNumDayEvents = CalendarGetNumDayEvents
+local CalendarOpenEvent = CalendarOpenEvent
+local CopyTable = CopyTable
+local GetGameTime = GetGameTime
+local GetGuildInfo = GetGuildInfo
+local GetGuildRosterInfo = GetGuildRosterInfo
+local GetMapNameByID = GetMapNameByID
+local GetNumGroupMembers = GetNumGroupMembers
+local GetNumGuildMembers = GetNumGuildMembers
+local GetRaidRosterInfo = GetRaidRosterInfo
+local GetTime = GetTime
+local GuildRoster = GuildRoster
+local IsInGuild = IsInGuild
+local IsInRaid = IsInRaid
+local SecondsToTimeAbbrev = SecondsToTimeAbbrev
+local UnitGUID = UnitGUID
+local UnitGroupRolesAssigned = UnitGroupRolesAssigned
+local UnitInParty = UnitInParty
+local UnitInRaid = UnitInRaid
+local UnitIsVisible = UnitIsVisible
+local _G = _G
+local format = format
+local ipairs = ipairs
+local math = math
+local pairs = pairs
+local random = random
+local select = select
+local string = string
+local strsplit = strsplit
+local tContains = tContains
+local table = table
+local time = time
+local tinsert = tinsert
+local tonumber = tonumber
+local tremove = tremove
+local type = type
+local unpack = unpack
+local wipe = wipe
+
 local addon = LibStub("AceAddon-3.0"):GetAddon("RCLootCouncil")
 local RCEPGP = addon:GetModule("RCEPGP")
 local RCCustomEP = RCEPGP:NewModule("RCCustomEP", "AceConsole-3.0", "AceEvent-3.0", "AceHook-3.0", "AceComm-3.0", "AceBucket-3.0", "AceTimer-3.0")
 local LEP = LibStub("AceLocale-3.0"):GetLocale("RCEPGP")
 local EPGP = LibStub("AceAddon-3.0"):GetAddon("EPGP")
 local LibSpec = LibStub("LibGroupInSpecT-1.1")
-local LibDialog = LibStub("LibDialog-1.0")
 local GS = LibStub("LibGuildStorage-1.2")
 
 RCCustomEP.MaxFormulas = 100 -- Maxmium formulas
@@ -49,7 +96,7 @@ end
 function RCCustomEP:GROUP_ROSTER_UPDATE()
 	GuildRoster()
 	for i = 1, GetNumGroupMembers() or 0 do
-		local name, rank, subgroup, level, class, classFileName, zone, online, isDead, groupRole, isML = GetRaidRosterInfo(i)
+		local name, rank, subgroup, level, _, classFileName, zone, online, isDead, groupRole, isML = GetRaidRosterInfo(i)
 		if name then
 			local unitID
 			if IsInRaid() then
@@ -105,7 +152,7 @@ function RCCustomEP:GUILD_ROSTER_UPDATE()
 	self.playerGuild = guildName
 
 	for i = 1, GetNumGuildMembers() do
-		local fullName, rank, rankIndex, level, class, zone, note, officernote, online,
+		local fullName, rank, rankIndex, level, _, zone, note, officernote, online,
 		status, classFileName, achievementPoints, achievementRank, isMobile, canSoR, reputation = GetGuildRosterInfo(i)
 		if fullName then
 			fullName = RCEPGP:GetEPGPName(fullName)
@@ -138,11 +185,12 @@ function RCCustomEP:GUILD_ROSTER_UPDATE()
 end
 
 function RCCustomEP:GetEventTimeDiff(month, day, year, hour, min)
+	local _
 	if year < 100 then year = year + 2000 end
 	local eventTime = time({year=year, month=month, day=day, hour=hour, min=min, sec=0})
 	-- Get current server time
-	local _, month, day, year = CalendarGetDate()
-	local hour, min = GetGameTime()
+	_, month, day, year = CalendarGetDate()
+	hour, min = GetGameTime()
 	local now = time({year=year, month=month, day=day, hour=hour, min=min, sec=0})
 	return eventTime - now
 end
