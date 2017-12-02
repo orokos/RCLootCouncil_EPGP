@@ -1,3 +1,8 @@
+### v2.2.2
++ Performance improvement
+###### Dev
+Removed some spamming debugging statement
+
 ### v2.2.1
 ---
 + You can now customize what columns to enable/disable.
