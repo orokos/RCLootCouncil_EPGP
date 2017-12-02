@@ -301,7 +301,7 @@ function RCEPGP:OptionsTable()
                         name = _G.RESET_TO_DEFAULT,
                         order = 1000,
                         type = "execute",
-                        func = function() self:DeepCopy(self.db.customGP, self.defaults.customGP, true) end,
+                        func = function() self.db.customGP = CopyTable(self.defaults.customGP) end,
                     },
                 },
             },

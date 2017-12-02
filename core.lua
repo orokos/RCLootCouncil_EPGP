@@ -2,14 +2,35 @@
 if LibDebug then LibDebug() end
 --@end-debug@
 
-
+-- Upvalue for better performance
+local Ambiguate = Ambiguate
+local CopyTable = CopyTable
+local GetAddOnMetadata = GetAddOnMetadata
+local GetItemInfo = GetItemInfo
+local GetLocale = GetLocale
+local Lib_DropDownList1 = Lib_DropDownList1
+local Lib_UIDropDownMenu_GetCurrentDropDown = Lib_UIDropDownMenu_GetCurrentDropDown
+local SetCVar = SetCVar
+local UnitFullName = UnitFullName
+local format = format
+local getmetatable = getmetatable
+local ipairs = ipairs
+local math = math
+local pairs = pairs
+local select = select
+local setmetatable = setmetatable
+local string = string
+local strsplit = strsplit
+local table = table
+local tonumber = tonumber
+local tostring = tostring
+local type = type
+local unpack = unpack
 
 local addon = LibStub("AceAddon-3.0"):GetAddon("RCLootCouncil")
 local RCEPGP = addon:NewModule("RCEPGP", "AceComm-3.0", "AceConsole-3.0", "AceHook-3.0", "AceEvent-3.0", "AceTimer-3.0", "AceSerializer-3.0", "AceBucket-3.0")
 local EPGP = LibStub("AceAddon-3.0"):GetAddon("EPGP")
-local L = LibStub("AceLocale-3.0"):GetLocale("RCLootCouncil")
 local LEP = LibStub("AceLocale-3.0"):GetLocale("RCEPGP")
-local RCVotingFrame = addon:GetModule("RCVotingFrame")
 local RCLootCouncilML = addon:GetModule("RCLootCouncilML")
 local GP = LibStub("LibGearPoints-1.2")
 local GS = LibStub("LibGuildStorage-1.2")
@@ -180,7 +201,6 @@ function RCEPGP:OnMessageReceived(msg, ...)
 	elseif msg == "RCMLBuildMLdb" then
 		local MLdb = ...
 		self:BuildMLdb(MLdb)
-		local str = self:Serialize(MLdb)
     end
 end
 
@@ -213,10 +233,11 @@ function RCEPGP:GetEPGPName(inputName)
     if not inputName then return nil end
 
     --------- First try to find name in the raid ------------------------------
-    local name = Ambiguate(inputName, "short") -- Convert to short name to be used as the argument to UnitFullName
+	local name, realm
+    name = Ambiguate(inputName, "short") -- Convert to short name to be used as the argument to UnitFullName
     local _, ourRealmName = UnitFullName("player") -- Get the name of our realm WITHOUT SPACE.
 
-    local name, realm = UnitFullName(name) -- In order to return a name with correct capitialization, and the realm name WITHOUT SPACE.
+    name, realm = UnitFullName(name) -- In order to return a name with correct capitialization, and the realm name WITHOUT SPACE.
     if name then -- Found the name in the raid
         if realm and realm ~= "" then
             return name.."-"..realm
@@ -228,7 +249,7 @@ function RCEPGP:GetEPGPName(inputName)
         if not realmName then
             realmName = ourRealmName
         end
-        local shortName = UpperFirstLowerRest(shortName)
+        shortName = UpperFirstLowerRest(shortName)
         realmName = realmName:gsub(" ", "") -- Eliminate space in the name
         return shortName.."-"..realmName
     end
@@ -322,7 +343,7 @@ function RCEPGP:GetLastEPGPAmount(kind, name, reason)
         for i = #logMod.db.profile.log, 1, - 1 do
 
             local entry = logMod.db.profile.log[i]
-            local timestamp, kind2, name2, reason2, amount = unpack(entry)
+            local _, kind2, name2, reason2, amount = unpack(entry)
             if kind2 == kind and name2 == name  then
                 if not reason then
                     return amount, reason2
@@ -403,21 +424,6 @@ function RCEPGP:RefreshMenu(level)
     end
 end
 
-function RCEPGP:DeepCopy(dest, src, cleanCopy)
-	if cleanCopy and type(dest) == "table" then
-		wipe(dest)
-	end
-	if type(src) ~= "table" then return end
-	if type(dest) ~= "table" then return end
-	for key, value in pairs(src) do
-		if type(value) == "table" and type(dest[key]) == "table" then
-			deepcopy(dest[key], src[key])
-		else
-			dest[key] = value
-		end
-	end
-end
-
 ---------------------------------------------
 -- MLdb (Master looter's db)
 ---------------------------------------------
@@ -442,8 +448,8 @@ function RCEPGP:GetMLEPGPOverrideSetting(...)
 		return mldbSetting
 	else
 		local epgpSetting = self.db
-		local i = 1
-		while select(i, ...) do
+		local j = 1
+		while select(j, ...) do
 			local key = select(i, ...)
 			if type(epgpSetting) == "table" and epgpSetting[key] then
 				epgpSetting = epgpSetting[key]
@@ -451,7 +457,7 @@ function RCEPGP:GetMLEPGPOverrideSetting(...)
 				epgpSetting = nil
 				break
 			end
-			i = i + 1
+			j = j + 1
 		end
 		return epgpSetting
 	end
@@ -472,9 +478,9 @@ function RCEPGP:EPGPConfigTableChanged(val)
 	-- We can do this by checking if the changed value is a key in mldb
 	if not addon.mldb then return RCLootCouncilML:UpdateMLdb() end -- mldb isn't made, so just make it
 
-	for val in pairs(val) do
+	for value in pairs(val) do
 		for key in pairs(self:GetMLEPGPdb()) do
-			if key == val then return RCLootCouncilML:UpdateMLdb() end
+			if key == value then return RCLootCouncilML:UpdateMLdb() end
 		end
 	end
 end
@@ -491,9 +497,6 @@ function RCEPGP:BuildMLdb(MLdb)
 		return self:ScheduleTimer("BuildMLdb", 1, MLdb)
 	end
 
-	local customGP = self:GetModule("RCCustomGP")
-
 	MLdb.epgp = {}
-	MLdb.epgp.bid = {}
-	self:DeepCopy(MLdb.epgp.bid, self.db.bid)
+	MLdb.epgp.bid = CopyTable(self.db.bid)
 end
