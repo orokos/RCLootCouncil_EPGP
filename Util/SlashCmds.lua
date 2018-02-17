@@ -26,6 +26,14 @@ local L = LibStub("AceLocale-3.0"):GetLocale("RCLootCouncil")
 local LEP = LibStub("AceLocale-3.0"):GetLocale("RCEPGP")
 local GP = LibStub("LibGearPoints-1.2")
 
+function RCEPGP:ChatCommand(func, help, command, ...)
+	if addon:VersionCompare(addon.version, "2.7.6") then
+		addon:CustomChatCmd(self, func, help, command, ...)
+	else
+		addon:ModuleChatCmd(self, func, nil, help, command, ...)
+	end
+end
+
 function RCEPGP:AddSlashCmds()
 	-- key: the command
 	-- func: the command function. Executed by '/rc command'
@@ -47,10 +55,6 @@ function RCEPGP:AddSlashCmds()
 		["zsdr"] = {func = RCEPGP.ZeroSumDetailedRole, help = LEP["slash_rc_zsdr_help"], helpDetailed = LEP["slash_rc_zs_help_detailed"], permission = true},
 	}
 
-	self["SlashCmdFuncHeader"] = function() end
-
-	addon:CustomChatCmd(self, "SlashCmdFuncHeader", "\n\n"..LEP["slash_help_header"]) -- Just add some help at the beginning and the end.
-
 	local commands = {}
 	for command, v in pairs(self.SlashCmds) do tinsert(commands, command) end
 	table.sort(commands)
@@ -59,14 +63,11 @@ function RCEPGP:AddSlashCmds()
 		local v = self.SlashCmds[command]
 		if v.func and v.help then
 			self["SlashCmdFunc"..i] = function(module, ...) module:ExecuteSlashCmd(command, ...) end
-			addon:CustomChatCmd(self, "SlashCmdFunc"..i, v.help, command)
+			self:ChatCommand("SlashCmdFunc"..i, v.help, command)
 		else
 			error("SlashCmds func and help not specified: "..command)
 		end
 	end
-
-	self["SlashCmdFuncFooter"] = function() end
-	addon:CustomChatCmd(self, "SlashCmdFuncFooter", "\n"..LEP["slash_help_footer"])
 end
 -- /rc command ...
 -- '/rc command help' shows the help of the command, if exists.
