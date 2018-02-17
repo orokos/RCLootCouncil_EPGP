@@ -45,7 +45,7 @@ function RCEPGP:OnInitialize()
 	self.testTocVersion = GetAddOnMetadata("RCLootCouncil_EPGP", "X-TestVersion") -- "" (emtyp string)/Beta.num/Alpha.num
 	self.lastVersionNeedingRestart = "2.2.0"
 	self.lastVersionResetSetting = "2.2.0"
-	self.minRCVersion = "2.7.0"
+	self.minRCVersion = "2.7.6"
 
 	self.debug = false
 	local meta = getmetatable(self) 	-- Set the addon name for self:Print()
