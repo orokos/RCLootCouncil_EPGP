@@ -1,6 +1,6 @@
 ### v2.2.3
 ---
-+ Update for a chat command API change by RCLootCouncil v2.7.6
++ Update for a chat command API change by RCLootCouncil v2.7.6. Better visual display when you use chat command "/rc help".
 
 ### v2.2.2
 + Performance improvement
