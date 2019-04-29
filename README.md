@@ -1,3 +1,12 @@
+**This addon is no longer maintained because the author has been Afk from the World of Warcraft. Any fork for this repository is welcome**
+
+
+
+
+
+
+
+
 **The author of RCLootCouncil-EPGP is NOT the author of RCLootCouncil. Please do NOT report any EPGP related bugs to RCLootCouncil. Before reporting any bugs, make sure to read the [FAQ](https://wow.curseforge.com/projects/rclootcouncil-epgp/pages/faq)!**
 
 
