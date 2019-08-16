@@ -4,15 +4,6 @@ if LibDebug then LibDebug() end
 
 local Ambiguate = Ambiguate
 local C_Calendar = C_Calendar
-local CalendarEventGetInvite = CalendarEventGetInvite
-local CalendarEventGetInviteResponseTime = CalendarEventGetInviteResponseTime
-local CalendarEventGetNumInvites = CalendarEventGetNumInvites
-local CalendarGetDate = CalendarGetDate
-local CalendarGetEventIndex = CalendarGetEventIndex
-local CalendarGetEventInfo = CalendarGetEventInfo
-local CalendarGetMonth = CalendarGetMonth
-local CalendarGetNumDayEvents = CalendarGetNumDayEvents
-local CalendarOpenEvent = CalendarOpenEvent
 local CopyTable = CopyTable
 local GetGameTime = GetGameTime
 local GetGuildInfo = GetGuildInfo
@@ -70,7 +61,7 @@ function RCCustomEP:OnInitialize()
 	self:RegisterBucketEvent({"CALENDAR_UPDATE_EVENT_LIST", "CALENDAR_UPDATE_INVITE_LIST"}, 20, "UPDATE_CALENDAR")
 	self:ScheduleRepeatingTimer("GROUP_ROSTER_UPDATE", 15, "GROUP_ROSTER_UPDATE")
 	self:RegisterBucketEvent("GUILD_ROSTER_UPDATE", 20, "GUILD_ROSTER_UPDATE")
-	self:SecureHook("CalendarOpenEvent", "OnCalendarOpenEvent")
+	self:SecureHook(_G.C_Calendar, "OpenEvent", "OnCalendarOpenEvent")
 	EPGP.RegisterCallback(self, "StartRecurringAward", "OnStartRecurringAward")
 	EPGP.RegisterCallback(self, "StopRecurringAward", "OnStopRecurringAward")
 	EPGP.RegisterCallback(self, "ResumeRecurringAward", "OnResumeRecurringAward")
@@ -211,12 +202,16 @@ function RCCustomEP:UPDATE_CALENDAR()
 	if _G.CalendarFrame and _G.CalendarFrame:IsShown() then
 		return -- Don't update when Blizzard calendar is shown
 	end
+	local lastMonthInfo = C_Calendar.GetMonthInfo(-1)
+	local nextMonthInfo = C_Calendar.GetMonthInfo(1)
+	local monthInfo = C_Calendar.GetMonthInfo()
 
-	local prevMonth, prevYear, prevNumDays = CalendarGetMonth(-1);
-	local nextMonth, nextYear, nextNumDays = CalendarGetMonth(1);
-	local month	   , year	 , numDays 	   = CalendarGetMonth();
+	local prevMonth, prevYear, prevNumDays = lastMonthInfo.month, lastMonthInfo.year,lastMonthInfo.numDays
+	local nextMonth, nextYear, nextNumDays = nextMonthInfo.month, nextMonthInfo.year,nextMonthInfo.numDays
+	local month	   , year	 , numDays 	   = monthInfo.month, monthInfo.year, monthInfo.numDays
 
-	local weekday, month, day, year = CalendarGetDate()
+	local date = C_DateAndTime.GetCurrentCalendarTime()
+	local weekday, month, day, year =date.weekday, date.month,date.monthDay,date.year
 	local existEvents = {}
 	wipe(self.eventOpenQueue)
 
@@ -247,8 +242,8 @@ function RCCustomEP:UPDATE_CALENDAR()
 	end
 
 	-- Check yesterday
-	for i=1, CalendarGetNumDayEvents(offsetYesterday, dayYesterday) do
-		local event = C_Calendar.GetDayEvent(offsetYesterday, dayYesterday, i)
+	for i=1, _G.C_Calendar.GetNumDayEvents(offsetYesterday, dayYesterday) do
+		local event = _G.C_Calendar.GetDayEvent(offsetYesterday, dayYesterday, i)
 		local id = self:GenerateEventID(offsetYesterday, dayYesterday, i)
 		if event then
 			local title, startTime, calendarType = event.title, event.startTime, event.calendarType
@@ -260,8 +255,8 @@ function RCCustomEP:UPDATE_CALENDAR()
 	end
 
 	-- Check today
-	for i=1, CalendarGetNumDayEvents(0, day) do
-		local event = C_Calendar.GetDayEvent(0, day, i)
+	for i=1, _G.C_Calendar.GetNumDayEvents(0, day) do
+		local event = _G.C_Calendar.GetDayEvent(0, day, i)
 		local id = self:GenerateEventID(0, day, i)
 		if event then
 			local title, startTime, calendarType = event.title, event.startTime, event.calendarType
@@ -273,8 +268,8 @@ function RCCustomEP:UPDATE_CALENDAR()
 	end
 
 	-- Check yesterday
-	for i=1, CalendarGetNumDayEvents(offsetTomorrow, dayTomorrow) do
-		local event = C_Calendar.GetDayEvent(offsetTomorrow, dayTomorrow, i)
+	for i=1, _G.C_Calendar.GetNumDayEvents(offsetTomorrow, dayTomorrow) do
+		local event = _G.C_Calendar.GetDayEvent(offsetTomorrow, dayTomorrow, i)
 		local id = self:GenerateEventID(offsetTomorrow, dayTomorrow, i)
 		if event then
 			local title, startTime, calendarType = event.title, event.startTime, event.calendarType
@@ -315,17 +310,19 @@ function RCCustomEP:ProcessEventOpenQueue()
 end
 
 function RCCustomEP:OPEN_CALENDAR()
-	local title, description, creator, eventType, repeatOption, maxSize, textureIndex, weekday, month, day, year, hour, minute,
-	lockoutWeekday, lockoutMonth, lockoutDay, lockoutYear, lockoutHour, lockoutMinute, locked, autoApprove, pendingInvite,
-	inviteStatus, inviteType, calendarType = CalendarGetEventInfo()
+	local event = _G.C_Calendar.GetEventInfo()
+	if not event then return end
+	local day, month,year, hour,minute = event.time.monthDay,event.time.month,event.time.year,event.time.hour,event.time.minute
 
-	if calendarType == "GUILD_EVENT" and math.abs(self:GetEventTimeDiff(month, day, year, hour, minute)) < 12*60*60 then
-		local monthOffset, day, index = CalendarGetEventIndex()
+
+	if event.calendarType == "GUILD_EVENT" and math.abs(self:GetEventTimeDiff(month, day, year, hour, minute)) < 12*60*60 then
+		local eventIndex = _G.C_Calendar.GetEventIndex()
+		local monthOffset, day, index = eventIndex.offsetMonths, eventIndex.monthDay,eventIndex.eventIndex
 		local id = self:GenerateEventID(monthOffset, day, index)
 		if not self.eventInfos[id] then
 			self.eventInfos[id] = {}
 		end
-		self.eventInfos[id].title = title
+		self.eventInfos[id].title = event.title
 		self.eventInfos[id].month = month
 		self.eventInfos[id].day = day
 		self.eventInfos[id].year = year
@@ -337,8 +334,9 @@ function RCCustomEP:OPEN_CALENDAR()
 		end
 		wipe(self.eventInfos[id].signupList)
 
-		for i = 1, CalendarEventGetNumInvites() do
-			local name, level, className, classFileName, inviteStatus, modStatus, inviteIsMine, inviteType = CalendarEventGetInvite(i)
+		for i = 1, _G.C_Calendar.GetNumInvites() do
+			local inv = _G.C_Calendar.EventGetInvite(i)
+			local name, level, className, classFileName, inviteStatus, modStatus, inviteIsMine, inviteType = inv.name, inv.level,inv.className,inv.classFileName,inv.inviteStatus,inv.modStatus,inv.inviteIsMine,inv.type
 			if name then
 				name = RCEPGP:GetEPGPName(name)
 				local info
@@ -346,12 +344,12 @@ function RCCustomEP:OPEN_CALENDAR()
 					self.eventInfos[id].signupList[name] = {}
 				end
 				info = self.eventInfos[id].signupList[name]
-				local weekday, month, day, year, hour, minute = CalendarEventGetInviteResponseTime(i)
-				info.month = month
-				info.day = day
-				info.year = year
-				info.hour = hour
-				info.minute = minute
+				local invRespTime = _G.C_Calendar.EventGetInviteResponseTime(i)
+				info.month = invRespTime.month
+				info.day = invRespTime.monthDay
+				info.year = invRespTime.year
+				info.hour = invRespTime.hour
+				info.minute = invRespTime.minute
 				info.inviteStatus = inviteStatus --_G.CALENDAR_INVITESTATUS_OUT _G.CALENDAR_INVITESTATUS_TENTATIVE
 				info.modStatus = modStatus
 				info.inviteIsMine = inviteIsMine
