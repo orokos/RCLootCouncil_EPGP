@@ -2,7 +2,7 @@
 
 ## Title: RCLootCouncil - EPGP
 ## Version: 2.3.0
-## X-TestVersion: Alpha.1
+## X-TestVersion: Beta.1
 
 ## Author: Safetee
 ## Notes: An unofficial RCLootCouncil module with full EPGP support and customization.
@@ -14,7 +14,7 @@
 
 ## X-Category: Guild
 ## X-License: GNU Lesser General Public License version 3 (LGPLv3)
-## X-Website: https://mods.curse.com/addons/wow/269161-rclootcouncil-epgp
+## X-Website: https://www.curseforge.com/wow/addons/rclootcouncil-epgp/
 ## X-Github: https://github.com/SafeteeWoW/RCLootCouncil_EPGP
 ## X-Curse_Project-ID: 269161
 
