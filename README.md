@@ -1,17 +1,17 @@
+## v2.3.0 Update
+I took some time off to update this addon to patch 8.2 and [RCLootCouncil](https://www.curseforge.com/wow/addons/rclootcouncil/) v2.13.0.
+This is merely an API update, and I've not done proper ingame testing as I'm not using EPGP, but as far as I can tell, everything is working as intended, including the new button groups from RCLootCouncil v2.9.0.
+
+### Changes
+This project now relies on [EPGP Next](https://www.curseforge.com/wow/addons/epgp-next) as EPGP(dkp reloaded) is no longer maintained. It doesn't seem to be particulary up to date, but was the newest semi maintained version I could find, and it seems to do the trick. Refer to that site for installation.
+
+
+
+_Original README below:_
+
+-------
 ### This addon is no longer maintained because the author has been Afk from the World of Warcraft. Any fork for this repository is welcome
-     
-     
-     
-     
-     
-     
-     
-     
-     
-     
-     
-     
-     
+
 **The author of RCLootCouncil-EPGP is NOT the author of RCLootCouncil. Please do NOT report any EPGP related bugs to RCLootCouncil. Before reporting any bugs, make sure to read the [FAQ](https://wow.curseforge.com/projects/rclootcouncil-epgp/pages/faq)!**
 
 

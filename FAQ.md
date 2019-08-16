@@ -1,4 +1,4 @@
-**Make sure you have read the [FAQ of RCLootCouncil](https://wow.curseforge.com/projects/rclootcouncil/pages/faq)**  
+**Make sure you have read the [FAQ of RCLootCouncil](https://www.curseforge.com/wow/addons/rclootcouncil/pages/faq)**  
 
 **I installed the addon, but the addon is not in the in-game AddOn List.**  
 Make sure you installed in the correct path.
@@ -6,7 +6,7 @@ If the path is correct, you should see the file "RCLootCouncil_EPGP.toc" under "
 Common mistake it that you put the addon file in an extra folder "WoW/Interface/Addons/RCLootCouncil_EPGP/RCLootCouncil_EPGP"
 
 **I installed and enabled the addon, but it seems the addon is not there.**  
-RCLootCouncil-EPGP depends on [RCLootCouncil](https://mods.curse.com/addons/wow/rclootcouncil) and [EPGP(DKP reloaded)](https://mods.curse.com/addons/wow/epgp-dkp-reloaded).
+RCLootCouncil-EPGP depends on [RCLootCouncil](https://www.curseforge.com/wow/addons/rclootcouncil) and [EPGP Next](https://www.curseforge.com/wow/addons/epgp-next).
 Make sure you have installed and enabled **RCLootCouncil** and **EPGP** in-game with RCLootCouncil-EPGP.
 RCLootCouncil-EPGP won't be loaded without those two addons.
 
