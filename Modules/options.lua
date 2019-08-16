@@ -18,33 +18,38 @@ local awardButtonNeedCheckStatus = false -- Need to update the enable/disable st
 function RCEPGP:AddGPOptions()
     local options = addon.options
     local button, picker, text, gp = {}, {}, {}, {}
-    for i = 1, addon.db.profile.buttons.default.numButtons do
-        options.args.mlSettings.args.buttonsTab.args.buttonOptions.args["button" .. i].order = i * 5 + 1
-        -- options.args.mlSettings.args.buttonsTab.args.buttonOptions.args["button" .. i].width = "half"
-        options.args.mlSettings.args.buttonsTab.args.buttonOptions.args["picker" .. i].order = i * 5 + 2
-        options.args.mlSettings.args.buttonsTab.args.buttonOptions.args["picker" .. i].width = "half"
-        options.args.mlSettings.args.buttonsTab.args.buttonOptions.args["text" .. i].order = i * 5 + 3
-        options.args.mlSettings.args.buttonsTab.args.buttonOptions.args["gp" .. i] = {
-            order = i * 5 + 3.1,
-            name = "GP",
-            desc = LEP["gp_value_help"],
-            type = "input",
-            width = 0.4,
-			pattern = "^%d+%%?$",
-            get = function() return self.db.gp.responses[i] end,
-            set = function(info, value) self.db.gp.responses[i] = value end,
-            hidden = function() return addon.db.profile.buttons.default.numButtons < i end,
-        }
-        self:Hook(options.args.mlSettings.args.buttonsTab.args.buttonOptions.args["move_up" .. i], "func", function()
-           local tmp = self.db.gp.responses[i]
-           self.db.gp.responses[i] = self.db.gp.responses[i - 1]
-           self.db.gp.responses[i - 1] = tmp
-        end)
-        self:Hook(options.args.mlSettings.args.buttonsTab.args.buttonOptions.args["move_down" .. i], "func", function()
-           local tmp = self.db.gp.responses[i]
-           self.db.gp.responses[i] = self.db.gp.responses[i + 1]
-           self.db.gp.responses[i + 1] = tmp
-        end)
+    local buttonGroups = CopyTable(addon:Getdb().enabledButtons or {})
+    buttonGroups.buttonOptions = true -- Default buttons lives here
+    for name in pairs(buttonGroups) do
+      -- Default buttons live in a different path in the options table
+      local buttonsEntry = name == "buttonOptions" and "default" or name
+       for i = 1, addon.db.profile.buttons[buttonsEntry].numButtons do
+           options.args.mlSettings.args.buttonsTab.args[name].args["button" .. i].order = i * 5 + 1
+           options.args.mlSettings.args.buttonsTab.args[name].args["picker" .. i].order = i * 5 + 2
+           options.args.mlSettings.args.buttonsTab.args[name].args["picker" .. i].width = "half"
+           options.args.mlSettings.args.buttonsTab.args[name].args["text" .. i].order = i * 5 + 3
+           options.args.mlSettings.args.buttonsTab.args[name].args["gp" .. i] = {
+               order = i * 5 + 3.1,
+               name = "GP",
+               desc = LEP["gp_value_help"],
+               type = "input",
+               width = 0.4,
+   			pattern = "^%d+%%?$",
+               get = function() return self.db.gp.responses[i] end,
+               set = function(info, value) self.db.gp.responses[i] = value end,
+               hidden = function() return addon.db.profile.buttons[buttonsEntry].numButtons < i end,
+           }
+           self:Hook(options.args.mlSettings.args.buttonsTab.args[name].args["move_up" .. i], "func", function()
+              local tmp = self.db.gp.responses[i]
+              self.db.gp.responses[i] = self.db.gp.responses[i - 1]
+              self.db.gp.responses[i - 1] = tmp
+           end)
+           self:Hook(options.args.mlSettings.args.buttonsTab.args[name].args["move_down" .. i], "func", function()
+              local tmp = self.db.gp.responses[i]
+              self.db.gp.responses[i] = self.db.gp.responses[i + 1]
+              self.db.gp.responses[i + 1] = tmp
+           end)
+       end
     end
 
     LibStub("AceConfigRegistry-3.0"):NotifyChange("RCLootCouncil")
