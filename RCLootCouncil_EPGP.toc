@@ -1,8 +1,8 @@
-﻿## Interface: 70300
+﻿## Interface: 80200
 
 ## Title: RCLootCouncil - EPGP
-## Version: 2.2.3
-## X-TestVersion:
+## Version: 2.3.0
+## X-TestVersion: Alpha.1
 
 ## Author: Safetee
 ## Notes: An unofficial RCLootCouncil module with full EPGP support and customization.

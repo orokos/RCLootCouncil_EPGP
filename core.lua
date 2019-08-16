@@ -40,13 +40,13 @@ local currentAwardingGP = 0
 function RCEPGP:OnInitialize()
 	-- MAKESURE: Edit the following versions every update, and should also update the version in TOC file.
 	addon:Debug("RCEPGP Initialized")
-	self.version = "2.2.3"
-	self.tVersion = nil -- format: nil/Beta.num/Alpha.num, testVersion compares only by number. eg. "Alpha.2" > "Beta.1"
+	self.version = "2.3.0"
+	self.tVersion = "Alpha.1" -- format: nil/Beta.num/Alpha.num, testVersion compares only by number. eg. "Alpha.2" > "Beta.1"
 	self.tocVersion = GetAddOnMetadata("RCLootCouncil_EPGP", "Version")
 	self.testTocVersion = GetAddOnMetadata("RCLootCouncil_EPGP", "X-TestVersion") -- "" (emtyp string)/Beta.num/Alpha.num
 	self.lastVersionNeedingRestart = "2.2.0"
-	self.lastVersionResetSetting = "2.2.0"
-	self.minRCVersion = "2.7.6"
+	self.lastVersionResetSetting = "2.2.3"
+	self.minRCVersion = "2.13.0"
 
 	self.debug = false
 	local meta = getmetatable(self) 	-- Set the addon name for self:Print()
