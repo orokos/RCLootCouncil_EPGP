@@ -39,6 +39,7 @@ local currentAwardingGP = 0
 
 function RCEPGP:OnInitialize()
 	-- MAKESURE: Edit the following versions every update, and should also update the version in TOC file.
+	addon:Debug("RCEPGP Initialized")
 	self.version = "2.2.3"
 	self.tVersion = nil -- format: nil/Beta.num/Alpha.num, testVersion compares only by number. eg. "Alpha.2" > "Beta.1"
 	self.tocVersion = GetAddOnMetadata("RCLootCouncil_EPGP", "Version")
@@ -138,9 +139,11 @@ function RCEPGP:OnInitialize()
 
 	-- Clean garbage in SV
 	addon.db.profile.epgp = nil -- No longer used
-	for _, v in pairs(addon.db.profile.relicButtons) do v.gp = nil end
-	for _, v in pairs(addon.db.profile.tierButtons) do v.gp = nil end
-    for _, v in pairs(addon.db.profile.responses) do v.gp = nil end
+    for _, data in pairs(addon.db.profile.responses) do
+		 for _,v in ipairs(data) do
+		 	v.gp = nil
+	 	end
+	 end
 
 	addon.db:RegisterNamespace("EPGP", self.defaults)
 
@@ -172,7 +175,7 @@ function RCEPGP:OnInitialize()
 	self:RegisterMessage("RCMLBuildMLdb", "OnMessageReceived")
 	self:RegisterBucketMessage("RCEPGPConfigTableChanged", 2, "EPGPConfigTableChanged")
 
-    self:AddGPOptions()
+	self:SecureHook(addon,"OptionsTable", "AddGPOptions") -- Ensure this is called after RCLootCouncil:OptionsTable()
     self:AddOptions()
 
     self:AddSlashCmds()

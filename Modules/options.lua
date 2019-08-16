@@ -18,60 +18,33 @@ local awardButtonNeedCheckStatus = false -- Need to update the enable/disable st
 function RCEPGP:AddGPOptions()
     local options = addon.options
     local button, picker, text, gp = {}, {}, {}, {}
-    for i = 1, addon.db.profile.maxButtons do
-        options.args.mlSettings.args.buttonsTab.args.buttonOptions.args["button" .. i].order = i * 4 + 1
-        options.args.mlSettings.args.buttonsTab.args.buttonOptions.args["picker" .. i].order = i * 4 + 2
+    for i = 1, addon.db.profile.buttons.default.numButtons do
+        options.args.mlSettings.args.buttonsTab.args.buttonOptions.args["button" .. i].order = i * 5 + 1
+        -- options.args.mlSettings.args.buttonsTab.args.buttonOptions.args["button" .. i].width = "half"
+        options.args.mlSettings.args.buttonsTab.args.buttonOptions.args["picker" .. i].order = i * 5 + 2
         options.args.mlSettings.args.buttonsTab.args.buttonOptions.args["picker" .. i].width = "half"
-        options.args.mlSettings.args.buttonsTab.args.buttonOptions.args["text" .. i].order = i * 4 + 3
+        options.args.mlSettings.args.buttonsTab.args.buttonOptions.args["text" .. i].order = i * 5 + 3
         options.args.mlSettings.args.buttonsTab.args.buttonOptions.args["gp" .. i] = {
-            order = i * 4 + 4,
+            order = i * 5 + 3.1,
             name = "GP",
             desc = LEP["gp_value_help"],
             type = "input",
-            width = "half",
+            width = 0.4,
 			pattern = "^%d+%%?$",
             get = function() return self.db.gp.responses[i] end,
             set = function(info, value) self.db.gp.responses[i] = value end,
-            hidden = function() return addon.db.profile.numButtons < i end,
+            hidden = function() return addon.db.profile.buttons.default.numButtons < i end,
         }
-    end
-    for k, v in pairs(addon.db.profile.responses.tier) do
-        options.args.mlSettings.args.buttonsTab.args.tierButtonsOptions.args["button" .. k].order = v.sort * 4 + 1
-        options.args.mlSettings.args.buttonsTab.args.tierButtonsOptions.args["color" .. k].order = v.sort * 4 + 2
-        options.args.mlSettings.args.buttonsTab.args.tierButtonsOptions.args["color" .. k].width = "half"
-        options.args.mlSettings.args.buttonsTab.args.tierButtonsOptions.args["text" .. k].order = v.sort * 4 + 3
-        options.args.mlSettings.args.buttonsTab.args.tierButtonsOptions.args["gp" .. k] = {
-            order = v.sort * 4 + 4,
-            name = "GP",
-            desc = LEP["gp_value_help"],
-            type = "input",
-            width = "half",
-			pattern = "^%d+%%?$",
-            get = function() return self.db.gp.tierButtons[v.sort] end,
-            set = function(info, value) self.db.gp.tierButtons[v.sort] = value end,
-            hidden = function() return not addon.db.profile.tierButtonsEnabled or addon.db.profile.tierNumButtons < v.sort end,
-        }
-    end
-
-    -- Relic Buttons/Responses
-    if addon.db.profile.responses.relic then
-    	for k, v in pairs(addon.db.profile.responses.relic) do
-            options.args.mlSettings.args.buttonsTab.args.relicButtonsOptions.args["button" .. k].order = v.sort * 4 + 1
-            options.args.mlSettings.args.buttonsTab.args.relicButtonsOptions.args["color" .. k].order = v.sort * 4 + 2
-            options.args.mlSettings.args.buttonsTab.args.relicButtonsOptions.args["color" .. k].width = "half"
-            options.args.mlSettings.args.buttonsTab.args.relicButtonsOptions.args["text" .. k].order = v.sort * 4 + 3
-            options.args.mlSettings.args.buttonsTab.args.relicButtonsOptions.args["gp" .. k] = {
-                order = v.sort * 4 + 4,
-                name = "GP",
-                desc = LEP["gp_value_help"],
-                type = "input",
-                width = "half",
-				pattern = "^%d+%%?$",
-                get = function() return self.db.gp.relicButtons[v.sort] end,
-                set = function(info, value) self.db.gp.relicButtons[v.sort] = value end,
-                hidden = function() return not addon.db.profile.relicButtonsEnabled or addon.db.profile.relicNumButtons < v.sort end,
-            }
-    	end
+        self:Hook(options.args.mlSettings.args.buttonsTab.args.buttonOptions.args["move_up" .. i], "func", function()
+           local tmp = self.db.gp.responses[i]
+           self.db.gp.responses[i] = self.db.gp.responses[i - 1]
+           self.db.gp.responses[i - 1] = tmp
+        end)
+        self:Hook(options.args.mlSettings.args.buttonsTab.args.buttonOptions.args["move_down" .. i], "func", function()
+           local tmp = self.db.gp.responses[i]
+           self.db.gp.responses[i] = self.db.gp.responses[i + 1]
+           self.db.gp.responses[i + 1] = tmp
+        end)
     end
 
     LibStub("AceConfigRegistry-3.0"):NotifyChange("RCLootCouncil")
