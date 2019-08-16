@@ -8,8 +8,8 @@ local CopyTable = CopyTable
 local GetAddOnMetadata = GetAddOnMetadata
 local GetItemInfo = GetItemInfo
 local GetLocale = GetLocale
-local Lib_DropDownList1 = Lib_DropDownList1
-local Lib_UIDropDownMenu_GetCurrentDropDown = Lib_UIDropDownMenu_GetCurrentDropDown
+local MSA_DropDownList1 = MSA_DropDownList1
+local MSA_DropDownMenu_GetCurrentDropDown = MSA_DropDownMenu_GetCurrentDropDown
 local SetCVar = SetCVar
 local UnitFullName = UnitFullName
 local format = format
@@ -417,12 +417,12 @@ end
 
 -- Refresh the current menu if it is a RCEPGP menu.
 function RCEPGP:RefreshMenu(level)
-    local menu = Lib_UIDropDownMenu_GetCurrentDropDown()
+    local menu = MSA_DropDownMenu_GetCurrentDropDown()
     if not menu then return end
     if not menu.RCEPGPMenu then return end
-    if not Lib_DropDownList1:IsShown() then return end
+    if not MSA_DropDownList1:IsShown() then return end
     if menu.initialize then
-        Lib_DropDownList1.numButtons = 0
+        MSA_DropDownList1.numButtons = 0
         menu.initialize(menu, level, menu.menuList)
     end
 end

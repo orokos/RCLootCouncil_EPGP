@@ -486,13 +486,15 @@ function RCVF:AddWidgetsIntoVotingFrame()
         end)
 
         -- Clear focus when rightclick menu opens.
-        if not self:IsHooked(_G["Lib_DropDownList1"], "OnShow") then
-            self:SecureHookScript(_G["Lib_DropDownList1"], "OnShow", function()
-                if f and f.gpEditbox then
-                    f.gpEditbox:ClearFocus()
-                end
-            end)
-        end
+		  if _G["MSA_DropDownList1"] then
+	        if not self:IsHooked(_G["MSA_DropDownList1"], "OnShow") then
+	            self:SecureHookScript(_G["MSA_DropDownList1"], "OnShow", function()
+	                if f and f.gpEditbox then
+	                    f.gpEditbox:ClearFocus()
+	                end
+	            end)
+	        end
+		  end
         f.gpEditbox = editbox
     end
 end
