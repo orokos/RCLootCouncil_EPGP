@@ -1,4 +1,4 @@
-### v2.3.0-Beta.1
+### v2.3.0
 ---
 I took some time off to update this addon to patch 8.2 and [RCLootCouncil](https://www.curseforge.com/wow/addons/rclootcouncil/) v2.13.0.
 This is merely an API update, and I've not done proper ingame testing as I'm not using EPGP, but as far as I can tell, everything is working as intended, including the new button groups from RCLootCouncil v2.9.0.

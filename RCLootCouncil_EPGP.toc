@@ -2,7 +2,7 @@
 
 ## Title: RCLootCouncil - EPGP
 ## Version: 2.3.0
-## X-TestVersion: Beta.1
+## X-TestVersion:
 
 ## Author: Safetee
 ## Notes: An unofficial RCLootCouncil module with full EPGP support and customization.
