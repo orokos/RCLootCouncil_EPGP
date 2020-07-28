@@ -20,12 +20,18 @@ function RCEPGP:AddAwardAnnouncement()
             local newgp = "?"
             local newpr = "?"
             ep, gp = EPGP:GetEPGP(name)
+            if ep then
+                ep = ep / 100
+            end
+            if gp then
+                gp = gp / 100
+            end
             if ep and gp then
                 pr = format("%.4g", ep / gp)
             end
 
             if ep and gp then
-                newgp = math.floor(gp + self:GetCurrentAwardingGP() + 0.5)
+                newgp = math.floor(gp + self:GetCurrentAwardingGP() / 100 + 0.5)
                 newpr = format("%.4g", ep / newgp)
             end
 
@@ -35,13 +41,13 @@ function RCEPGP:AddAwardAnnouncement()
             return ep, gp, pr, newgp, newpr
         end
 
-        RCLootCouncilML.awardStrings['#diffgp#'] = function(name) return self:GetCurrentAwardingGP() end
+        RCLootCouncilML.awardStrings['#diffgp#'] = function(name) return self:GetCurrentAwardingGP() / 100 end
         RCLootCouncilML.awardStrings['#ep#'] = function(name) return select(1, GetEPGPInfo(name)) end
         RCLootCouncilML.awardStrings['#gp#'] = function(name) return select(2, GetEPGPInfo(name)) end
         RCLootCouncilML.awardStrings['#pr#'] = function(name) return select(3, GetEPGPInfo(name)) end
         RCLootCouncilML.awardStrings['#newgp#'] = function(name) return select(4, GetEPGPInfo(name)) end
         RCLootCouncilML.awardStrings['#newpr#'] = function(name) return select(5, GetEPGPInfo(name)) end
-		RCLootCouncilML.awardStrings['#itemgp#'] = function(_, item) return GP:GetValue(item) or 0 end
+        RCLootCouncilML.awardStrings['#itemgp#'] = function(_, item) return GP:GetValue(item) and GP:GetValue(item) / 100 or 0 end
 
 		if RCLootCouncilML.awardStringsDesc then
 			tinsert(RCLootCouncilML.awardStringsDesc, LEP["announce_#diffgp#_desc"])
@@ -58,7 +64,7 @@ end
 function RCEPGP:AddConsiderationAnnouncement()
     if RCLootCouncilML.announceItemStrings then -- Requires RCLootCouncil v2.7
 		if RCLootCouncilML.announceItemStringsDesc then
-			RCLootCouncilML.announceItemStrings["#itemgp#"] = function(_, item) return GP:GetValue(item) or 0 end
+			RCLootCouncilML.announceItemStrings["#itemgp#"] = function(_, item) return GP:GetValue(item) and GP:GetValue(item) / 100 or 0 end
 			tinsert(RCLootCouncilML.announceItemStringsDesc, LEP["announce_#itemgp#_desc"])
 		end
     end
