@@ -53,6 +53,7 @@ LibDialog:Register("RCEPGP_CONFIRM_AWARD", {
 					if awarded then
 						local gp = data and data.gp or 0
 						local winner = RCEPGP:GetEPGPName(data.winner)
+						local response = RCLootCouncil:GetResponse("default", data.responseID).text
 						local lastgpAwardee = RCEPGP:GetEPGPName(RCLootCouncilML.lootTable[data.session].gpAwardee)
 						local lastgpAwarded = RCLootCouncilML.lootTable[data.session].gpAwarded
 						if lastgpAwardee then
@@ -60,7 +61,7 @@ LibDialog:Register("RCEPGP_CONFIRM_AWARD", {
 						end
 						RCEPGP:SetCurrentAwardingGP(gp) -- For announcement
 						if gp ~= 0 then
-							RCEPGP:IncGPSecure(winner, data.link, gp) -- Fix GP not awarded for Russian name.
+							RCEPGP:IncGPSecure(winner, data.link .. " - " .. response, gp) -- Fix GP not awarded for Russian name.
 							RCEPGP:Debug("Awarded GP: ", winner, data.link, gp)
 						end
 						RCLootCouncilML.lootTable[data.session].gpAwarded = gp
