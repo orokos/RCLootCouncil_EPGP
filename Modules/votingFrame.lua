@@ -109,19 +109,25 @@ end
 
 function RCVF:Update()
     -- Dont try to use RCVotingFrame:GetFrame() here, it causes lag on login.
-	if RCVotingFrame.frame and session and RCVotingFrame:GetLootTable()[session] then
-    	RCVotingFrame:Update()
-		RCEPGP:RefreshMenu(1)
+    if RCVotingFrame.frame and session and RCVotingFrame:GetLootTable()[session] then
+        RCVotingFrame:Update()
+        RCEPGP:RefreshMenu(1)
 
-		local lootTable = RCVotingFrame:GetLootTable()
-		if lootTable then
-			local t = lootTable[session]
-			if t then
-				local gp = lootTable[session].gp or 0
-				RCVotingFrame:GetFrame().gpEditbox:SetNumber(gp)
-			end
-		end
-	end
+        -- Don't change the text when editing or rightclick menu openning
+        local gpEditbox = RCVotingFrame:GetFrame().gpEditbox
+        if _G["MSA_DropDownList1"]:IsShown() or gpEditbox:HasFocus() then
+            return
+        end
+
+        local lootTable = RCVotingFrame:GetLootTable()
+        if lootTable then
+            local t = lootTable[session]
+            if t then
+                local gp = lootTable[session].gp or 0
+                gpEditbox:SetNumber(gp)
+            end
+        end
+    end
 end
 
 function RCVF:GetScrollColIndexFromName(colName)
